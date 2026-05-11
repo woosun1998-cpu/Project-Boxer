@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - 안전확인</title>
+    <style>
+      :root {
+        --bg: #080a12;
+        --panel: #121826;
+        --line: rgba(255, 255, 255, 0.12);
+        --text: #f8faff;
+        --ok: #2ecc71;
+        --warn: #ff4d67;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 20% 0%, #1a2033 0%, #080a12 55%);
+        color: var(--text);
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      }
+      .page {
+        width: min(1100px, 94vw);
+        margin: 24px auto 16px;
+      }
+      .title {
+        margin: 0 0 8px;
+        font-size: clamp(26px, 3vw, 40px);
+        font-weight: 800;
+      }
+      .desc {
+        margin: 0 0 12px;
+        color: rgba(248, 250, 255, 0.8);
+      }
+      .panel {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(220px, 320px);
+        gap: 16px;
+      }
+      .camera-box,
+      .info-box {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(18, 24, 38, 0.9);
+      }
+      .camera-box {
+        padding: 10px;
+      }
+      #safety-video {
+        width: 100%;
+        aspect-ratio: 16 / 8.8;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #02050b;
+        object-fit: cover;
+      }
+      .info-box {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .camera-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: rgba(248, 250, 255, 0.86);
+      }
+      .camera-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #666;
+      }
+      .camera-dot.on {
+        background: var(--ok);
+      }
+      .status {
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .status.ok {
+        border-color: rgba(46, 204, 113, 0.45);
+      }
+      .status.warn {
+        border-color: rgba(255, 77, 103, 0.55);
+      }
+      .status.running {
+        border-color: rgba(45, 114, 255, 0.55);
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #2d72ff;
+        color: #fff;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+      }
+      .danger-list {
+        margin: 0;
+        padding-left: 18px;
+      }
+      .danger-list li {
+        margin: 4px 0;
+      }
+      .pred-list {
+        margin: 0;
+        padding-left: 18px;
+        max-height: 130px;
+        overflow: auto;
+        font-size: 13px;
+        color: rgba(248, 250, 255, 0.86);
+      }
+      .mode-box {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 14px;
+        color: rgba(248, 250, 255, 0.9);
+      }
+      .timing-box {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: rgba(248, 250, 255, 0.9);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .timing-box strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+      .timing-box ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+      .timing-box li {
+        margin: 4px 0;
+      }
+      .mode-box label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      @media (max-width: 900px) {
+        .panel {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <h1 class="title">안전확인</h1>
+      <p class="desc">카메라 화면을 보고 위험요소(칼, 가위, 야구방망이)를 분석합니다.</p>
+      <section class="panel">
+        <article class="camera-box">
+          <video id="safety-video" autoplay playsinline muted></video>
+        </article>
+        <aside class="info-box">
+          <div class="camera-state">
+            <span id="cameraDot" class="camera-dot"></span>
+            <span id="cameraStateText">카메라 꺼짐</span>
+          </div>
+          <div id="statusBox" class="status">카메라 시작 버튼을 눌러 주세요.</div>
+          <div class="mode-box">
+            <label>
+              <input id="testModeCheckbox" type="checkbox" />
+              테스트 모드(흔한 물체 감지: 휴대폰, 컵, 병, 책, 노트북, 키보드, 마우스, 리모컨, 가방, 사람)
+            </label>
+          </div>
+          <div class="timing-box">
+            <strong>권장 점검 타이밍</strong>
+            <ul>
+              <li>운동 시작 전 1회</li>
+              <li>카메라/조명/자리 변경 시 즉시 1회</li>
+              <li>20~30분 운동마다 1회</li>
+              <li>휴식 후 재시작 직전에 1회</li>
+            </ul>
+          </div>
+          <div class="btn-row">
+            <button id="startCameraBtn" class="btn-primary" type="button">카메라 시작</button>
+            <button id="analyzeBtn" class="btn-secondary" type="button">위험요소 분석</button>
+            <button id="stopCameraBtn" class="btn-secondary" type="button">카메라 종료</button>
+          </div>
+          <ul id="dangerList" class="danger-list"></ul>
+          <ul id="predictionList" class="pred-list"></ul>
+        </aside>
+      </section>
+    </main>
+
+    <script src="js/core/danger-precheck.js"></script>
+    <script src="js/core/safety-gate.js"></script>
+    <script src="js/ui/navbar.js"></script>
+    <script>
+      // 무엇: 안전확인 페이지 상태를 한 곳에 보관 -> 왜: 버튼/카메라 상태를 안정적으로 제어하기 위해
+      const state = {
+        stream: null,
+      };
+
+      const videoEl = document.getElementById("safety-video");
+      const statusBox = document.getElementById("statusBox");
+      const dangerListEl = document.getElementById("dangerList");
+      const predictionListEl = document.getElementById("predictionList");
+      const startCameraBtn = document.getElementById("startCameraBtn");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      const stopCameraBtn = document.getElementById("stopCameraBtn");
+      const cameraDot = document.getElementById("cameraDot");
+      const cameraStateText = document.getElementById("cameraStateText");
+      const testModeCheckbox = document.getElementById("testModeCheckbox");
+
+      const TEST_LABELS = [
+        "cell phone",
+        "cup",
+        "bottle",
+        "book",
+        "laptop",
+        "keyboard",
+        "mouse",
+        "remote",
+        "backpack",
+        "handbag",
+        "person",
+      ];
+      const TEST_LABEL_MAP = {
+        "cell phone": "휴대폰",
+        cup: "컵",
+        bottle: "병",
+        book: "책",
+        laptop: "노트북",
+        keyboard: "키보드",
+        mouse: "마우스",
+        remote: "리모컨",
+        backpack: "백팩",
+        handbag: "가방",
+        person: "사람",
+      };
+
+      function setStatus(text, type) {
+        statusBox.textContent = text;
+        statusBox.classList.remove("ok", "warn");
+        statusBox.classList.remove("running");
+        if (type) statusBox.classList.add(type);
+      }
+
+      function renderDangerList(labels) {
+        dangerListEl.innerHTML = "";
+        if (!labels.length) return;
+        labels.forEach((label) => {
+          const li = document.createElement("li");
+          li.textContent = label;
+          dangerListEl.appendChild(li);
+        });
+      }
+
+      function renderPredictionList(predictions) {
+        predictionListEl.innerHTML = "";
+        if (!predictions.length) return;
+        predictions.slice(0, 12).forEach((item) => {
+          const li = document.createElement("li");
+          const score = Number(item?.score || 0) * 100;
+          li.textContent = `${item?.class || "unknown"} (${score.toFixed(1)}%)`;
+          predictionListEl.appendChild(li);
+        });
+      }
+
+      function setCameraState(isOn) {
+        cameraDot.classList.toggle("on", isOn);
+        cameraStateText.textContent = isOn ? "카메라 켜짐" : "카메라 꺼짐";
+      }
+
+      async function startCamera() {
+        if (state.stream) return;
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false,
+          });
+          state.stream = stream;
+          videoEl.srcObject = stream;
+          await videoEl.play();
+          setCameraState(true);
+          setStatus("카메라가 준비되었습니다. 위험요소 분석 버튼을 눌러 주세요.", "ok");
+          renderDangerList([]);
+          renderPredictionList([]);
+        } catch (error) {
+          setCameraState(false);
+          setStatus("카메라 접근에 실패했습니다. 권한을 확인해 주세요.", "warn");
+          console.error(error);
+        }
+      }
+
+      function stopCamera() {
+        if (state.stream) {
+          state.stream.getTracks().forEach((track) => track.stop());
+          state.stream = null;
+        }
+        videoEl.srcObject = null;
+        setCameraState(false);
+        setStatus("카메라를 종료했습니다.", null);
+      }
+
+      async function analyzeDanger() {
+        if (typeof window.runDangerObjectPrecheck !== "function") {
+          setStatus("위험요소 분석 기능을 불러오지 못했습니다.", "warn");
+          return;
+        }
+        if (!state.stream) {
+          await startCamera();
+          if (!state.stream) return;
+        }
+        const isTestMode = !!testModeCheckbox.checked;
+        setStatus(
+          isTestMode
+            ? "테스트 모드로 분석 중입니다... (흔한 물체)"
+            : "위험요소를 분석하는 중입니다...",
+          "running"
+        );
+        analyzeBtn.disabled = true;
+        const result = await window.runDangerObjectPrecheck({
+          videoEl,
+          videoConstraints: { video: { facingMode: "user" }, audio: false },
+          keepStream: true,
+          sampleCount: 5,
+          sampleIntervalMs: 120,
+          requiredHits: 2,
+          targetLabels: isTestMode ? TEST_LABELS : null,
+          labelMap: isTestMode ? TEST_LABEL_MAP : null,
+        });
+        analyzeBtn.disabled = false;
+        const labels = Array.isArray(result?.dangerLabels) ? result.dangerLabels : [];
+        const predictions = Array.isArray(result?.rawPredictions) ? result.rawPredictions : [];
+        renderPredictionList(predictions);
+        if (labels.length) {
+          setStatus(`위험요소 감지: ${labels.join(", ")}`, "warn");
+          renderDangerList(labels);
+          return;
+        }
+        if (window.BoxerSafetyGate?.markPassed) {
+          // 무엇: 안전확인 완료 시각 저장 -> 왜: 다른 모드 시작 전 공통 게이트에서 검증하기 위해
+          window.BoxerSafetyGate.markPassed();
+        }
+        setStatus(
+          isTestMode
+            ? "테스트 대상 물체가 감지되지 않았습니다."
+            : "위험요소가 감지되지 않았습니다. 안전합니다.",
+          "ok"
+        );
+        renderDangerList([]);
+      }
+
+      startCameraBtn.addEventListener("click", startCamera);
+      analyzeBtn.addEventListener("click", analyzeDanger);
+      stopCameraBtn.addEventListener("click", stopCamera);
+      setCameraState(false);
+      window.addEventListener("beforeunload", stopCamera);
+    </script>
+  </body>
+</html>

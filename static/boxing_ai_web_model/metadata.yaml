@@ -1,0 +1,25 @@
+description: Ultralytics YOLO11n model trained on /content/room-1/data.yaml
+author: Ultralytics
+date: '2026-04-22T04:27:25.702553'
+version: 8.4.41
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: hook
+  1: uppercut
+  2: cross
+  3: jab
+  4: No punch
+args:
+  batch: 1
+  half: false
+  int8: false
+  nms: false
+channels: 3
+end2end: false

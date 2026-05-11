@@ -1,0 +1,2098 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOXER HOME TRAINING</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/index.css?v=figma-52-12-live-fonts" />
+</head>
+
+<body>
+  <main class="landing">
+    <section class="hero-section" aria-label="BOXER HOME TRAINING 소개">
+      <img class="hero-logo" src="./image/로고.png" alt="BOXER HOME TRAING" />
+      <nav class="top-nav" aria-label="상단 메뉴">
+        <a href="tutorial-new.html">트레이닝</a>
+        <a href="sparring.html">아케이드</a>
+        <a href="dashboard.html">랭킹</a>
+        <button type="button" onclick="openModal('login')">로그인</button>
+      </nav>
+      <p class="hero-copy">
+        섀도우 복싱, 혼자 하다 자세가 무너지면 부상으로 이어지기 쉽습니다.<br />
+        화면 앞을 서는 순간, 인공지능이 실시간으로 관절의 움직임을 분석하여<br />
+        타격점과 회피 각도를 정밀하게 교정해 드립니다.<br />
+        부상 걱정 없이, 집에서도 프로처럼 펀치를 뻗어보세요.
+      </p>
+    </section>
+
+    <section class="learn-section" aria-label="실시간 AI 복싱 소개">
+      <img class="learn-boxer" src="./image/2번째 영역 복서 이미지.png" alt="복싱 자세를 분석하는 선수 이미지" />
+      <img class="learn-word" src="./image/2번째 영역 복서 배경 글자.png" alt="" aria-hidden="true" />
+      <div class="learn-content">
+        <h2>집에서 쉽게 배우는 복싱</h2>
+        <p>
+          웹캠 하나로 시작하는 실시간 AI 복싱. 화면 속<br>
+          파란색 가이드 뼈대에 몸을 맞추고 펀치를 뻗어보세요.<br>
+          인공지능이 1초에 30번 당신의 관절 움직임을 추적하여,<br>
+          틀어진 가드와 타격 자세를 즉각적인 음성<br>
+          피드백으로 교정합니다.
+        </p>
+        <button id="play-button" class="play-button" type="button">플레이 하기</button>
+      </div>
+    </section>
+
+    <section class="cards-section" aria-label="BOXER 기능 선택">
+      <div class="cards-copy">
+        <p class="cards-kicker">완벽한 AI 복싱 플랫폼</p>
+        <h2>집에서 쉽게 시작하세요</h2>
+        <p class="cards-description">
+          기초 훈련부터 실전 스파링, 그리고 모든 제약을 없앤 프리미엄 멤버십까지 당신만의 방식을 선택하세요.
+        </p>
+      </div>
+      <div class="feature-grid">
+        <a class="feature-card" href="tutorial-new.html">
+          <img src="./image/트레이닝카드.png" alt="트레이닝: 기초 복싱 자세를 단계별로 배워보세요." />
+        </a>
+        <a class="feature-card" href="sparring.html">
+          <img src="./image/스파링카드.png" alt="스파링: 날아오는 주먹을 회피하고 반격해보세요." />
+        </a>
+        <a class="feature-card" href="diet-boxing.html">
+          <img src="./image/다이어트복싱카드.png" alt="다이어트 복싱: 라운드 타이머와 칼로리 추정으로 복싱합니다." />
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="auth-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="로그인 및 회원가입">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">로그인</button>
+        <button class="modal-tab" id="tab-signup" type="button" onclick="switchTab('signup')">회원가입</button>
+      </div>
+
+      <div class="modal-pane active" id="pane-login">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <input type="email" class="input-field" id="login-email" placeholder="이메일" required />
+          </div>
+          <div class="form-group">
+            <input type="password" class="input-field" id="login-password" placeholder="비밀번호" required />
+          </div>
+          <p class="modal-error" id="login-error"></p>
+          <button type="submit" class="modal-primary-btn">로그인</button>
+        </form>
+        <div class="modal-footer">
+          계정이 없으신가요?
+          <button type="button" onclick="switchTab('signup')">회원가입</button>
+        </div>
+      </div>
+
+      <div class="modal-pane" id="pane-signup">
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <input type="text" class="input-field" id="signup-username" placeholder="닉네임 (3~20자)" minlength="3"
+              maxlength="20" required />
+          </div>
+          <div class="form-group">
+            <input type="email" class="input-field" id="signup-email" placeholder="이메일" required />
+          </div>
+          <div class="form-group">
+            <input type="password" class="input-field" id="signup-password" placeholder="비밀번호 (8자 이상)" minlength="8"
+              required />
+          </div>
+          <p class="modal-error" id="signup-error"></p>
+          <button type="submit" class="modal-primary-btn">가입하기</button>
+        </form>
+        <div class="modal-footer">
+          이미 계정이 있으신가요?
+          <button type="button" onclick="switchTab('login')">로그인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js?v=8000"></script>
+  <script src="js/core/auth.js?v=8000"></script>
+  <script>
+    function isUserLoggedIn() {
+      if (typeof auth === "undefined") return false;
+      const token = localStorage.getItem("boxer_token");
+      return Boolean(token && auth.getCachedUser());
+    }
+
+    function openModal(tab = "login") {
+      document.getElementById("auth-modal").classList.add("open");
+      switchTab(tab);
+    }
+
+    function closeModal() {
+      document.getElementById("auth-modal").classList.remove("open");
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById("auth-modal")) closeModal();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-login").classList.toggle("active", tab === "login");
+      document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("pane-login").classList.toggle("active", tab === "login");
+      document.getElementById("pane-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("login-error").style.display = "none";
+      document.getElementById("signup-error").style.display = "none";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.style.display = "none";
+      try {
+        await auth.login(
+          document.getElementById("login-email").value.trim(),
+          document.getElementById("login-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "로그인에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      errEl.style.display = "none";
+      try {
+        await auth.signup(
+          document.getElementById("signup-username").value.trim(),
+          document.getElementById("signup-email").value.trim(),
+          document.getElementById("signup-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "회원가입에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    function handlePlayButtonClick() {
+      if (!isUserLoggedIn()) {
+        openModal("login");
+        return;
+      }
+      window.location.href = "tutorial.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("play-button").addEventListener("click", handlePlayButtonClick);
+    });
+  </script>
+  <script src="js/ui/auto-scale.js"></script>
+</body>
+
+</html>
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOXER HOME TRAINING</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/index.css?v=figma-52-12-live-fonts" />
+</head>
+
+<body>
+  <main class="landing">
+    <section class="hero-section" aria-label="BOXER HOME TRAINING 소개">
+      <img class="hero-logo" src="./image/로고.png" alt="BOXER HOME TRAING" />
+      <nav class="top-nav" aria-label="상단 메뉴">
+        <a href="tutorial.html">트레이닝</a>
+        <a href="sparring.html">아케이드</a>
+        <a href="dashboard.html">랭킹</a>
+        <button type="button" onclick="openModal('login')">로그인</button>
+      </nav>
+      <p class="hero-copy">
+        섀도우 복싱, 혼자 하다 자세가 무너지면 부상으로 이어지기 쉽습니다.<br />
+        화면 앞을 서는 순간, 인공지능이 실시간으로 관절의 움직임을 분석하여<br />
+        타격점과 회피 각도를 정밀하게 교정해 드립니다.<br />
+        부상 걱정 없이, 집에서도 프로처럼 펀치를 뻗어보세요.
+      </p>
+    </section>
+
+    <section class="learn-section" aria-label="실시간 AI 복싱 소개">
+      <img class="learn-boxer" src="./image/2번째 영역 복서 이미지.png" alt="복싱 자세를 분석하는 선수 이미지" />
+      <img class="learn-word" src="./image/2번째 영역 복서 배경 글자.png" alt="" aria-hidden="true" />
+      <div class="learn-content">
+        <h2>집에서 쉽게 배우는 복싱</h2>
+        <p>
+          웹캠 하나로 시작하는 실시간 AI 복싱. 화면 속<br />
+          파란색 가이드 뼈대에 몸을 맞추고 펀치를 뻗어보세요.<br />
+          인공지능이 1초에 30번 당신의 관절 움직임을 추적하여,<br />
+          틀어진 가드와 타격 자세를 즉각적인 음성<br />
+          피드백으로 교정합니다.
+        </p>
+        <button id="play-button" class="play-button" type="button">플레이 하기</button>
+      </div>
+    </section>
+
+    <section class="cards-section" aria-label="BOXER 기능 선택">
+      <div class="cards-copy">
+        <p class="cards-kicker">완벽한 AI 복싱 플랫폼</p>
+        <h2>집에서 쉽게 시작하세요</h2>
+        <p class="cards-description">
+          기초 훈련부터 실전 스파링, 그리고 모든 제약을 없앤 프리미엄 멤버십까지 당신만의 방식을 선택하세요.
+        </p>
+      </div>
+      <div class="feature-grid">
+        <a class="feature-card" href="tutorial.html">
+          <img src="./image/트레이닝카드.png" alt="트레이닝: 기초 복싱 자세를 단계별로 배워보세요." />
+        </a>
+        <a class="feature-card" href="sparring.html">
+          <img src="./image/스파링카드.png" alt="스파링: 날아오는 주먹을 회피하고 반격해보세요." />
+        </a>
+        <a class="feature-card" href="diet-boxing.html">
+          <img src="./image/다이어트복싱카드.png" alt="다이어트 복싱: 라운드 타이머와 칼로리 추정으로 복싱합니다." />
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="auth-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="로그인 및 회원가입">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">로그인</button>
+        <button class="modal-tab" id="tab-signup" type="button" onclick="switchTab('signup')">회원가입</button>
+      </div>
+
+      <div class="modal-pane active" id="pane-login">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <input type="email" class="input-field" id="login-email" placeholder="이메일" required />
+          </div>
+          <div class="form-group">
+            <input type="password" class="input-field" id="login-password" placeholder="비밀번호" required />
+          </div>
+          <p class="modal-error" id="login-error"></p>
+          <button type="submit" class="modal-primary-btn">로그인</button>
+        </form>
+        <div class="modal-footer">
+          계정이 없으신가요?
+          <button type="button" onclick="switchTab('signup')">회원가입</button>
+        </div>
+      </div>
+
+      <div class="modal-pane" id="pane-signup">
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <input type="text" class="input-field" id="signup-username" placeholder="닉네임 (3~20자)" minlength="3"
+              maxlength="20" required />
+          </div>
+          <div class="form-group">
+            <input type="email" class="input-field" id="signup-email" placeholder="이메일" required />
+          </div>
+          <div class="form-group">
+            <input type="password" class="input-field" id="signup-password" placeholder="비밀번호 (8자 이상)" minlength="8"
+              required />
+          </div>
+          <p class="modal-error" id="signup-error"></p>
+          <button type="submit" class="modal-primary-btn">가입하기</button>
+        </form>
+        <div class="modal-footer">
+          이미 계정이 있으신가요?
+          <button type="button" onclick="switchTab('login')">로그인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js?v=8000"></script>
+  <script src="js/core/auth.js?v=8000"></script>
+  <script>
+    function isUserLoggedIn() {
+      if (typeof auth === "undefined") return false;
+      const token = localStorage.getItem("boxer_token");
+      return Boolean(token && auth.getCachedUser());
+    }
+
+    function openModal(tab = "login") {
+      document.getElementById("auth-modal").classList.add("open");
+      switchTab(tab);
+    }
+
+    function closeModal() {
+      document.getElementById("auth-modal").classList.remove("open");
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById("auth-modal")) closeModal();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-login").classList.toggle("active", tab === "login");
+      document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("pane-login").classList.toggle("active", tab === "login");
+      document.getElementById("pane-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("login-error").style.display = "none";
+      document.getElementById("signup-error").style.display = "none";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.style.display = "none";
+      try {
+        await auth.login(
+          document.getElementById("login-email").value.trim(),
+          document.getElementById("login-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "로그인에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      errEl.style.display = "none";
+      try {
+        await auth.signup(
+          document.getElementById("signup-username").value.trim(),
+          document.getElementById("signup-email").value.trim(),
+          document.getElementById("signup-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "회원가입에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    function handlePlayButtonClick() {
+      if (!isUserLoggedIn()) {
+        openModal("login");
+        return;
+      }
+      window.location.href = "tutorial.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("play-button").addEventListener("click", handlePlayButtonClick);
+    });
+  </script>
+</body>
+
+</html>
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOXER HOME TRAINING</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css" />
+  <style>
+    @font-face {
+      font-family: "KblJumpExtended";
+      src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2601-5@1.0/KBLJump_EB_ExtendedTTF.woff2") format("woff2");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --hero-bg: url("https://www.figma.com/api/mcp/asset/a0e9b239-3a45-4651-afc3-19ba5e2ea0f3");
+      --hero-logo: url("https://www.figma.com/api/mcp/asset/4d19e4b9-1a9d-4afb-b4ba-305582b19bfa");
+      --section2-boxer: url("https://www.figma.com/api/mcp/asset/37225f39-8d8f-4f60-b9a5-8cb86999ca96");
+      --section3-bg: url("https://www.figma.com/api/mcp/asset/b6110cb8-bcda-49f1-a1f1-00c975b6a6d1");
+      --card-training: url("https://www.figma.com/api/mcp/asset/e0de3ee2-7812-4dd6-9b33-0e543630091d");
+      --card-sparring: url("https://www.figma.com/api/mcp/asset/d9a55d41-6ddb-4fb0-ade3-b214fd16c05c");
+      --card-diet: url("https://www.figma.com/api/mcp/asset/28bcd6ee-41ba-4bc6-97e8-0211011a807a");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #02050c;
+      color: #fff;
+      font-family: "Paperlogy", "Pretendard", "Noto Sans KR", sans-serif;
+    }
+
+    .landing {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .canvas {
+      width: 1920px;
+      min-height: 3277px;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    .section-hero {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      background-image: var(--hero-bg);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-nav {
+      position: absolute;
+      left: 1418px;
+      top: 20px;
+      width: 452px;
+      height: 70px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .hero-nav a,
+    .hero-nav button {
+      border: 0;
+      background: transparent;
+      color: #000;
+      cursor: pointer;
+      text-decoration: none;
+      font: 600 20px/1 "Paperlogy", sans-serif;
+    }
+
+    .hero-logo {
+      position: absolute;
+      left: 23px;
+      top: 160px;
+      width: 759px;
+      height: 369px;
+      background: center / cover no-repeat var(--hero-logo);
+    }
+
+    .hero-desc {
+      position: absolute;
+      left: 47px;
+      top: 557px;
+      width: 913px;
+      margin: 0;
+      color: #fff;
+      font: 600 25px/1.6 "Paperlogy", sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .section-two {
+      width: 1920px;
+      height: 1094px;
+      position: relative;
+      background: #fff;
+    }
+
+    .section-two .boxer {
+      position: absolute;
+      left: 50px;
+      top: 51px;
+      width: 897px;
+      height: 1052px;
+      background: center / cover no-repeat var(--section2-boxer);
+    }
+
+    .section-two .title {
+      position: absolute;
+      left: 991px;
+      top: 122px;
+      width: 796px;
+      margin: 0;
+      color: #000;
+      font: 800 80px/1 "KblJumpExtended", "Paperlogy", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .section-two .desc {
+      position: absolute;
+      left: 991px;
+      top: 316px;
+      width: 716px;
+      margin: 0;
+      color: #000;
+      font: 600 30px/1.5 "Paperlogy", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .play-btn {
+      position: absolute;
+      left: 991px;
+      top: 490px;
+      width: 594px;
+      height: 134px;
+      border: 0;
+      border-radius: 67px;
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+      font: 800 72px/1 "KblJumpExtended", "Paperlogy", sans-serif;
+    }
+
+    .section-three {
+      width: 1920px;
+      height: 1103px;
+      position: relative;
+      background: center / cover no-repeat var(--section3-bg);
+    }
+
+    .section-three .kicker {
+      position: absolute;
+      left: 614px;
+      top: 69px;
+      width: 700px;
+      margin: 0;
+      font: 600 80px/1.1 "Paperlogy", sans-serif;
+    }
+
+    .section-three .title {
+      position: absolute;
+      left: 193px;
+      top: 151px;
+      width: 1535px;
+      margin: 0;
+      font: 800 150px/0.96 "KblJumpExtended", "Paperlogy", sans-serif;
+      letter-spacing: -0.05em;
+    }
+
+    .section-three .desc {
+      position: absolute;
+      left: 258px;
+      top: 300px;
+      width: 1405px;
+      margin: 0;
+      font: 600 35px/1.3 "Paperlogy", sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .cards {
+      position: absolute;
+      left: 46px;
+      top: 436px;
+      width: 1824px;
+      display: flex;
+      gap: 41px;
+    }
+
+    .card {
+      position: relative;
+      width: 580px;
+      height: 421px;
+      overflow: hidden;
+      text-decoration: none;
+      color: #000;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #f31b38;
+    }
+
+    .card-inner {
+      position: absolute;
+      left: 37px;
+      top: 43px;
+      width: 505px;
+      height: 336px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .card h3 {
+      position: absolute;
+      left: 57px;
+      top: 97px;
+      margin: 0;
+      font: 800 86px/1 "KblJumpExtended", "Paperlogy", sans-serif;
+    }
+
+    .card p {
+      position: absolute;
+      left: 61px;
+      top: 194px;
+      margin: 0;
+      font: 600 25px/1.3 "Paperlogy", sans-serif;
+    }
+
+    .thumb {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 250px;
+      height: 421px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .training .thumb {
+      background-image: var(--card-training);
+    }
+
+    .sparring .thumb {
+      background-image: var(--card-sparring);
+    }
+
+    .diet .thumb {
+      width: 289px;
+      background-image: var(--card-diet);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.66);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 430px;
+      border-radius: 14px;
+      background: #121826;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 20px;
+    }
+
+    .modal-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .modal-tab {
+      height: 42px;
+      border: 0;
+      border-radius: 10px;
+      color: #d0d4dd;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .modal-tab.active {
+      background: #ed1c33;
+      color: #fff;
+    }
+
+    .modal-pane {
+      display: none;
+    }
+
+    .modal-pane.active {
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      height: 44px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      padding: 0 12px;
+    }
+
+    .modal-primary-btn {
+      width: 100%;
+      height: 46px;
+      border: 0;
+      border-radius: 10px;
+      background: #ed1c33;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modal-error {
+      display: none;
+      color: #ff7c8a;
+      margin: 0 0 10px;
+    }
+
+    .modal-footer {
+      margin-top: 12px;
+      color: #c3c7cf;
+      font-size: 14px;
+    }
+
+    .modal-footer button {
+      border: 0;
+      background: none;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="landing">
+    <div class="canvas">
+      <section class="section-hero">
+        <nav class="hero-nav">
+          <a href="index.html">홈</a>
+          <a href="tutorial.html">트레이닝</a>
+          <a href="sparring.html">스파링</a>
+          <button type="button" onclick="openModal('login')">로그인</button>
+        </nav>
+        <div class="hero-logo" aria-label="BOXER 로고"></div>
+        <p class="hero-desc">
+          섀도우 복싱, 혼자 하다 자세가 무너지면 부상으로 이어지기 쉽습니다.
+          화면 앞을 서는 순간, 인공지능이 실시간으로 관절의 움직임을 분석하여
+          타격점과 회피 각도를 정밀하게 교정해 드립니다.
+          부상 걱정 없이, 집에서도 프로처럼 펀치를 뻗어보세요.
+        </p>
+      </section>
+
+      <section class="section-two">
+        <div class="boxer" aria-hidden="true"></div>
+        <h2 class="title">집에서 쉽게 배우는 복싱</h2>
+        <p class="desc">
+          웹캠 하나로 시작하는 실시간 AI 복싱 짐 화면 속
+          파란색 가이드 뼈대에 몸을 맞추고 펀치를 뻗어보세요.
+          인공지능이 1초에 30번 당신의 관절 움직임을 추적하여,
+          틀어진 가드와 타격 자세를 즉각적인 음성 피드백으로 교정합니다.
+        </p>
+        <button id="play-button" class="play-btn" type="button">플레이 하기</button>
+      </section>
+
+      <section class="section-three">
+        <p class="kicker">완벽한 AI 복싱 플랫폼</p>
+        <h2 class="title">집에서 쉽게 시작하세요</h2>
+        <p class="desc">기초 훈련부터 실전 스파링, 그리고 모든 제약을 없앤 프리미엄 멤버십까지 당신만의 방식을 선택하세요.</p>
+        <div class="cards">
+          <a class="card training" href="tutorial.html">
+            <div class="card-inner"></div>
+            <h3>TRAINING</h3>
+            <p>기초 복싱 자세를 단계별로<br />배워보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+          <a class="card sparring" href="sparring.html">
+            <div class="card-inner"></div>
+            <h3>SPARRING</h3>
+            <p>날아오는 주먹을 회피하고<br />반격 해보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+          <a class="card diet" href="diet-boxing.html">
+            <div class="card-inner"></div>
+            <h3>DIET BOXING</h3>
+            <p>라운드 타이머와 칼로리 추정<br />유산소 감량에 맞춘 복싱 입니다!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="auth-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">로그인</button>
+        <button class="modal-tab" id="tab-signup" type="button" onclick="switchTab('signup')">회원가입</button>
+      </div>
+
+      <div class="modal-pane active" id="pane-login">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <input type="email" class="input-field" id="login-email" placeholder="이메일" required />
+          <input type="password" class="input-field" id="login-password" placeholder="비밀번호" required />
+          <p class="modal-error" id="login-error"></p>
+          <button type="submit" class="modal-primary-btn">로그인</button>
+        </form>
+        <div class="modal-footer">계정이 없으신가요? <button type="button" onclick="switchTab('signup')">회원가입</button></div>
+      </div>
+
+      <div class="modal-pane" id="pane-signup">
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <input type="text" class="input-field" id="signup-username" placeholder="닉네임 (3~20자)" minlength="3"
+            maxlength="20" required />
+          <input type="email" class="input-field" id="signup-email" placeholder="이메일" required />
+          <input type="password" class="input-field" id="signup-password" placeholder="비밀번호 (8자 이상)" minlength="8"
+            required />
+          <p class="modal-error" id="signup-error"></p>
+          <button type="submit" class="modal-primary-btn">가입하기</button>
+        </form>
+        <div class="modal-footer">이미 계정이 있으신가요? <button type="button" onclick="switchTab('login')">로그인</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js?v=8000"></script>
+  <script src="js/core/auth.js?v=8000"></script>
+  <script>
+    function isUserLoggedIn() {
+      if (typeof auth === "undefined") return false;
+      const token = localStorage.getItem("boxer_token");
+      return Boolean(token && auth.getCachedUser());
+    }
+
+    function openModal(tab = "login") {
+      document.getElementById("auth-modal").classList.add("open");
+      switchTab(tab);
+    }
+
+    function closeModal() {
+      document.getElementById("auth-modal").classList.remove("open");
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById("auth-modal")) closeModal();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-login").classList.toggle("active", tab === "login");
+      document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("pane-login").classList.toggle("active", tab === "login");
+      document.getElementById("pane-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("login-error").style.display = "none";
+      document.getElementById("signup-error").style.display = "none";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.style.display = "none";
+      try {
+        await auth.login(
+          document.getElementById("login-email").value.trim(),
+          document.getElementById("login-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "로그인에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      errEl.style.display = "none";
+      try {
+        await auth.signup(
+          document.getElementById("signup-username").value.trim(),
+          document.getElementById("signup-email").value.trim(),
+          document.getElementById("signup-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "회원가입에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    function handlePlayButtonClick() {
+      if (!isUserLoggedIn()) {
+        openModal("login");
+        return;
+      }
+      window.location.href = "tutorial.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("play-button").addEventListener("click", handlePlayButtonClick);
+    });
+  </script>
+</body>
+
+</html>
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOXER HOME TRAINING</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css" />
+  <style>
+    /* KBL JUMP 폰트를 웹에서 직접 불러옵니다. -> 피그마 타이틀 폰트와 최대한 맞추려고 */
+    @font-face {
+      font-family: "KblJumpExtended";
+      src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2601-5@1.0/KBLJump_EB_ExtendedTTF.woff2") format("woff2");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --hero-bg: url("https://www.figma.com/api/mcp/asset/a0e9b239-3a45-4651-afc3-19ba5e2ea0f3");
+      --hero-logo: url("https://www.figma.com/api/mcp/asset/4d19e4b9-1a9d-4afb-b4ba-305582b19bfa");
+      --section2-boxer: url("https://www.figma.com/api/mcp/asset/37225f39-8d8f-4f60-b9a5-8cb86999ca96");
+      --section3-bg: url("https://www.figma.com/api/mcp/asset/b6110cb8-bcda-49f1-a1f1-00c975b6a6d1");
+      --card-training: url("https://www.figma.com/api/mcp/asset/e0de3ee2-7812-4dd6-9b33-0e543630091d");
+      --card-sparring: url("https://www.figma.com/api/mcp/asset/d9a55d41-6ddb-4fb0-ade3-b214fd16c05c");
+      --card-diet: url("https://www.figma.com/api/mcp/asset/28bcd6ee-41ba-4bc6-97e8-0211011a807a");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #02050c;
+      color: #fff;
+      font-family: "Paperlogy", "Pretendard", "Noto Sans KR", sans-serif;
+    }
+
+    .landing {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    /* 1920 고정 캔버스입니다. -> 피그마 52:12 좌표를 안정적으로 맞추려고 */
+    .canvas {
+      width: 1920px;
+      min-height: 3277px;
+      margin: 0 auto;
+      position: relative;
+      background: #fff;
+    }
+
+    .section-hero {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      background-image: var(--hero-bg);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-nav {
+      position: absolute;
+      right: 202px;
+      top: 10px;
+      width: 452px;
+      height: 70px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .hero-nav a,
+    .hero-nav button {
+      border: 0;
+      background: transparent;
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+      font: 600 20px/1 "Paperlogy", sans-serif;
+    }
+
+    .hero-logo {
+      position: absolute;
+      left: 23px;
+      top: 130px;
+      width: 759px;
+      height: 369px;
+      background-image: var(--hero-logo);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-desc {
+      position: absolute;
+      left: 47px;
+      top: 527px;
+      width: 913px;
+      margin: 0;
+      color: #fff;
+      font: 600 25px/1.6 "Paperlogy", sans-serif;
+      letter-spacing: -0.05em;
+    }
+
+    .section-two {
+      width: 1920px;
+      height: 1094px;
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .section-two .boxer {
+      position: absolute;
+      left: 50px;
+      top: 51px;
+      width: 897px;
+      height: 1052px;
+      background-image: var(--section2-boxer);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .section-two .title {
+      position: absolute;
+      left: 991px;
+      top: 143px;
+      margin: 0;
+      color: #000;
+      font: 800 80px/1.05 "KblJumpExtended", "Paperlogy", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .section-two .desc {
+      position: absolute;
+      left: 991px;
+      top: 237px;
+      width: 716px;
+      margin: 0;
+      color: #000;
+      font: 600 30px/1.5 "Paperlogy", sans-serif;
+      letter-spacing: -0.025em;
+    }
+
+    .play-btn {
+      position: absolute;
+      left: 991px;
+      top: 490px;
+      width: 594px;
+      height: 134px;
+      border-radius: 67px;
+      border: 0;
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+      font: 800 72px/1 "KblJumpExtended", "Paperlogy", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .section-three {
+      width: 1920px;
+      height: 1103px;
+      position: relative;
+      background-image: var(--section3-bg);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .section-three .kicker {
+      position: absolute;
+      left: 654px;
+      top: 69px;
+      margin: 0;
+      font: 600 80px/1.1 "Paperlogy", sans-serif;
+    }
+
+    .section-three .title {
+      position: absolute;
+      left: 318px;
+      top: 151px;
+      margin: 0;
+      font: 800 150px/0.98 "KblJumpExtended", "Paperlogy", sans-serif;
+      letter-spacing: -0.05em;
+    }
+
+    .section-three .desc {
+      position: absolute;
+      left: 341px;
+      top: 326px;
+      margin: 0;
+      font: 600 35px/1.4 "Paperlogy", sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .cards {
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      top: 436px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 34px;
+    }
+
+    .card {
+      position: relative;
+      height: 421px;
+      border: 3px solid #f31b38;
+      background: #fff;
+      overflow: hidden;
+      text-decoration: none;
+      color: #000;
+    }
+
+    .card h3 {
+      margin: 90px 0 0 36px;
+      font: 800 78px/1 "KblJumpExtended", "Paperlogy", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .card p {
+      margin: 20px 0 0 36px;
+      font: 600 25px/1.3 "Paperlogy", sans-serif;
+    }
+
+    .card .thumb {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 46%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card.training .thumb {
+      background-image: var(--card-training);
+    }
+
+    .card.sparring .thumb {
+      background-image: var(--card-sparring);
+    }
+
+    .card.diet .thumb {
+      background-image: var(--card-diet);
+    }
+
+    /* 로그인 모달은 기존 기능을 유지하기 위한 최소 스타일입니다. */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.66);
+      z-index: 20;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 430px;
+      border-radius: 14px;
+      background: #121826;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 20px;
+    }
+
+    .modal-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .modal-tab {
+      height: 42px;
+      border: 0;
+      border-radius: 10px;
+      color: #d0d4dd;
+      background: rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+    }
+
+    .modal-tab.active {
+      background: #ed1c33;
+      color: #fff;
+    }
+
+    .modal-pane {
+      display: none;
+    }
+
+    .modal-pane.active {
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      height: 44px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      padding: 0 12px;
+    }
+
+    .modal-primary-btn {
+      width: 100%;
+      height: 46px;
+      border: 0;
+      border-radius: 10px;
+      background: #ed1c33;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .modal-error {
+      display: none;
+      color: #ff7c8a;
+      margin: 0 0 10px;
+    }
+
+    .modal-footer {
+      margin-top: 12px;
+      color: #c3c7cf;
+      font-size: 14px;
+    }
+
+    .modal-footer button {
+      border: 0;
+      background: none;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="landing">
+    <div class="canvas">
+      <section class="section-hero">
+        <nav class="hero-nav">
+          <a href="index.html">홈</a>
+          <a href="tutorial.html">트레이닝</a>
+          <a href="sparring.html">아케이드</a>
+          <a href="dashboard.html">랭킹</a>
+          <button type="button" onclick="openModal('login')">로그인</button>
+        </nav>
+        <div class="hero-logo" aria-label="BOXER 로고"></div>
+        <p class="hero-desc">
+          섀도우 복싱, 혼자 하다 자세가 무너지면 부상으로 이어지기 쉽습니다.
+          화면 앞을 서는 순간, 인공지능이 실시간으로 관절의 움직임을 분석하여
+          타격점과 회피 각도를 정밀하게 교정해 드립니다.
+          부상 걱정 없이, 집에서도 프로처럼 펀치를 뻗어보세요.
+        </p>
+      </section>
+
+      <section class="section-two">
+        <div class="boxer" aria-hidden="true"></div>
+        <h2 class="title">집에서 쉽게 배우는 복싱</h2>
+        <p class="desc">
+          웹캠 하나로 시작하는 실시간 AI 복싱 짐 화면 속
+          파란색 가이드 뼈대에 몸을 맞추고 펀치를 뻗어보세요.
+          인공지능이 초당 30회 당신의 관절 움직임을 추적하여,
+          틀어진 가드와 타격 자세를 즉각적인 음성 피드백으로 교정합니다.
+        </p>
+        <button id="play-button" class="play-btn" type="button">플레이 하기</button>
+      </section>
+
+      <section class="section-three">
+        <p class="kicker">완벽한 AI 복싱 플랫폼</p>
+        <h2 class="title">집에서 쉽게 시작하세요</h2>
+        <p class="desc">기초 훈련부터 실전 스파링, 그리고 모든 제약을 없앤 프리미엄 멤버십까지 당신만의 방식을 선택하세요.</p>
+        <div class="cards">
+          <a class="card training" href="tutorial.html">
+            <h3>TRAINING</h3>
+            <p>기초 복싱 자세를 단계별로<br />배워보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+          <a class="card sparring" href="sparring.html">
+            <h3>SPARRING</h3>
+            <p>날아오는 주먹을 회피하고<br />반격 해보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+          <a class="card diet" href="diet-boxing.html">
+            <h3>DIET BOX</h3>
+            <p>칼로리 트레이닝 루틴으로<br />유산소 지방 연소를 돕습니다</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="auth-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">로그인</button>
+        <button class="modal-tab" id="tab-signup" type="button" onclick="switchTab('signup')">회원가입</button>
+      </div>
+
+      <div class="modal-pane active" id="pane-login">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <input type="email" class="input-field" id="login-email" placeholder="이메일" required />
+          <input type="password" class="input-field" id="login-password" placeholder="비밀번호" required />
+          <p class="modal-error" id="login-error"></p>
+          <button type="submit" class="modal-primary-btn">로그인</button>
+        </form>
+        <div class="modal-footer">계정이 없으신가요? <button type="button" onclick="switchTab('signup')">회원가입</button></div>
+      </div>
+
+      <div class="modal-pane" id="pane-signup">
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <input type="text" class="input-field" id="signup-username" placeholder="닉네임 (3~20자)" minlength="3"
+            maxlength="20" required />
+          <input type="email" class="input-field" id="signup-email" placeholder="이메일" required />
+          <input type="password" class="input-field" id="signup-password" placeholder="비밀번호 (8자 이상)" minlength="8"
+            required />
+          <p class="modal-error" id="signup-error"></p>
+          <button type="submit" class="modal-primary-btn">가입하기</button>
+        </form>
+        <div class="modal-footer">이미 계정이 있으신가요? <button type="button" onclick="switchTab('login')">로그인</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js?v=8000"></script>
+  <script src="js/core/auth.js?v=8000"></script>
+  <script>
+    function isUserLoggedIn() {
+      if (typeof auth === "undefined") return false;
+      const token = localStorage.getItem("boxer_token");
+      return Boolean(token && auth.getCachedUser());
+    }
+
+    function openModal(tab = "login") {
+      document.getElementById("auth-modal").classList.add("open");
+      switchTab(tab);
+    }
+
+    function closeModal() {
+      document.getElementById("auth-modal").classList.remove("open");
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById("auth-modal")) closeModal();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-login").classList.toggle("active", tab === "login");
+      document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("pane-login").classList.toggle("active", tab === "login");
+      document.getElementById("pane-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("login-error").style.display = "none";
+      document.getElementById("signup-error").style.display = "none";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.style.display = "none";
+      try {
+        await auth.login(
+          document.getElementById("login-email").value.trim(),
+          document.getElementById("login-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "로그인에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      errEl.style.display = "none";
+      try {
+        await auth.signup(
+          document.getElementById("signup-username").value.trim(),
+          document.getElementById("signup-email").value.trim(),
+          document.getElementById("signup-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "회원가입에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    // 플레이 버튼의 로그인 분기 처리입니다. -> 기존 동작을 유지하려고
+    function handlePlayButtonClick() {
+      if (!isUserLoggedIn()) {
+        openModal("login");
+        return;
+      }
+      window.location.href = "tutorial.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("play-button").addEventListener("click", handlePlayButtonClick);
+    });
+  </script>
+</body>
+
+</html>
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOXER HOME TRAINING</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+  <style>
+    :root {
+      --hero-bg: url("https://www.figma.com/api/mcp/asset/a0e9b239-3a45-4651-afc3-19ba5e2ea0f3");
+      --logo-image: url("https://www.figma.com/api/mcp/asset/4d19e4b9-1a9d-4afb-b4ba-305582b19bfa");
+      --section2-boxer: url("https://www.figma.com/api/mcp/asset/37225f39-8d8f-4f60-b9a5-8cb86999ca96");
+      --section3-bg: url("https://www.figma.com/api/mcp/asset/b6110cb8-bcda-49f1-a1f1-00c975b6a6d1");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      color: #fff;
+      background: #05070c;
+    }
+
+    .landing {
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: auto;
+    }
+
+    /* 1920 고정 캔버스입니다. -> 피그마 기준 좌표를 안정적으로 맞추려고 */
+    .canvas {
+      position: relative;
+      width: 1920px;
+      min-height: 3277px;
+      margin: 0 auto;
+      background: #fff;
+    }
+
+    .section-hero {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-image: var(--hero-bg);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .top-nav {
+      position: absolute;
+      top: 10px;
+      right: 202px;
+      width: 452px;
+      height: 70px;
+      border-radius: 100px;
+      background: #fff;
+      box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .top-nav a,
+    .top-nav button {
+      font: 600 20px/1 "Pretendard", sans-serif;
+      color: #000;
+      text-decoration: none;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .hero-logo {
+      position: absolute;
+      left: 23px;
+      top: 130px;
+      width: 759px;
+      height: 369px;
+      background-image: var(--logo-image);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .hero-description {
+      position: absolute;
+      left: 47px;
+      top: 527px;
+      width: 913px;
+      margin: 0;
+      font: 600 25px/1.6 "Pretendard", sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .section-two {
+      position: relative;
+      width: 1920px;
+      height: 1094px;
+      background: #fff;
+    }
+
+    .section-two .boxer {
+      position: absolute;
+      left: 50px;
+      top: 51px;
+      width: 897px;
+      height: 1052px;
+      background-image: var(--section2-boxer);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .section-two .title {
+      position: absolute;
+      left: 991px;
+      top: 143px;
+      margin: 0;
+      color: #000;
+      font: 900 80px/1.05 "Pretendard", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .section-two .desc {
+      position: absolute;
+      left: 991px;
+      top: 237px;
+      width: 716px;
+      margin: 0;
+      color: #000;
+      font: 600 30px/1.5 "Pretendard", sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .play-button {
+      position: absolute;
+      left: 991px;
+      top: 490px;
+      width: 594px;
+      height: 134px;
+      border: 0;
+      border-radius: 67px;
+      color: #fff;
+      background: #000;
+      font: 900 64px/1 "Pretendard", sans-serif;
+      cursor: pointer;
+    }
+
+    .section-three {
+      position: relative;
+      width: 1920px;
+      height: 1103px;
+      background-image: var(--section3-bg);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .section-three .kicker {
+      position: absolute;
+      left: 654px;
+      top: 69px;
+      margin: 0;
+      font: 600 80px/1.1 "Pretendard", sans-serif;
+    }
+
+    .section-three .title {
+      position: absolute;
+      left: 318px;
+      top: 151px;
+      margin: 0;
+      font: 700 150px/1 "Pretendard", sans-serif;
+      letter-spacing: -0.05em;
+    }
+
+    .section-three .desc {
+      position: absolute;
+      left: 341px;
+      top: 326px;
+      margin: 0;
+      font: 600 35px/1.4 "Pretendard", sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .cards {
+      position: absolute;
+      left: 46px;
+      right: 46px;
+      top: 436px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 34px;
+    }
+
+    .card {
+      position: relative;
+      height: 421px;
+      border: 3px solid #f41d3a;
+      background: #fff;
+      overflow: hidden;
+      text-decoration: none;
+      color: #000;
+    }
+
+    .card .thumb {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 46%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card h3 {
+      margin: 90px 0 0 36px;
+      font: 400 90px/1 "Urban Shadow", sans-serif;
+      text-transform: uppercase;
+    }
+
+    .card p {
+      margin: 24px 0 0 36px;
+      font: 700 25px/1.3 "Pretendard", sans-serif;
+    }
+
+    .card.training .thumb {
+      background-image: url("https://www.figma.com/api/mcp/asset/e0de3ee2-7812-4dd6-9b33-0e543630091d");
+    }
+
+    .card.arcade .thumb {
+      background-image: url("https://www.figma.com/api/mcp/asset/d9a55d41-6ddb-4fb0-ade3-b214fd16c05c");
+    }
+
+    .card.member .thumb {
+      background-image: url("https://www.figma.com/api/mcp/asset/28bcd6ee-41ba-4bc6-97e8-0211011a807a");
+    }
+
+    /* 모달 스타일은 기존 UI와 동일 계열로 유지합니다. */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.66);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 430px;
+      border-radius: 14px;
+      background: #111522;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 20px;
+    }
+
+    .modal-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .modal-tab {
+      height: 42px;
+      border: 0;
+      border-radius: 10px;
+      color: #d0d4dd;
+      background: rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+    }
+
+    .modal-tab.active {
+      color: #fff;
+      background: #ed1c33;
+    }
+
+    .modal-pane {
+      display: none;
+    }
+
+    .modal-pane.active {
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      padding: 0 12px;
+      margin-bottom: 10px;
+    }
+
+    .modal-primary-btn {
+      width: 100%;
+      height: 46px;
+      border: 0;
+      border-radius: 10px;
+      background: #ed1c33;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modal-error {
+      display: none;
+      color: #ff7c8a;
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .modal-footer {
+      margin-top: 12px;
+      color: #c3c7cf;
+      font-size: 14px;
+    }
+
+    .modal-footer button {
+      border: 0;
+      background: none;
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="landing">
+    <div class="canvas">
+      <section class="section-hero">
+        <nav class="top-nav">
+          <a href="tutorial.html">트레이닝</a>
+          <a href="sparring.html">아케이드</a>
+          <a href="dashboard.html">랭킹</a>
+          <button type="button" onclick="openModal('login')">로그인</button>
+        </nav>
+        <div class="hero-logo" aria-label="BOXER 로고"></div>
+        <p class="hero-description">
+          섀도우 복싱, 혼자 하다 자세가 무너지면 부상으로 이어지기 쉽습니다.
+          화면 앞을 서는 순간, 인공지능이 실시간으로 관절의 움직임을 분석하여
+          타격점과 회피 각도를 정밀하게 교정해 드립니다.
+          부상 걱정 없이, 집에서도 프로처럼 펀치를 뻗어보세요.
+        </p>
+      </section>
+
+      <section class="section-two">
+        <div class="boxer" aria-label="복서 가이드 이미지"></div>
+        <h2 class="title">집에서 쉽게 배우는 복싱</h2>
+        <p class="desc">
+          웹캠 하나로 시작하는 실시간 AI 복싱 짐 화면 속
+          파란색 가이드 뼈대에 몸을 맞추고 펀치를 뻗어보세요.
+          인공지능이 초당 30회 당신의 관절 움직임을 추적하여,
+          틀어진 가드와 타격 자세를 즉각적인 음성 피드백으로 교정합니다.
+        </p>
+        <button id="play-button" class="play-button" type="button">플레이 하기</button>
+      </section>
+
+      <section class="section-three">
+        <p class="kicker">완벽한 AI 복싱 플랫폼</p>
+        <h2 class="title">집에서 쉽게 시작하세요</h2>
+        <p class="desc">기초훈련부터 실전 스파링, 그리고 모든 제약을 없앤 프리미엄 멤버십까지 당신만의 방식을 선택하세요.</p>
+        <div class="cards">
+          <a class="card training" href="tutorial.html">
+            <h3>TRAINING</h3>
+            <p>기초 복싱 자세를 단계별로<br />배워보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+          <a class="card arcade" href="sparring.html">
+            <h3>SPARRING</h3>
+            <p>날아오는 주먹을 회피하고<br />반격 해보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+          <a class="card member" href="shop.html">
+            <h3>MEMBER</h3>
+            <p>복서를 구독 하셔서 더 다양한<br />기능을 누려보세요!</p>
+            <div class="thumb" aria-hidden="true"></div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 로그인/회원가입 모달 -->
+  <div class="modal-overlay" id="auth-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">로그인</button>
+        <button class="modal-tab" id="tab-signup" type="button" onclick="switchTab('signup')">회원가입</button>
+      </div>
+
+      <div class="modal-pane active" id="pane-login">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <input type="email" class="input-field" id="login-email" placeholder="이메일" required />
+          <input type="password" class="input-field" id="login-password" placeholder="비밀번호" required />
+          <p class="modal-error" id="login-error"></p>
+          <button type="submit" class="modal-primary-btn">로그인</button>
+        </form>
+        <div class="modal-footer">계정이 없으신가요? <button type="button" onclick="switchTab('signup')">회원가입</button></div>
+      </div>
+
+      <div class="modal-pane" id="pane-signup">
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <input type="text" class="input-field" id="signup-username" placeholder="닉네임 (3~20자)" minlength="3"
+            maxlength="20" required />
+          <input type="email" class="input-field" id="signup-email" placeholder="이메일" required />
+          <input type="password" class="input-field" id="signup-password" placeholder="비밀번호 (8자 이상)" minlength="8"
+            required />
+          <p class="modal-error" id="signup-error"></p>
+          <button type="submit" class="modal-primary-btn">가입하기</button>
+        </form>
+        <div class="modal-footer">이미 계정이 있으신가요? <button type="button" onclick="switchTab('login')">로그인</button></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js?v=8000"></script>
+  <script src="js/core/auth.js?v=8000"></script>
+  <script>
+    function isUserLoggedIn() {
+      if (typeof auth === "undefined") return false;
+      const token = localStorage.getItem("boxer_token");
+      return Boolean(token && auth.getCachedUser());
+    }
+
+    function openModal(tab = "login") {
+      document.getElementById("auth-modal").classList.add("open");
+      switchTab(tab);
+    }
+
+    function closeModal() {
+      document.getElementById("auth-modal").classList.remove("open");
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById("auth-modal")) closeModal();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-login").classList.toggle("active", tab === "login");
+      document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("pane-login").classList.toggle("active", tab === "login");
+      document.getElementById("pane-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("login-error").style.display = "none";
+      document.getElementById("signup-error").style.display = "none";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.style.display = "none";
+      try {
+        await auth.login(
+          document.getElementById("login-email").value.trim(),
+          document.getElementById("login-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "로그인에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      errEl.style.display = "none";
+      try {
+        await auth.signup(
+          document.getElementById("signup-username").value.trim(),
+          document.getElementById("signup-email").value.trim(),
+          document.getElementById("signup-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "회원가입에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    // 플레이 버튼 분기입니다. -> 비로그인은 로그인 모달, 로그인은 튜토리얼 이동
+    function handlePlayButtonClick() {
+      if (!isUserLoggedIn()) {
+        openModal("login");
+        return;
+      }
+      window.location.href = "tutorial.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("play-button").addEventListener("click", handlePlayButtonClick);
+    });
+  </script>
+</body>
+
+</html>
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOXER HOME TRAINING</title>
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/index.css?v=figma-52-12" />
+</head>
+
+<body>
+
+
+
+  <!-- 로그인/회원가입 모달 -->
+  <div class="modal-overlay" id="auth-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">
+          로그인
+        </button>
+        <button class="modal-tab" id="tab-signup" type="button" onclick="switchTab('signup')">
+          회원가입
+        </button>
+      </div>
+
+      <div class="modal-pane active" id="pane-login">
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <input type="email" class="input-field" id="login-email" placeholder="이메일" required />
+          </div>
+          <div class="form-group">
+            <input type="password" class="input-field" id="login-password" placeholder="비밀번호" required />
+          </div>
+          <p class="modal-error" id="login-error"></p>
+          <button type="submit" class="modal-primary-btn">로그인</button>
+        </form>
+        <div class="modal-footer">
+          계정이 없으신가요?
+          <button type="button" onclick="switchTab('signup')">회원가입</button>
+        </div>
+      </div>
+
+      <div class="modal-pane" id="pane-signup">
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <input type="text" class="input-field" id="signup-username" placeholder="닉네임 (3~20자)" minlength="3"
+              maxlength="20" required />
+          </div>
+          <div class="form-group">
+            <input type="email" class="input-field" id="signup-email" placeholder="이메일" required />
+          </div>
+          <div class="form-group">
+            <input type="password" class="input-field" id="signup-password" placeholder="비밀번호 (8자 이상)" minlength="8"
+              required />
+          </div>
+          <p class="modal-error" id="signup-error"></p>
+          <button type="submit" class="modal-primary-btn">가입하기</button>
+        </form>
+        <div class="modal-footer">
+          이미 계정이 있으신가요?
+          <button type="button" onclick="switchTab('login')">로그인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js?v=8000"></script>
+  <script src="js/core/auth.js?v=8000"></script>
+  <script>
+    function fitLandingCanvas() {
+      const baseWidth = 1920;
+      const baseHeight = 3277;
+      const scale = Math.min(window.innerWidth / baseWidth, 1);
+      document.documentElement.style.setProperty("--canvas-scale", String(scale));
+      document.body.style.minHeight = `${baseHeight * scale}px`;
+    }
+
+    function isUserLoggedIn() {
+      if (typeof auth === "undefined") return false;
+      const token = localStorage.getItem("boxer_token");
+      return Boolean(token && auth.getCachedUser());
+    }
+
+    function openModal(tab = "login") {
+      document.getElementById("auth-modal").classList.add("open");
+      switchTab(tab);
+    }
+
+    function closeModal() {
+      document.getElementById("auth-modal").classList.remove("open");
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target === document.getElementById("auth-modal")) closeModal();
+    }
+
+    function switchTab(tab) {
+      document.getElementById("tab-login").classList.toggle("active", tab === "login");
+      document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("pane-login").classList.toggle("active", tab === "login");
+      document.getElementById("pane-signup").classList.toggle("active", tab === "signup");
+      document.getElementById("login-error").style.display = "none";
+      document.getElementById("signup-error").style.display = "none";
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("login-error");
+      errEl.style.display = "none";
+      try {
+        await auth.login(
+          document.getElementById("login-email").value.trim(),
+          document.getElementById("login-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "로그인에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      const errEl = document.getElementById("signup-error");
+      errEl.style.display = "none";
+      try {
+        await auth.signup(
+          document.getElementById("signup-username").value.trim(),
+          document.getElementById("signup-email").value.trim(),
+          document.getElementById("signup-password").value
+        );
+        closeModal();
+      } catch (error) {
+        errEl.textContent = error.message || "회원가입에 실패했습니다.";
+        errEl.style.display = "block";
+      }
+    }
+
+    function handlePlayButtonClick() {
+      if (!isUserLoggedIn()) {
+        openModal("login");
+        return;
+      }
+      window.location.href = "tutorial.html";
+    }
+
+    window.addEventListener("resize", fitLandingCanvas);
+    document.addEventListener("DOMContentLoaded", () => {
+      fitLandingCanvas();
+      document.getElementById("play-button").addEventListener("click", handlePlayButtonClick);
+    });
+  </script>
+</body>
+
+</html>

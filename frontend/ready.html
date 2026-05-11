@@ -1,0 +1,256 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER · 운동 시작 전</title>
+    <style>
+      /* 외부 CSS 간섭 차단 및 전체 뼈대 고정 */
+      /* height:100vh + overflow:hidden 이면 안내+버튼 세로 합이 창보다 길 때 하단이 잘림 */
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background-color: #000;
+        font-family: "Paperlogy SemiBold", sans-serif;
+      }
+
+      /* 1. 배경 — 앞(위): 다이어트복싱 메인 인물, 뒤(아래): 3번째 배경 이미지@3x */
+      .ready-bg-figure {
+        position: fixed;
+        inset: 0;
+        width: 135%;
+        min-height: 100vh;
+        min-height: 100dvh;
+
+        background-image:
+          url("https://lh3.googleusercontent.com/d/1iFZPj-_D6EbeYw0UDLZ8Nop_1B_9Bk4_=w2000"),
+          url("https://lh3.googleusercontent.com/d/1q0R8NWaNvle1dQuOl-6TTBdqreoEC7gF=w2000");
+
+        /* 인물: 가로·세로 기준(첫 줄) — bottom 을 줄이면 아래로, 키우면 위로 */
+        background-position:
+          right 50% bottom 0,
+          center;
+
+        /* 인물: 세로 비율(첫 줄), % 키우면 더 크게 */
+        background-size:
+          auto 98%,
+          cover;
+
+        background-repeat: no-repeat, no-repeat;
+        z-index: 1;
+      }
+
+      /* 2. 완벽한 빨간색 사선 컷팅 */
+      .red-overlay {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100vw;
+        background-color: #ed1d32;
+        clip-path: polygon(0 0, 65% 0, 35% 100%, 0% 100%);
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        box-sizing: border-box;
+        padding: clamp(0.75rem, 2vh, 1.5rem) 0 clamp(1.25rem, 4vh, 2.5rem);
+      }
+
+      /* 전체 영역을 더 위로 끌어올림 (-15%) */
+      .red-overlay-inner {
+        position: relative; /* 로고를 absolute로 띄우기 위한 기준 컨테이너 */
+        width: min(40vw, 520px);
+        max-width: 92vw;
+        padding-left: 5vw;
+        /* 45vh 고정이 짧은 창에서 리스트+버튼을 밀어 잘림 → 상한·하한으로 완화 */
+        padding-top: clamp(9rem, 32vh, 42vh);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        transform: none;
+      }
+
+      /* 4. 로고 및 텍스트 */
+      .ready-logo {
+        position: absolute; /* 로고를 플로우에서 분리 → 아래 텍스트 위치에 영향 없음 */
+        top: -150px;
+        left: 60px;
+        width: auto;
+        max-width: 480px; /* 이 값만 조절해도 설명글 위치는 그대로 유지됨 */
+        display: block;
+        filter: brightness(0) invert(1);
+      }
+      .ready-heading {
+        display: none;
+      }
+      /* 설명글 폰트 사이즈 확대 및 여백 조정 */
+      .ready-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 4vh 0;
+        color: #fff;
+        font-size: clamp(
+          20px,
+          1.8vw,
+          28px
+        ); /* 폰트 사이즈를 기존보다 시원하게 키움 */
+        line-height: 1;
+        word-break: keep-all;
+      }
+      .ready-list li {
+        margin-bottom: 24px; /* 글자가 커졌으므로 항목 간의 간격도 살짝 넓힘 */
+      }
+
+      .ready-subline {
+        display: block; /* 무조건 다음 줄로 */
+        margin-top: 5px; /* 이 숫자가 “행간처럼” 보이는 간격 */
+      }
+
+      /* 5. 시작 버튼 */
+      .ready-start-btn {
+        align-self: flex-start;
+        background: #fff;
+        color: #ed1d32;
+        border: none;
+        border-radius: 50px;
+        padding: 18px 40px;
+        font-size: 24px;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s ease;
+      }
+      .ready-start-btn:hover {
+        transform: scale(1.05);
+      }
+
+      /* 6. 카운트다운 오버레이 연출 */
+      #countdownOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      #countdownNumber {
+        font-size: 250px;
+        font-weight: 900;
+        color: #ccff00;
+        margin: 0;
+        text-shadow: 0 0 40px rgba(204, 255, 0, 0.5);
+      }
+      .pop-anim {
+        animation: popIn 0.8s ease-out forwards;
+      }
+      @keyframes popIn {
+        0% {
+          transform: scale(0.5);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 배경 이미지 -->
+    <div class="ready-bg-figure"></div>
+
+    <!-- 사선 컷팅 영역 -->
+    <main class="red-overlay">
+      <div class="red-overlay-inner">
+        <img
+          crossorigin="anonymous"
+          class="ready-logo"
+          src="https://lh3.googleusercontent.com/d/1cSzxDlFtHLLYuAeHunJlRK5Yf_YBTXxe=w2000"
+          alt="BOXER 로고"
+        />
+        <ol class="ready-list">
+          <li>1. 카메라는 책상에 직각이 되게 세워주세요!</li>
+          <li>
+            2. 화면에 머리부터 발 끝까지 모두 들어오도록
+            <span class="ready-subline">거리를 조절해주세요!</span>
+          </li>
+          <li>3. 옷과 장소의 색이 대비 될수록 정확도가 올라가요!</li>
+          <li>
+            4. 운동 중에 부딪치지 않도록 주변
+            <span class="ready-subline">물건을 정리 해주세요!</span>
+          </li>
+        </ol>
+        <button type="button" class="ready-start-btn" id="readyStartBtn">
+          운동 시작하기
+        </button>
+      </div>
+    </main>
+
+    <script>
+      // 무엇: GET 폼 제출로만 페이지 이동 / 왜: window.location.assign·replace 미사용
+      var qs = String(document.documentURI.split("?")[1] || "");
+      var params = new URLSearchParams(qs);
+      var targetPage = params.get("target") || "";
+      targetPage = targetPage.replace(/^(\.\/|\/)+/, "");
+
+      if (!targetPage) {
+        var ref = String(document.referrer || "").toLowerCase();
+        if (ref.includes("tutorial")) targetPage = "tutorial-new.html";
+        else if (ref.includes("diet")) targetPage = "diet-boxing-play.html";
+        else if (ref.includes("sparring")) targetPage = "sparring.html";
+        else if (ref.includes("stretch")) targetPage = "stretch.html";
+        else targetPage = "index.html";
+      }
+
+      var btn = document.getElementById("readyStartBtn");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          var out = new URLSearchParams();
+          params.forEach(function (value, key) {
+            if (key !== "target") out.set(key, value);
+          });
+          out.set("autostart", "1");
+          out.set("skipIntro", "1");
+          if (!out.has("level")) {
+            try {
+              out.set(
+                "level",
+                localStorage.getItem("boxer_sparring_level") || "beginner",
+              );
+            } catch (e) {
+              out.set("level", "beginner");
+            }
+          }
+          if (targetPage === "diet-boxing-play.html" && !out.has("mode")) {
+            out.set("mode", params.get("mode") || "light");
+          }
+
+          var form = document.createElement("form");
+          form.method = "GET";
+          form.action = "./" + targetPage;
+          out.forEach(function (v, k) {
+            var inp = document.createElement("input");
+            inp.type = "hidden";
+            inp.name = k;
+            inp.value = v;
+            form.appendChild(inp);
+          });
+          document.body.appendChild(form);
+          form.submit();
+        });
+      }
+    </script>
+  </body>
+</html>

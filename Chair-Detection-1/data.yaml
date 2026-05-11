@@ -1,0 +1,12 @@
+names:
+- chair
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: chair-detection-y06j5-kg10w
+  url: https://universe.roboflow.com/s-workspace-6mofi/chair-detection-y06j5-kg10w/dataset/1
+  version: 1
+  workspace: s-workspace-6mofi
+test: ../test/images
+train: ../train/images
+val: ../valid/images

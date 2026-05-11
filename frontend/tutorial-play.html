@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - 단계별 튜토리얼 플레이</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="js/config/boxer-video-local.js"></script>
+    <style>
+      :root {
+        --bg: #090909;
+        --panel: #131313;
+        --panel-soft: #1f1f1f;
+        --accent: #ed1d32;
+        --accent-soft: #ff5a6a;
+        --ok: #38d79f;
+        --warn: #ffbe4d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at 10% 10%, #1b1b1b 0%, var(--bg) 55%);
+        color: #fff;
+        font-family: "Pretendard", "Malgun Gothic", sans-serif;
+      }
+
+      .page {
+        width: min(1600px, 100vw);
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-radius: 16px;
+        background: linear-gradient(90deg, #191919 0%, #0f0f0f 100%);
+        border: 1px solid #2a2a2a;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .header p {
+        margin: 4px 0 0;
+        color: #cfcfcf;
+        font-size: 13px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(340px, 1fr);
+        gap: 16px;
+      }
+
+      .trainer-wrap {
+        position: relative;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #2a2a2a;
+        background: #000;
+      }
+
+      #trainerVideo {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        display: block;
+        object-fit: cover;
+        background: #000;
+      }
+
+      .phase-badge {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        background: rgba(237, 29, 50, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .side-panel {
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid #272727;
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+
+      .meta {
+        font-size: 13px;
+        color: #d2d2d2;
+        line-height: 1.5;
+      }
+
+      .kpi {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .kpi div {
+        background: var(--panel-soft);
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 9px;
+      }
+
+      .kpi span {
+        display: block;
+        color: #bdbdbd;
+        font-size: 11px;
+      }
+
+      .kpi strong {
+        font-size: 18px;
+      }
+
+      .status-list {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .camera-box {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+      }
+
+      #webcamFeed,
+      #poseCanvas {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        display: block;
+        transform: scaleX(-1);
+      }
+
+      #poseCanvas {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .btn-ghost {
+        background: #2a2a2a;
+        color: #fff;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 20;
+      }
+
+      .modal.open {
+        display: grid;
+      }
+
+      .modal-panel {
+        width: min(760px, calc(100vw - 24px));
+        background: linear-gradient(180deg, #171717 0%, #101010 100%);
+        border: 1px solid #2f2f2f;
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .modal-title {
+        margin: 0 0 8px;
+        color: var(--accent-soft);
+      }
+
+      .report-score {
+        font-size: 44px;
+        margin: 8px 0 16px;
+        font-weight: 900;
+      }
+
+      .report-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .report-box {
+        background: #161616;
+        border: 1px solid #303030;
+        border-radius: 12px;
+        padding: 12px;
+      }
+
+      .report-box h4 {
+        margin: 0 0 10px;
+      }
+
+      .report-box ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+      }
+
+      .good h4 {
+        color: var(--ok);
+      }
+
+      .bad h4 {
+        color: var(--warn);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="header">
+        <div>
+          <h1>단계별 튜토리얼 시스템</h1>
+          <p>Level 1: 스탠스 → AI 피드백 → 잽 → AI 피드백</p>
+        </div>
+        <div class="meta">Standard Form (183cm) 기준 자세 스코어링 적용</div>
+      </section>
+
+      <section class="layout">
+        <div class="trainer-wrap">
+          <video id="trainerVideo" playsinline muted></video>
+          <div class="phase-badge" id="phaseBadge">대기</div>
+        </div>
+
+        <aside class="side-panel">
+          <article class="card">
+            <h3>실시간 상태</h3>
+            <div class="kpi">
+              <div><span>현재 단계</span><strong id="kpiPhase">-</strong></div>
+              <div><span>진행 순번</span><strong id="kpiStep">0 / 0</strong></div>
+              <div><span>스탠스 점수</span><strong id="kpiStance">0%</strong></div>
+              <div><span>잽 점수</span><strong id="kpiJab">0%</strong></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>AI 체크포인트</h3>
+            <ul class="status-list" id="liveChecklist">
+              <li>시작 버튼을 누르면 분석이 시작됩니다.</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>사용자 웹캠 + 포즈</h3>
+            <div class="camera-box">
+              <video id="webcamFeed" autoplay playsinline muted></video>
+              <canvas id="poseCanvas"></canvas>
+            </div>
+          </article>
+
+          <article class="card controls">
+            <button class="btn-primary" id="startBtn">튜토리얼 시작</button>
+            <button class="btn-ghost" id="stopBtn">중지</button>
+          </article>
+        </aside>
+      </section>
+    </main>
+
+    <div class="modal" id="reportModal" role="dialog" aria-modal="true">
+      <div class="modal-panel">
+        <h2 class="modal-title" id="reportTitle">AI 코칭 리포트</h2>
+        <div class="meta" id="reportSubtitle"></div>
+        <div class="report-score" id="reportScore">0점</div>
+        <div class="report-grid">
+          <div class="report-box good">
+            <h4>좋은 점</h4>
+            <ul id="reportGoodList"></ul>
+          </div>
+          <div class="report-box bad">
+            <h4>부족한 점</h4>
+            <ul id="reportBadList"></ul>
+          </div>
+        </div>
+        <div style="margin-top: 14px; display: flex; justify-content: flex-end">
+          <button class="btn-primary" id="nextStepBtn">다음 단계로</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const trainerVideo = document.getElementById("trainerVideo");
+        const webcamFeed = document.getElementById("webcamFeed");
+        const poseCanvas = document.getElementById("poseCanvas");
+        const phaseBadge = document.getElementById("phaseBadge");
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const liveChecklist = document.getElementById("liveChecklist");
+        const reportModal = document.getElementById("reportModal");
+        const reportTitle = document.getElementById("reportTitle");
+        const reportSubtitle = document.getElementById("reportSubtitle");
+        const reportScore = document.getElementById("reportScore");
+        const reportGoodList = document.getElementById("reportGoodList");
+        const reportBadList = document.getElementById("reportBadList");
+        const nextStepBtn = document.getElementById("nextStepBtn");
+        const kpiPhase = document.getElementById("kpiPhase");
+        const kpiStep = document.getElementById("kpiStep");
+        const kpiStance = document.getElementById("kpiStance");
+        const kpiJab = document.getElementById("kpiJab");
+
+        const V = window.BOXER_VIDEO || {};
+        const level1Sequence = [
+          { phase: "stance", title: "1단계 · 기본 스탠스", videoSrc: V.boxingStance || "" },
+          { phase: "jab", title: "2단계 · 퍼펙트 잽", videoSrc: V.boxingWeaving || "" },
+        ];
+
+        trainerVideo.addEventListener(
+          "error",
+          () => {
+            const banner = document.querySelector(".header p");
+            if (banner) {
+              banner.textContent =
+                "트레이너 영상 로드 실패: frontend/video/에 복싱스탠스·복싱 위빙 mp4를 넣었는지 확인하세요.";
+            }
+          },
+          { once: true }
+        );
+
+        const stats = {
+          stance: { total: 0, widthPass: 0, anglePass: 0 },
+          jab: { jabCount: 0, shoulderGuardPass: 0, fastReturnPass: 0 },
+        };
+
+        let pose = null;
+        let camera = null;
+        let running = false;
+        let stepIndex = -1;
+        let activePhase = "";
+        let waitingModal = false;
+        let lastLandmarks = null;
+        const jabState = { extended: false, extendedAt: 0 };
+
+        // 한국어 음성 안내를 한 번에 끊고 새로 말하도록 제어한다.
+        function speak(text) {
+          if (!("speechSynthesis" in window)) return;
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = "ko-KR";
+          utter.rate = 1;
+          window.speechSynthesis.speak(utter);
+        }
+
+        function dist(a, b) {
+          return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
+        }
+
+        function footAngle(heel, toe) {
+          const rad = Math.atan2((toe.y || 0) - (heel.y || 0), (toe.x || 0) - (heel.x || 0));
+          return Math.abs((rad * 180) / Math.PI);
+        }
+
+        function pct(v) {
+          return `${Math.round(v)}%`;
+        }
+
+        function calcStanceScore() {
+          if (stats.stance.total < 1) return 0;
+          const widthRate = (stats.stance.widthPass / stats.stance.total) * 100;
+          const angleRate = (stats.stance.anglePass / stats.stance.total) * 100;
+          return widthRate * 0.6 + angleRate * 0.4;
+        }
+
+        function calcJabScore() {
+          if (stats.jab.jabCount < 1) return 0;
+          const guardRate = (stats.jab.shoulderGuardPass / stats.jab.jabCount) * 100;
+          const returnRate = (stats.jab.fastReturnPass / stats.jab.jabCount) * 100;
+          return guardRate * 0.45 + returnRate * 0.55;
+        }
+
+        function updateKpi() {
+          kpiStance.textContent = pct(calcStanceScore());
+          kpiJab.textContent = pct(calcJabScore());
+          kpiPhase.textContent = activePhase ? activePhase.toUpperCase() : "-";
+          kpiStep.textContent = `${Math.max(stepIndex + 1, 0)} / ${level1Sequence.length}`;
+        }
+
+        // 스탠스 구간: 어깨 대비 발 너비와 발 각도 안정성을 평가한다.
+        function analyzeStance(lm) {
+          const shoulderW = dist(lm[11], lm[12]);
+          const footW = dist(lm[31], lm[32]);
+          const ratio = shoulderW > 0 ? footW / shoulderW : 0;
+          const widthGood = ratio >= 0.95 && ratio <= 1.55;
+          const leftA = footAngle(lm[29], lm[31]);
+          const rightA = footAngle(lm[30], lm[32]);
+          const angleGood = leftA >= 8 && leftA <= 75 && rightA >= 8 && rightA <= 75;
+
+          stats.stance.total += 1;
+          if (widthGood) stats.stance.widthPass += 1;
+          if (angleGood) stats.stance.anglePass += 1;
+
+          liveChecklist.innerHTML = `
+            <li>발 너비 비율: ${ratio.toFixed(2)} (권장 0.95~1.55)</li>
+            <li>왼발/오른발 각도: ${leftA.toFixed(0)}° / ${rightA.toFixed(0)}°</li>
+            <li>${widthGood ? "좋음: 어깨너비 기반 스탠스 안정" : "주의: 발 간격을 어깨너비 기준으로 조정"}</li>
+            <li>${angleGood ? "좋음: 앞/뒷발 각도 유지" : "주의: 발끝 방향이 흐트러짐"}</li>
+          `;
+        }
+
+        // 잽 구간: 어깨 가드 유지와 타격 후 손 복귀 속도를 평가한다.
+        function analyzeJab(lm) {
+          const shoulderW = dist(lm[11], lm[12]) || 0.0001;
+          const leftExt = Math.abs((lm[15].x || 0) - (lm[11].x || 0));
+          const rightExt = Math.abs((lm[16].x || 0) - (lm[12].x || 0));
+          const side = leftExt > rightExt ? "left" : "right";
+          const wrist = side === "left" ? lm[15] : lm[16];
+          const shoulder = side === "left" ? lm[11] : lm[12];
+          const extension = Math.abs((wrist.x || 0) - (shoulder.x || 0));
+          const extended = extension > shoulderW * 0.55;
+          const shoulderGuard = (shoulder.y || 0) <= (lm[0].y || 0) + 0.08;
+          const guardReturned = dist(wrist, lm[0]) < shoulderW * 0.75;
+
+          if (extended && !jabState.extended) {
+            jabState.extended = true;
+            jabState.extendedAt = performance.now();
+            stats.jab.jabCount += 1;
+            if (shoulderGuard) stats.jab.shoulderGuardPass += 1;
+          }
+
+          if (jabState.extended && guardReturned) {
+            const ms = performance.now() - jabState.extendedAt;
+            if (ms <= 900) stats.jab.fastReturnPass += 1;
+            jabState.extended = false;
+          }
+
+          liveChecklist.innerHTML = `
+            <li>현재 타격 방향: ${side === "left" ? "왼손 잽" : "오른손 잽"}</li>
+            <li>어깨 가드: ${shoulderGuard ? "유지 중" : "낮아짐(턱 보호 필요)"}</li>
+            <li>복귀 상태: ${guardReturned ? "가드 복귀 완료" : "가드 복귀 진행 중"}</li>
+            <li>유효 잽 횟수: ${stats.jab.jabCount}회</li>
+          `;
+        }
+
+        function renderPose(results) {
+          const ctx = poseCanvas.getContext("2d");
+          poseCanvas.width = webcamFeed.videoWidth || 640;
+          poseCanvas.height = webcamFeed.videoHeight || 480;
+          ctx.save();
+          ctx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
+          if (results.poseLandmarks) {
+            drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, { color: "#00ffb3", lineWidth: 2 });
+            drawLandmarks(ctx, results.poseLandmarks, { color: "#ed1d32", lineWidth: 1, radius: 2 });
+            lastLandmarks = results.poseLandmarks;
+          }
+          ctx.restore();
+        }
+
+        function onPoseResults(results) {
+          renderPose(results);
+          if (!running || waitingModal || trainerVideo.paused || trainerVideo.ended) return;
+          if (!lastLandmarks) return;
+          if (activePhase === "stance") analyzeStance(lastLandmarks);
+          if (activePhase === "jab") analyzeJab(lastLandmarks);
+          updateKpi();
+        }
+
+        function buildReport(phase) {
+          const good = [];
+          const bad = [];
+          let score = 0;
+
+          if (phase === "stance") {
+            score = calcStanceScore();
+            const widthRate = stats.stance.total ? (stats.stance.widthPass / stats.stance.total) * 100 : 0;
+            const angleRate = stats.stance.total ? (stats.stance.anglePass / stats.stance.total) * 100 : 0;
+            if (widthRate >= 70) good.push("안정적인 스탠스를 유지하고 있습니다!");
+            else bad.push("발 너비가 흔들립니다. 어깨너비 기준을 유지하세요.");
+            if (angleRate >= 70) good.push("앞/뒷발 각도 유지가 좋습니다.");
+            else bad.push("앞발과 뒷발의 발끝 각도를 일정하게 유지하세요.");
+          }
+
+          if (phase === "jab") {
+            score = calcJabScore();
+            const guardRate = stats.jab.jabCount ? (stats.jab.shoulderGuardPass / stats.jab.jabCount) * 100 : 0;
+            const returnRate = stats.jab.jabCount ? (stats.jab.fastReturnPass / stats.jab.jabCount) * 100 : 0;
+            if (guardRate >= 65) good.push("잽 동작에서 어깨로 턱 보호가 잘 됩니다.");
+            else bad.push("잽을 뻗을 때 가드가 내려갑니다. 어깨를 턱 가까이 올리세요.");
+            if (returnRate >= 65) good.push("타격 후 손 복귀 속도가 빠릅니다.");
+            else bad.push("타격 후 손이 늦게 돌아옵니다. 즉시 턱 가드로 복귀하세요.");
+          }
+
+          if (!good.length) good.push("기본 자세 의식이 좋습니다. 기준만 조금 더 맞추면 완성됩니다.");
+          if (!bad.length) bad.push("현재 단계는 매우 안정적입니다. 다음 단계 난이도를 올려보세요.");
+          return { score, good, bad };
+        }
+
+        function openReport(phase) {
+          waitingModal = true;
+          const report = buildReport(phase);
+          reportTitle.textContent = "AI 코칭 리포트";
+          reportSubtitle.textContent = `Standard Form (183cm) 기준 ${phase === "stance" ? "스탠스" : "잽"} 분석`;
+          reportScore.textContent = `${Math.round(report.score)}점`;
+          reportGoodList.innerHTML = report.good.map((v) => `<li>${v}</li>`).join("");
+          reportBadList.innerHTML = report.bad.map((v) => `<li>${v}</li>`).join("");
+          reportModal.classList.add("open");
+          speak(`AI 코칭 리포트입니다. 점수는 ${Math.round(report.score)}점. 좋은 점과 보완점을 확인하고 다음 단계로 진행하세요.`);
+        }
+
+        async function initPose() {
+          pose = new Pose({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+          });
+          pose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+          });
+          pose.onResults(onPoseResults);
+
+          camera = new Camera(webcamFeed, {
+            onFrame: async () => {
+              if (pose) await pose.send({ image: webcamFeed });
+            },
+            width: 640,
+            height: 480,
+          });
+          await camera.start();
+        }
+
+        async function playStep(index) {
+          stepIndex = index;
+          const step = level1Sequence[index];
+          activePhase = step.phase;
+          phaseBadge.textContent = step.title;
+          trainerVideo.src = step.videoSrc;
+          trainerVideo.currentTime = 0;
+          updateKpi();
+          waitingModal = false;
+
+          try {
+            await trainerVideo.play();
+          } catch {
+            trainerVideo.muted = true;
+            await trainerVideo.play().catch(() => {});
+          }
+        }
+
+        async function startTutorial() {
+          if (!pose) await initPose();
+          running = true;
+          waitingModal = false;
+          stepIndex = -1;
+          activePhase = "";
+          Object.assign(stats.stance, { total: 0, widthPass: 0, anglePass: 0 });
+          Object.assign(stats.jab, { jabCount: 0, shoulderGuardPass: 0, fastReturnPass: 0 });
+          updateKpi();
+          await playStep(0);
+        }
+
+        function stopTutorial() {
+          running = false;
+          waitingModal = false;
+          trainerVideo.pause();
+          reportModal.classList.remove("open");
+          phaseBadge.textContent = "중지됨";
+          speak("튜토리얼이 중지되었습니다.");
+        }
+
+        trainerVideo.addEventListener("ended", () => {
+          if (!running) return;
+          openReport(activePhase);
+        });
+
+        nextStepBtn.addEventListener("click", async () => {
+          reportModal.classList.remove("open");
+          const nextIndex = stepIndex + 1;
+          if (nextIndex < level1Sequence.length) {
+            await playStep(nextIndex);
+            return;
+          }
+          running = false;
+          phaseBadge.textContent = "튜토리얼 완료";
+          liveChecklist.innerHTML = "<li>모든 Level 1 단계를 완료했습니다.</li>";
+          speak("초급 레벨 튜토리얼을 완료했습니다. 훌륭합니다.");
+        });
+
+        startBtn.addEventListener("click", () => {
+          startTutorial().catch(() => {
+            liveChecklist.innerHTML = "<li>웹캠 권한 또는 모델 초기화에 실패했습니다.</li>";
+          });
+        });
+        stopBtn.addEventListener("click", stopTutorial);
+      });
+    </script>
+  </body>
+</html>

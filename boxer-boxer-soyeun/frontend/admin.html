@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOXER - 관리자 패널</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body { padding-top: 64px; background: var(--color-bg-primary); }
+
+    /* 관리자 상단 네비게이션 */
+    .nav { border-bottom-color: rgba(255,214,10,0.3); }
+    .admin-badge {
+      background: rgba(255,214,10,0.15);
+      border: 1px solid rgba(255,214,10,0.4);
+      color: var(--color-accent-gold);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* 관리자 전체 레이아웃 */
+    .admin-wrap { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* 섹션 헤더 */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+    .section-divider {
+      height: 1px;
+      background: var(--color-border);
+      margin: 2rem 0;
+    }
+
+    /* 상태 카드 */
+    .status-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .status-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem 1.4rem;
+      text-align: center;
+    }
+    .status-card-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .status-card-num {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .status-card-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* 서버 상태 배너 */
+    .server-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      margin-bottom: 2rem;
+    }
+    .server-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+    .server-dot.ok    { background: var(--color-accent-green); box-shadow: 0 0 8px rgba(48,209,88,0.6); }
+    .server-dot.error { background: var(--color-accent-red);   box-shadow: 0 0 8px rgba(255,45,85,0.6); }
+    .server-info { flex: 1; font-size: 14px; }
+    .server-info strong { display: block; margin-bottom: 2px; }
+    .server-info span { font-size: 12px; color: var(--color-text-secondary); }
+    .server-actions { display: flex; gap: 8px; }
+    .btn-sm {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      color: var(--color-text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-sm:hover { background: rgba(255,255,255,0.08); color: white; }
+    .btn-sm.danger:hover { border-color: rgba(255,45,85,0.5); color: var(--color-accent-red); }
+    .btn-sm.success { border-color: rgba(48,209,88,0.4); color: var(--color-accent-green); }
+
+    /* 탭 메뉴 */
+    .admin-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 2rem;
+    }
+    .admin-tab {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+    .admin-tab:hover { color: white; }
+    .admin-tab.active { color: white; border-bottom-color: var(--color-accent-gold); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* 테이블 */
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .admin-table thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .admin-table tbody tr { transition: background 0.15s; }
+    .admin-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .admin-table tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    .admin-table tbody tr:last-child td { border-bottom: none; }
+    .table-wrap {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    /* 입력 패널 */
+    .form-panel {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-panel-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .select-field {
+      width: 100%;
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: var(--color-text-primary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      appearance: none;
+      cursor: pointer;
+      outline: none;
+    }
+    .select-field:focus { border-color: var(--color-accent-blue); }
+    .select-field option { background: var(--color-bg-tertiary); }
+    textarea.input-field { resize: vertical; min-height: 80px; font-family: var(--font-mono); font-size: 13px; }
+
+    /* 타임스탬프 입력 영역 */
+    .ts-row { display: grid; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .ts-main {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .ts-advanced {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .ts-help {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .preset-row .btn-sm { font-size: 12px; padding: 6px 12px; }
+    .ts-remove {
+      background: rgba(255,45,85,0.1);
+      border: 1px solid rgba(255,45,85,0.3);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      color: var(--color-accent-red);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .ts-remove:hover { background: rgba(255,45,85,0.2); }
+
+    /* 안내 배너 */
+    .api-notice {
+      background: rgba(255,214,10,0.06);
+      border: 1px solid rgba(255,214,10,0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: 1rem;
+    }
+    .api-notice code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-accent-blue);
+      background: rgba(0,122,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* 티어 배지 */
+    .tier-free    { color: var(--color-text-secondary); font-size: 12px; }
+    .tier-premium { color: var(--color-accent-gold); font-size: 12px; font-weight: 700; }
+    .level-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .level-beginner    { background: rgba(48,209,88,0.15); color: var(--color-accent-green); }
+    .level-intermediate{ background: rgba(255,214,10,0.15); color: var(--color-accent-gold); }
+    .level-advanced    { background: rgba(255,45,85,0.15);  color: var(--color-accent-red); }
+
+    /* 아이콘 버튼 */
+    .icon-btn {
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.07); color: white; }
+    .icon-btn.edit:hover  { border-color: rgba(0,122,255,0.5); color: var(--color-accent-blue); }
+    .icon-btn.delete:hover{ border-color: rgba(255,45,85,0.5); color: var(--color-accent-red); }
+
+    /* 모달 (global.css 사용) */
+    .admin-modal {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+    .modal-overlay.open .admin-modal { transform: scale(1); }
+    .admin-modal-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* 로딩 오버레이 */
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: var(--color-bg-primary);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+      z-index: 999;
+      transition: opacity 0.4s ease;
+    }
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .loading-logo { font-family: var(--font-display); font-size: 3rem; color: var(--color-accent-gold); letter-spacing: 4px; }
+
+    /* 반응형 */
+    @media (max-width: 1024px) {
+      .status-cards { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .status-cards { grid-template-columns: repeat(2, 1fr); }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+      .ts-main { grid-template-columns: 1fr 1fr; }
+      .ts-advanced { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 로딩 오버레이 -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-logo">ADMIN</div>
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--color-text-secondary);">서버 상태 확인 중...</div>
+</div>
+
+<!-- 관리자 네비게이션 -->
+<nav class="nav">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="nav-logo" href="/frontend/index.html" style="color:var(--color-accent-gold);">
+      <img class="nav-logo-img" src="assets/images/logo.png" alt="BOXER" onerror="this.style.display='none'">
+      <span class="nav-logo-text">BOXER</span>
+    </a>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="/frontend/dashboard.html">대시보드</a>
+    <a class="nav-link" href="/frontend/tutorial.html">튜토리얼</a>
+    <a class="nav-link" href="/frontend/sparring.html">스파링</a>
+    <a class="nav-link" href="/frontend/shop.html">상점</a>
+    <div style="width:1px;height:20px;background:var(--color-border);margin:0 4px;"></div>
+    <span id="nav-admin-name" style="font-size:13px;font-weight:600;color:var(--color-accent-gold);padding:0 8px;"></span>
+    <button class="btn-outline" style="padding:8px 16px;font-size:13px;" onclick="auth.logout()">로그아웃</button>
+  </div>
+</nav>
+
+<div class="admin-wrap">
+
+  <!-- 서버 상태 배너 -->
+  <div class="server-banner" id="server-banner">
+    <div class="server-dot" id="server-dot"></div>
+    <div class="server-info">
+      <strong id="server-status-text">서버 상태 확인 중...</strong>
+      <span id="server-detail">http://localhost:8000</span>
+    </div>
+    <div class="server-actions">
+      <button class="btn-sm" onclick="checkServerHealth()">새로고침</button>
+      <a class="btn-sm success" href="http://localhost:8000/docs" target="_blank">API 문서 (Swagger UI)</a>
+      <a class="btn-sm" href="http://localhost:8000/redoc" target="_blank">ReDoc</a>
+    </div>
+  </div>
+
+  <!-- 상태 카드 -->
+  <div class="status-cards">
+    <div class="status-card">
+      <div class="status-card-icon">👤</div>
+      <div class="status-card-num" id="stat-users" style="color:var(--color-accent-blue);">0</div>
+      <div class="status-card-label">랭킹 사용자 수</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">🎯</div>
+      <div class="status-card-num" id="stat-tutorials" style="color:var(--color-accent-green);">0</div>
+      <div class="status-card-label">튜토리얼 수</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">🥊</div>
+      <div class="status-card-num" id="stat-videos" style="color:var(--color-accent-red);">0</div>
+      <div class="status-card-label">스파링 영상 개수</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">🏆</div>
+      <div class="status-card-num" id="stat-topscore" style="color:var(--color-accent-gold);">0</div>
+      <div class="status-card-label">최고 점수</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card-icon">⭐</div>
+      <div class="status-card-num" id="stat-my-score" style="color:var(--color-text-secondary);">0</div>
+      <div class="status-card-label">내 누적 점수</div>
+    </div>
+  </div>
+
+  <!-- 탭 메뉴 -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchTab('users', this)">사용자 관리</button>
+    <button class="admin-tab" onclick="switchTab('tutorials', this)">튜토리얼</button>
+    <button class="admin-tab" onclick="switchTab('videos', this)">스파링 영상</button>
+    <button class="admin-tab" onclick="switchTab('leaderboard', this)">랭킹</button>
+    <button class="admin-tab" onclick="switchTab('seed', this)">시드 데이터</button>
+  </div>
+
+  <!-- 탭: 사용자 관리 -->
+  <div class="tab-pane active" id="tab-users">
+    <div class="section-header">
+      <h2>사용자 관리</h2>
+      <div style="font-size:13px;color:var(--color-text-secondary);">랭킹에 등록된 사용자 목록입니다. 리더보드 기준으로 표시됩니다.</div>
+    </div>
+
+    <div class="api-notice">
+      현재는 <code>GET /api/leaderboard</code> 결과를 보여줍니다. 전체 사용자 목록과 계정 수정은
+      <code>GET /api/admin/users</code> 백엔드가 추가되어야 사용할 수 있습니다.
+    </div>
+
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>닉네임</th>
+            <th>점수</th>
+            <th>최고 콤보</th>
+            <th>회피율</th>
+            <th>랭크</th>
+            <th>포인트</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+            <div class="spinner" style="margin:0 auto;"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 탭: 튜토리얼 관리 -->
+  <div class="tab-pane" id="tab-tutorials">
+    <div class="section-header">
+      <h2>튜토리얼 관리</h2>
+      <button class="btn-primary" style="padding:10px 20px;font-size:14px;" onclick="showTutorialForm()">+ 튜토리얼 추가</button>
+    </div>
+
+    <div class="api-notice">
+      목록 조회는 <code>GET /api/tutorials</code>를 사용합니다. 튜토리얼 추가/수정/삭제는
+      <code>POST /api/admin/tutorials</code> 관리자 API가 있어야 동작합니다.
+    </div>
+
+    <!-- 튜토리얼 추가 패널 -->
+    <div class="form-panel" id="tutorial-form-panel" style="display:none;">
+      <div class="form-panel-title">새 튜토리얼 추가</div>
+
+      <div class="form-group">
+        <label class="form-label">제목</label>
+        <input type="text" class="input-field" id="tut-title" placeholder="예: 기본 가드 자세" style="font-size:14px;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">설명</label>
+        <input type="text" class="input-field" id="tut-desc" placeholder="튜토리얼 설명을 입력하세요" style="font-size:14px;">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">난이도</label>
+          <select class="select-field" id="tut-difficulty">
+            <option value="1">1 초급</option>
+            <option value="2">2 중급</option>
+            <option value="3">3 상급</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">프리미엄</label>
+          <select class="select-field" id="tut-premium">
+            <option value="false">아니요 (무료)</option>
+            <option value="true">예 (프리미엄)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">EXP 보상</label>
+          <input type="number" class="input-field" id="tut-exp" value="100" style="font-size:14px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">코인 보상</label>
+          <input type="number" class="input-field" id="tut-coins" value="10" style="font-size:14px;">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">영상 URL (선택)</label>
+        <input type="text" class="input-field" id="tut-video-url" placeholder="/assets/videos/tutorial_guard.mp4" style="font-size:14px;">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">정답 자세 설정 JSON (target_pose_json)</label>
+        <textarea class="input-field" id="tut-pose-json" placeholder='{"guard": {"min_angle": 80}, "stance": {"min_width": 0.9}}'></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-primary" style="padding:10px 24px;font-size:14px;" onclick="submitTutorial()">저장하기</button>
+        <button class="btn-outline" style="padding:10px 24px;font-size:14px;" onclick="hideTutorialForm()">취소</button>
+      </div>
+
+      <div class="api-notice" style="margin-top:1rem;">
+        저장은 <code>POST /api/admin/tutorials</code> 엔드포인트를 사용합니다.
+        백엔드 라우터가 없으면 콘솔 오류가 표시됩니다.
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>제목</th>
+            <th>난이도</th>
+            <th>프리미엄</th>
+            <th>EXP</th>
+            <th>코인</th>
+            <th>순서</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="tutorials-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+            <div class="spinner" style="margin:0 auto;"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 탭: 스파링 영상 관리 -->
+  <div class="tab-pane" id="tab-videos">
+    <div class="section-header">
+      <h2>스파링 영상 관리</h2>
+      <button class="btn-primary" style="padding:10px 20px;font-size:14px;" onclick="showVideoForm()">+ 영상 추가</button>
+    </div>
+
+    <div class="api-notice">
+      목록 조회는 <code>GET /api/videos</code>를 사용합니다. 영상 추가/삭제/타임스탬프 관리는
+      <code>POST /api/admin/videos</code> 관리자 API가 있어야 동작합니다.
+    </div>
+
+    <!-- 영상 추가 패널 -->
+    <div class="form-panel" id="video-form-panel" style="display:none;">
+      <div class="form-panel-title">새 스파링 영상 추가</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">영상 제목</label>
+          <input type="text" class="input-field" id="vid-title" placeholder="예: 초급 잽 A" style="font-size:14px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">파일 경로</label>
+          <input type="text" class="input-field" id="vid-path" placeholder="/frontend/assets/videos/sparring/sparring_beginner_jab_01.mp4" style="font-size:14px;">
+        </div>
+      </div>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">공격 타입</label>
+          <select class="select-field" id="vid-type">
+            <option value="jab">잽</option>
+            <option value="hook">훅</option>
+            <option value="straight">스트레이트</option>
+            <option value="uppercut">어퍼컷</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">난이도</label>
+          <select class="select-field" id="vid-difficulty">
+            <option value="beginner" selected>초급</option>
+            <option value="intermediate">중급</option>
+            <option value="advanced">상급</option>
+            <option value="pro">프로</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">영상 길이 (초)</label>
+          <input type="number" class="input-field" id="vid-duration" value="5.0" step="0.1" style="font-size:14px;">
+        </div>
+      </div>
+      <div class="preset-row" style="margin-top:0.5rem;">
+        <button class="btn-sm success" type="button" onclick="applySparringVideoPreset('beginner')">초급 프리셋</button>
+        <button class="btn-sm" type="button" onclick="applySparringVideoPreset('intermediate')">중급 프리셋</button>
+        <button class="btn-sm" type="button" onclick="applySparringVideoPreset('advanced')">상급 프리셋</button>
+        <button class="btn-sm danger" type="button" onclick="applySparringVideoPreset('pro')">프로 프리셋</button>
+      </div>
+
+      <!-- 타임스탬프 입력 -->
+      <div class="form-group">
+        <label class="form-label">공격 타임스탬프(impact 시점)</label>
+        <div id="timestamps-container">
+  <div class="ts-row">
+    <div class="ts-main">
+      <input type="number" class="input-field ts-impact" placeholder="impact_time (초)" step="0.1" style="font-size:13px;">
+      <input type="number" class="input-field ts-window" placeholder="dodge_window_ms" value="500" style="font-size:13px;">
+      <select class="select-field ts-type" style="font-size:13px;">
+        <option value="jab">잽</option>
+        <option value="hook">훅</option>
+        <option value="straight">스트레이트</option>
+        <option value="uppercut">어퍼컷</option>
+      </select>
+      <input type="number" class="input-field ts-radius" placeholder="hitbox_radius" value="0.15" step="0.01" style="font-size:13px;">
+      <button class="ts-remove" onclick="removeTs(this)">삭제</button>
+    </div>
+    <div class="ts-advanced">
+      <select class="select-field ts-shape" style="font-size:13px;">
+        <option value="">판정 형태(자동)</option>
+        <option value="circle">원형</option>
+        <option value="ellipse">타원형</option>
+        <option value="lane">레인형</option>
+      </select>
+      <select class="select-field ts-zone" style="font-size:13px;">
+        <option value="">타깃 부위(선택)</option>
+        <option value="head">머리</option>
+        <option value="body">몸통</option>
+        <option value="left_head">왼쪽 머리</option>
+        <option value="right_head">오른쪽 머리</option>
+      </select>
+      <select class="select-field ts-move" style="font-size:13px;">
+        <option value="">필수 동작(자동)</option>
+        <option value="any">제한 없음</option>
+        <option value="slip_left">왼쪽으로 피하기</option>
+        <option value="slip_right">오른쪽으로 피하기</option>
+        <option value="slip_side">측면 회피</option>
+        <option value="duck">숙이기</option>
+        <option value="lean_back">뒤로 젖히기</option>
+      </select>
+      <input type="number" class="input-field ts-min" placeholder="최소 이동량" step="0.01" style="font-size:13px;">
+    </div>
+  </div>
+</div>
+<button class="btn-sm" style="margin-top:8px;" onclick="addTimestamp()">+ 타임스탬프 추가</button>
+<div class="preset-row">
+  <button class="btn-sm success" type="button" onclick="applyDifficultyPreset('beginner')">초급 프리셋</button>
+  <button class="btn-sm" type="button" onclick="applyDifficultyPreset('intermediate')">중급 프리셋</button>
+  <button class="btn-sm" type="button" onclick="applyDifficultyPreset('advanced')">상급 프리셋</button>
+  <button class="btn-sm danger" type="button" onclick="applyDifficultyPreset('pro')">프로 프리셋</button>
+</div>
+<div class="ts-help">
+      필수 입력값은 <code>impact_time</code>, <code>dodge_window_ms</code>, <code>attack_type</code>입니다.
+      나머지 항목은 스파링 판정을 더 세밀하게 조절할 때 사용하는 선택값입니다.
+</div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-primary" id="video-submit-btn" style="padding:10px 24px;font-size:14px;" onclick="submitVideo()">저장하기</button>
+        <button class="btn-outline" style="padding:10px 24px;font-size:14px;" onclick="hideVideoForm()">취소</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>제목</th>
+            <th>공격 타입</th>
+            <th>난이도</th>
+            <th>길이(초)</th>
+            <th>타임스탬프</th>
+            <th>프리미엄</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="videos-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+            <div class="spinner" style="margin:0 auto;"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 탭: 랭킹 -->
+  <div class="tab-pane" id="tab-leaderboard">
+    <div class="section-header">
+      <h2>글로벌 랭킹 TOP 100</h2>
+      <button class="btn-sm" onclick="loadLeaderboard()">새로고침</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>닉네임</th>
+            <th>총 점수</th>
+            <th>최고 콤보</th>
+            <th>총 회피</th>
+            <th>회피율</th>
+            <th>랭크 티어</th>
+            <th>랭크 포인트</th>
+          </tr>
+        </thead>
+        <tbody id="lb-tbody">
+          <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+            <div class="spinner" style="margin:0 auto;"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 탭: 시드 데이터 -->
+  <div class="tab-pane" id="tab-seed">
+    <div class="section-header">
+      <h2>시드 데이터</h2>
+      <div style="font-size:13px;color:var(--color-text-secondary);">DB 초기 데이터와 샘플 SQL을 바로 확인할 수 있습니다.</div>
+    </div>
+
+    <div class="api-notice">
+      아래 SQL은 MySQL Workbench나 콘솔에서 실행할 수 있습니다.
+      Swagger UI로 API를 직접 확인해도 됩니다.
+    </div>
+
+    <!-- 튜토리얼 시드 SQL -->
+    <div class="form-panel">
+      <div class="form-panel-title">튜토리얼 시드 SQL</div>
+      <textarea class="input-field" id="seed-tutorial-sql" style="height:280px;font-size:12px;" readonly></textarea>
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-sm" onclick="copySeedSql('seed-tutorial-sql')">복사</button>
+        <span style="font-size:12px;color:var(--color-text-secondary);line-height:2.2;">MySQL: <code style="font-size:11px;color:var(--color-accent-blue);">mysql -u root -p boxer_db &lt; seed_tutorials.sql</code></span>
+      </div>
+    </div>
+
+    <!-- 스파링 영상 시드 SQL -->
+    <div class="form-panel">
+      <div class="form-panel-title">스파링 영상 시드 SQL</div>
+      <textarea class="input-field" id="seed-video-sql" style="height:200px;font-size:12px;" readonly></textarea>
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-sm" onclick="copySeedSql('seed-video-sql')">복사</button>
+      </div>
+    </div>
+
+    <!-- 상점 시드 SQL -->
+    <div class="form-panel">
+      <div class="form-panel-title">상점 시드 SQL</div>
+      <textarea class="input-field" id="seed-shop-sql" style="height:200px;font-size:12px;" readonly></textarea>
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-sm" onclick="copySeedSql('seed-shop-sql')">복사</button>
+      </div>
+    </div>
+
+    <!-- 백엔드 관리자 API 추가 안내 -->
+    <div class="form-panel">
+      <div class="form-panel-title">백엔드 관리자 API 추가 방법</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--color-text-secondary);">
+        아래 파일에 <code style="color:var(--color-accent-blue);">backend/app/routers/admin.py</code>를 만들고
+        <code style="color:var(--color-accent-blue);">main.py</code>에 등록하면 관리자 기능을 확장할 수 있습니다.
+      </div>
+      <textarea class="input-field" id="admin-route-template" style="height:260px;font-size:12px;margin-top:1rem;" readonly></textarea>
+      <div style="display:flex;gap:8px;margin-top:1rem;">
+        <button class="btn-sm" onclick="copySeedSql('admin-route-template')">복사</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- 관리자 래퍼 끝 -->
+
+<!-- 사용자 티어 수정 모달 -->
+<div class="modal-overlay" id="user-modal" onclick="closeUserModalOnOverlay(event)">
+  <div class="admin-modal">
+    <div class="admin-modal-title">사용자 티어 관리</div>
+    <div id="user-modal-info" style="margin-bottom:1rem;font-size:14px;color:var(--color-text-secondary);"></div>
+
+    <div class="form-group">
+      <label class="form-label">티어 변경</label>
+      <select class="select-field" id="user-modal-tier">
+        <option value="free">무료</option>
+        <option value="premium">프리미엄</option>
+      </select>
+    </div>
+
+    <div class="api-notice" style="margin:0.8rem 0;">
+      변경은 <code>PUT /api/admin/users/{id}/tier</code> 관리자 API를 사용합니다.
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn-primary" style="flex:1;padding:10px;font-size:14px;" onclick="saveUserTier()">저장</button>
+      <button class="btn-outline" style="flex:1;padding:10px;font-size:14px;" onclick="closeUserModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/core/api.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/ui/navbar.js"></script>
+<script>
+  // 비로그인 상태면 접근 차단
+  auth.requireAuthAsync().then(user => { if (!user) return; });
+  if (!auth.requireAuth()) throw new Error('redirect');
+
+  // 상태 변수
+  let allTutorials = [];
+  let allVideos    = [];
+  let allLbData    = [];
+  let editingUser  = null;
+  let editingVideo = null;
+
+  // 초기화
+  async function initAdmin() {
+    const user = await auth.requireAuthAsync();
+    if (!user) return;
+
+    document.getElementById('nav-admin-name').textContent = user.username;
+
+    try {
+      await Promise.all([
+        checkServerHealth(),
+        loadTutorials(),
+        loadVideos(),
+        loadLeaderboard(),
+        loadMyStats(user),
+      ]);
+    } catch (e) {
+      showToast('데이터 로드 중 오류: ' + e.message, 'error');
+    } finally {
+      generateSeedSql();
+      const overlay = document.getElementById('loading');
+      overlay.classList.add('hidden');
+      setTimeout(() => overlay.remove(), 400);
+    }
+  }
+
+  // 서버 상태 확인
+  async function checkServerHealth() {
+    const dot    = document.getElementById('server-dot');
+    const text   = document.getElementById('server-status-text');
+    const detail = document.getElementById('server-detail');
+    try {
+      const res = await api.get('/api/health/db');
+      if (res?.status === 'ok' || res?.database === 'connected') {
+        dot.className    = 'server-dot ok';
+        text.textContent = '서버 OK';
+        detail.textContent = 'DB 연결 확인 완료 · http://localhost:8000';
+      } else {
+        throw new Error('DB 상태 이상');
+      }
+    } catch {
+      dot.className    = 'server-dot error';
+      text.textContent = '서버 연결 실패';
+      detail.textContent = 'FastAPI 서버가 실행 중인지 확인하세요. (uvicorn main:app --reload)';
+    }
+  }
+
+  // 내 통계 로드
+  async function loadMyStats(user) {
+    const stats = await api.get('/api/stats/me').catch(() => null);
+    document.getElementById('stat-my-score').textContent = (stats?.total_score || 0).toLocaleString();
+  }
+
+  // 튜토리얼 목록 로드
+  async function loadTutorials() {
+    try {
+      const resp = await api.get('/api/tutorials');
+      allTutorials = Array.isArray(resp) ? resp : (resp?.tutorials || resp?.items || []);
+      document.getElementById('stat-tutorials').textContent = allTutorials.length;
+      renderTutorialsTable();
+    } catch {
+      document.getElementById('stat-tutorials').textContent = '0';
+    }
+  }
+
+  function renderTutorialsTable() {
+    const tbody = document.getElementById('tutorials-tbody');
+    if (!allTutorials.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+        등록된 튜토리얼이 없습니다. 시드 데이터 또는 관리자 API로 추가해 주세요.
+      </td></tr>`;
+      return;
+    }
+    const diffLabel = { 1: '초급', 2: '중급', 3: '상급' };
+    const diffColor = { 1: 'var(--color-accent-green)', 2: 'var(--color-accent-gold)', 3: 'var(--color-accent-red)' };
+    tbody.innerHTML = allTutorials.map(t => `
+      <tr>
+        <td style="font-family:var(--font-mono);color:var(--color-text-secondary);">#${t.id}</td>
+        <td style="font-weight:600;">${t.title}</td>
+        <td style="color:${diffColor[t.difficulty_level] || 'inherit'};">Lv.${t.difficulty_level || 1} ${diffLabel[t.difficulty_level] || '초급'}</td>
+        <td>${t.is_premium ? '<span class="tier-premium">프리미엄</span>' : '<span class="tier-free">무료</span>'}</td>
+        <td style="font-family:var(--font-mono);color:var(--color-accent-blue);">+${t.reward_exp || 100}</td>
+        <td style="font-family:var(--font-mono);color:var(--color-accent-gold);">+${t.reward_coins || 10}</td>
+        <td style="font-family:var(--font-mono);">${t.order_sequence ?? '?'}</td>
+        <td>
+          <button class="icon-btn delete" onclick="deleteTutorial(${t.id})" title="삭제 (admin API 필요)">삭제</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // 스파링 영상 목록 로드
+  async function loadVideos() {
+    try {
+      const resp = await api.get('/api/videos');
+      allVideos = Array.isArray(resp) ? resp : (resp?.videos || resp?.items || []);
+      document.getElementById('stat-videos').textContent = allVideos.length;
+      renderVideosTable();
+    } catch {
+      document.getElementById('stat-videos').textContent = '0';
+    }
+  }
+
+  function renderVideosTable() {
+    const tbody = document.getElementById('videos-tbody');
+    if (!allVideos.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+        등록된 스파링 영상이 없습니다. 시드 데이터 또는 관리자 API로 추가해 주세요.
+      </td></tr>`;
+      return;
+    }
+    const diffColor = {
+      easy: 'var(--color-accent-green)',
+      medium: 'var(--color-accent-gold)',
+      hard: 'var(--color-accent-red)',
+      beginner: 'var(--color-accent-green)',
+      intermediate: 'var(--color-accent-gold)',
+      advanced: 'var(--color-accent-orange, var(--color-accent-red))',
+      pro: 'var(--color-accent-red)'
+    };
+    const diffLabel = {
+      easy: 'Beginner',
+      medium: 'Intermediate',
+      hard: 'Advanced',
+      beginner: 'Beginner',
+      intermediate: 'Intermediate',
+      advanced: 'Advanced',
+      pro: 'Pro'
+    };
+    tbody.innerHTML = allVideos.map(v => `
+      <tr>
+        <td style="font-family:var(--font-mono);color:var(--color-text-secondary);">#${v.id}</td>
+        <td style="font-weight:600;">${v.title}</td>
+        <td>${v.attack_type || '?'}</td>
+        <td style="color:${diffColor[v.difficulty] || 'inherit'};">${diffLabel[v.difficulty] || v.difficulty || '?'}</td>
+        <td style="font-family:var(--font-mono);">${v.duration_sec || '?'}s</td>
+        <td style="font-family:var(--font-mono);">
+          ${(v.timestamps?.length || v.timestamp_count || 0)}개
+        </td>
+        <td>${v.is_premium ? '<span class="tier-premium">프리미엄</span>' : '<span class="tier-free">무료</span>'}</td>
+        <td>
+          <button class="icon-btn edit" onclick="editVideo(${v.id})" title="수정">수정</button>
+          <button class="icon-btn delete" onclick="deleteVideo(${v.id})" title="삭제 (admin API 필요)">삭제</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // 랭킹 로드
+  async function loadLeaderboard() {
+    try {
+      const resp = await api.get('/api/leaderboard');
+      allLbData = Array.isArray(resp) ? resp : (resp?.leaderboard || resp?.items || []);
+      document.getElementById('stat-users').textContent = allLbData.length;
+
+      // 최고 점수
+      const topScore = allLbData.reduce((max, r) => Math.max(max, r.total_score || 0), 0);
+      document.getElementById('stat-topscore').textContent = topScore.toLocaleString();
+
+      renderUsersTable();
+      renderLeaderboardTable();
+    } catch {
+      document.getElementById('stat-users').textContent = '0';
+    }
+  }
+
+  function renderUsersTable() {
+    const tbody = document.getElementById('users-tbody');
+    if (!allLbData.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">
+        등록된 사용자 데이터가 없습니다.
+      </td></tr>`;
+      return;
+    }
+    const tierColors = { Bronze: '#CD7F32', Silver: '#C0C0C0', Gold: '#FFD60A', Platinum: '#007AFF', Diamond: '#B9F2FF' };
+    tbody.innerHTML = allLbData.slice(0, 50).map((r, i) => `
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700;color:${i < 3 ? 'var(--color-accent-gold)' : 'var(--color-text-secondary)'};">${i + 1}</td>
+        <td style="font-weight:600;">${r.username || `#${r.user_id}`}</td>
+        <td style="font-family:var(--font-mono);">${(r.total_score || 0).toLocaleString()}</td>
+        <td style="font-family:var(--font-mono);">${r.max_combo || 0}</td>
+        <td style="font-family:var(--font-mono);">${r.win_rate != null ? Math.round(r.win_rate * 100) + '%' : '?'}</td>
+        <td><span style="color:${tierColors[r.rank_tier] || '#8E8E93'};font-weight:600;font-size:13px;">${r.rank_tier || 'Bronze'}</span></td>
+        <td style="font-family:var(--font-mono);">${r.rank_points || 0}</td>
+        <td>
+          <button class="icon-btn edit" onclick="openUserModal(${JSON.stringify(r).replace(/"/g, '&quot;')})">티어 관리</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function renderLeaderboardTable() {
+    const tbody = document.getElementById('lb-tbody');
+    if (!allLbData.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-secondary);">랭킹 데이터가 없습니다.</td></tr>`;
+      return;
+    }
+    const tierColors = { Bronze: '#CD7F32', Silver: '#C0C0C0', Gold: '#FFD60A', Platinum: '#007AFF', Diamond: '#B9F2FF' };
+    tbody.innerHTML = allLbData.map((r, i) => `
+      <tr>
+        <td style="font-family:var(--font-mono);font-weight:700;color:${i < 3 ? 'var(--color-accent-gold)' : 'var(--color-text-secondary)'};">${i + 1}</td>
+        <td style="font-weight:600;">${r.username || `User #${r.user_id}`}</td>
+        <td style="font-family:var(--font-mono);">${(r.total_score || 0).toLocaleString()}</td>
+        <td style="font-family:var(--font-mono);">${r.max_combo || 0}</td>
+        <td style="font-family:var(--font-mono);">${r.total_dodges || 0}</td>
+        <td>${r.win_rate != null ? Math.round(r.win_rate * 100) + '%' : '?'}</td>
+        <td><span style="color:${tierColors[r.rank_tier] || '#8E8E93'};font-weight:600;">${r.rank_tier || 'Bronze'}</span></td>
+        <td style="font-family:var(--font-mono);">${r.rank_points || 0}</td>
+      </tr>`).join('');
+  }
+
+  // 탭 전환
+  function switchTab(name, el) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // 튜토리얼 폼
+  function showTutorialForm() {
+    document.getElementById('tutorial-form-panel').style.display = 'block';
+  }
+  function hideTutorialForm() {
+    document.getElementById('tutorial-form-panel').style.display = 'none';
+  }
+
+  async function submitTutorial() {
+    const title   = document.getElementById('tut-title').value.trim();
+    if (!title) { showToast('제목을 입력해 주세요.', 'error'); return; }
+
+    let poseJson = null;
+    try {
+      const raw = document.getElementById('tut-pose-json').value.trim();
+      if (raw) poseJson = JSON.parse(raw);
+    } catch {
+      showToast('자세 JSON 형식이 올바르지 않습니다.', 'error'); return;
+    }
+
+    const payload = {
+      title,
+      description:      document.getElementById('tut-desc').value.trim(),
+      difficulty_level: parseInt(document.getElementById('tut-difficulty').value),
+      is_premium:       document.getElementById('tut-premium').value === 'true',
+      reward_exp:       parseInt(document.getElementById('tut-exp').value) || 100,
+      reward_coins:     parseInt(document.getElementById('tut-coins').value) || 10,
+      video_url:        document.getElementById('tut-video-url').value.trim() || null,
+      target_pose_json: poseJson
+    };
+
+    try {
+      // 아직 관리자 API가 없으면 404가 발생할 수 있습니다.
+      await api.post('/api/admin/tutorials', payload);
+      showToast('튜토리얼이 추가되었습니다!', 'success');
+      hideTutorialForm();
+      await loadTutorials();
+    } catch (err) {
+      showToast('추가 실패: ' + err.message + ' (admin API 필요)', 'error');
+    }
+  }
+
+  async function deleteTutorial(id) {
+    if (!confirm(`튜토리얼 #${id}을 삭제하시겠습니까?`)) return;
+    try {
+      await api.delete(`/api/admin/tutorials/${id}`);
+      showToast('삭제되었습니다.', 'success');
+      await loadTutorials();
+    } catch (err) {
+      showToast('삭제 실패: ' + err.message + ' (admin API 필요)', 'error');
+    }
+  }
+
+  // 영상 폼
+  const SPARRING_VIDEO_PRESETS = {
+    beginner: {
+      label: '초급',
+      attack_type: 'jab',
+      difficulty: 'beginner',
+      duration_sec: 5.0,
+      titlePrefix: '초급 잽',
+      filePrefix: 'sparring_beginner_jab_',
+    },
+    intermediate: {
+      label: '중급',
+      attack_type: 'straight',
+      difficulty: 'intermediate',
+      duration_sec: 6.0,
+      titlePrefix: '중급 스트레이트',
+      filePrefix: 'sparring_intermediate_straight_',
+    },
+    advanced: {
+      label: '상급',
+      attack_type: 'hook',
+      difficulty: 'advanced',
+      duration_sec: 6.5,
+      titlePrefix: '상급 훅',
+      filePrefix: 'sparring_advanced_hook_',
+    },
+    pro: {
+      label: '프로',
+      attack_type: 'mixed',
+      difficulty: 'pro',
+      duration_sec: 7.5,
+      titlePrefix: '프로 믹스',
+      filePrefix: 'sparring_pro_mixed_',
+    },
+  };
+
+  function clearVideoForm() {
+    editingVideo = null;
+    const titleEl = document.getElementById('vid-title');
+    const pathEl = document.getElementById('vid-path');
+    const typeEl = document.getElementById('vid-type');
+    const diffEl = document.getElementById('vid-difficulty');
+    const durEl = document.getElementById('vid-duration');
+    const clipEl = document.getElementById('vid-clip-index');
+    const panel = document.getElementById('video-form-panel');
+    const submitBtn = document.getElementById('video-submit-btn');
+    if (titleEl) titleEl.value = '';
+    if (pathEl) pathEl.value = '';
+    if (typeEl) typeEl.value = 'jab';
+    if (diffEl) diffEl.value = 'beginner';
+    if (durEl) durEl.value = '5.0';
+    if (clipEl) clipEl.value = '1';
+    if (submitBtn) submitBtn.textContent = '저장하기';
+    if (panel) panel.dataset.mode = 'create';
+    const container = document.getElementById('timestamps-container');
+    if (container) container.innerHTML = '';
+    addTimestamp();
+  }
+
+  function showVideoForm(video = null) {
+    document.getElementById('video-form-panel').style.display = 'block';
+    if (video) {
+      editingVideo = video;
+      const submitBtn = document.getElementById('video-submit-btn');
+      if (submitBtn) submitBtn.textContent = '수정하기';
+      document.getElementById('video-form-panel').dataset.mode = 'edit';
+      document.getElementById('vid-title').value = video.title || '';
+      document.getElementById('vid-path').value = video.file_path || '';
+      document.getElementById('vid-type').value = video.attack_type || 'jab';
+      document.getElementById('vid-difficulty').value = video.difficulty || 'beginner';
+      document.getElementById('vid-duration').value = video.duration_sec || 5.0;
+      const clipMatch = String(video.file_path || '').match(/_(\d{2})\.mp4$/i);
+      if (clipMatch) document.getElementById('vid-clip-index').value = String(parseInt(clipMatch[1], 10) || 1);
+
+      const container = document.getElementById('timestamps-container');
+      container.innerHTML = '';
+      const timestamps = video.timestamps && video.timestamps.length ? video.timestamps : [{}];
+      timestamps.forEach(ts => {
+        addTimestamp();
+        const row = container.querySelector('.ts-row:last-child');
+        if (!row) return;
+        row.querySelector('.ts-impact').value = ts.impact_time ?? '';
+        row.querySelector('.ts-window').value = ts.dodge_window_ms ?? 500;
+        row.querySelector('.ts-radius').value = ts.hitbox_radius ?? 0.15;
+        row.querySelector('.ts-type').value = ts.attack_type || video.attack_type || 'jab';
+        row.querySelector('.ts-shape').value = ts.judge_shape || '';
+        row.querySelector('.ts-zone').value = ts.target_zone || '';
+        row.querySelector('.ts-move').value = ts.required_move || '';
+        row.querySelector('.ts-min').value = ts.min_displacement ?? '';
+      });
+      return;
+    }
+    clearVideoForm();
+  }
+
+  function hideVideoForm() {
+    document.getElementById('video-form-panel').style.display = 'none';
+    clearVideoForm();
+  }
+
+  function applySparringVideoPreset(level) {
+    const preset = SPARRING_VIDEO_PRESETS[level] || SPARRING_VIDEO_PRESETS.beginner;
+    const clipIndex = Math.max(1, Math.min(3, parseInt(document.getElementById('vid-clip-index')?.value || '1', 10)));
+    const suffix = String(clipIndex).padStart(2, '0');
+    const filePath = `/frontend/assets/videos/sparring/${preset.filePrefix}${suffix}.mp4`;
+
+    document.getElementById('vid-title').value = `${preset.titlePrefix} ${suffix}`;
+    document.getElementById('vid-path').value = filePath;
+    document.getElementById('vid-type').value = preset.attack_type;
+    document.getElementById('vid-difficulty').value = preset.difficulty;
+    document.getElementById('vid-duration').value = String(preset.duration_sec);
+
+    const container = document.getElementById('timestamps-container');
+    container.innerHTML = '';
+    addTimestamp();
+    const row = container.querySelector('.ts-row');
+    if (row) {
+      row.querySelector('.ts-type').value = preset.attack_type;
+      applyDifficultyPreset(level);
+    }
+  }
+  function addTimestamp() {
+    const container = document.getElementById('timestamps-container');
+    const div = document.createElement('div');
+    div.className = 'ts-row';
+    div.innerHTML = `
+      <div class="ts-main">
+        <input type="number" class="input-field ts-impact" placeholder="impact_time (초)" step="0.1" style="font-size:13px;">
+        <input type="number" class="input-field ts-window" placeholder="dodge_window_ms" value="500" style="font-size:13px;">
+        <select class="select-field ts-type" style="font-size:13px;">
+          <option value="jab">Jab</option>
+          <option value="hook">훅</option>
+          <option value="straight">스트레이트</option>
+          <option value="uppercut">어퍼컷</option>
+        </select>
+        <input type="number" class="input-field ts-radius" placeholder="hitbox_radius" value="0.15" step="0.01" style="font-size:13px;">
+        <button class="ts-remove" onclick="removeTs(this)">삭제</button>
+      </div>
+      <div class="ts-advanced">
+        <select class="select-field ts-shape" style="font-size:13px;">
+          <option value="">판정 형태(자동)</option>
+          <option value="circle">원형</option>
+          <option value="ellipse">타원형</option>
+          <option value="lane">레인형</option>
+        </select>
+        <select class="select-field ts-zone" style="font-size:13px;">
+          <option value="">타깃 부위(선택)</option>
+          <option value="head">머리</option>
+          <option value="body">몸통</option>
+          <option value="left_head">왼쪽 머리</option>
+          <option value="right_head">오른쪽 머리</option>
+        </select>
+        <select class="select-field ts-move" style="font-size:13px;">
+          <option value="">필수 동작(자동)</option>
+          <option value="any">제한 없음</option>
+          <option value="slip_left">왼쪽으로 피하기</option>
+          <option value="slip_right">오른쪽으로 피하기</option>
+          <option value="slip_side">측면 회피</option>
+          <option value="duck">숙이기</option>
+          <option value="lean_back">뒤로 젖히기</option>
+        </select>
+        <input type="number" class="input-field ts-min" placeholder="최소 이동량" step="0.01" style="font-size:13px;">
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  function inferDefaultsForAttackType(attackType) {
+    switch ((attackType || '').toLowerCase()) {
+      case 'uppercut':
+        return { judge_shape: 'lane', required_move: 'duck', target_zone: 'head' };
+      case 'hook':
+        return { judge_shape: 'ellipse', required_move: 'slip_side', target_zone: 'head' };
+      case 'straight':
+        return { judge_shape: 'circle', required_move: 'lean_back', target_zone: 'head' };
+      case 'jab':
+      default:
+        return { judge_shape: 'circle', required_move: 'slip_side', target_zone: 'head' };
+    }
+  }
+
+  const ALLOWED_ATTACK_TYPES = new Set(['jab', 'hook', 'straight', 'uppercut', 'mixed']);
+  const ALLOWED_JUDGE_SHAPES = new Set(['circle', 'ellipse', 'lane']);
+  const ALLOWED_TARGET_ZONES = new Set(['head', 'body', 'left_head', 'right_head']);
+  const ALLOWED_REQUIRED_MOVES = new Set(['any', 'slip_left', 'slip_right', 'slip_side', 'duck', 'lean_back', 'step_out']);
+
+  function applyDifficultyPreset(level) {
+    const preset = {
+      beginner: { dodge_window_ms: 650, hitbox_radius: 0.22, min_displacement_ratio: 0.75 },
+      intermediate: { dodge_window_ms: 520, hitbox_radius: 0.16, min_displacement_ratio: 0.75 },
+      advanced: { dodge_window_ms: 430, hitbox_radius: 0.12, min_displacement_ratio: 0.8 },
+      pro: { dodge_window_ms: 360, hitbox_radius: 0.09, min_displacement_ratio: 0.85 }
+    }[level] || { dodge_window_ms: 520, hitbox_radius: 0.16, min_displacement_ratio: 0.75 };
+
+    const rows = document.querySelectorAll('#timestamps-container .ts-row');
+    rows.forEach(row => {
+      const attackType = row.querySelector('.ts-type')?.value || 'jab';
+      const inferred = inferDefaultsForAttackType(attackType);
+
+      const windowEl = row.querySelector('.ts-window');
+      const radiusEl = row.querySelector('.ts-radius');
+      const shapeEl = row.querySelector('.ts-shape');
+      const zoneEl = row.querySelector('.ts-zone');
+      const moveEl = row.querySelector('.ts-move');
+      const minEl = row.querySelector('.ts-min');
+
+      if (windowEl) windowEl.value = String(preset.dodge_window_ms);
+      if (radiusEl) radiusEl.value = String(preset.hitbox_radius);
+
+      if (shapeEl && !shapeEl.value) shapeEl.value = inferred.judge_shape;
+      if (zoneEl && !zoneEl.value) zoneEl.value = inferred.target_zone;
+      if (moveEl && !moveEl.value) moveEl.value = inferred.required_move;
+
+      const radius = Number(radiusEl?.value || preset.hitbox_radius);
+      if (minEl && !minEl.value) {
+        const v = Math.max(0.03, Math.round(radius * preset.min_displacement_ratio * 100) / 100);
+        minEl.value = String(v);
+      }
+    });
+
+    const levelLabel = { beginner: '초급', intermediate: '중급', advanced: '상급', pro: '프로' }[level] || level;
+    showToast(`${levelLabel} 프리셋이 적용되었습니다.`, 'success');
+  }
+
+  function validateTimestamp(ts, index) {
+    const idx = index + 1;
+    if (!(ts.impact_time > 0)) return `Row ${idx}: impact_time는 0보다 커야 합니다.`;
+    if (!(ts.dodge_window_ms >= 150 && ts.dodge_window_ms <= 4000)) return `Row ${idx}: dodge_window_ms 범위가 올바르지 않습니다.`;
+    if (!(ts.hitbox_radius > 0.03 && ts.hitbox_radius <= 0.6)) return `Row ${idx}: hitbox_radius 범위가 올바르지 않습니다.`;
+    if (ts.min_displacement != null && !(ts.min_displacement > 0 && ts.min_displacement <= 1.0)) return `Row ${idx}: min_displacement 범위가 올바르지 않습니다.`;
+    if (ts.attack_type && !ALLOWED_ATTACK_TYPES.has(String(ts.attack_type).toLowerCase())) return `Row ${idx}: attack_type 값이 올바르지 않습니다.`;
+    if (ts.judge_shape && !ALLOWED_JUDGE_SHAPES.has(String(ts.judge_shape).toLowerCase())) return `Row ${idx}: judge_shape 값이 올바르지 않습니다.`;
+    if (ts.target_zone && !ALLOWED_TARGET_ZONES.has(String(ts.target_zone).toLowerCase())) return `Row ${idx}: target_zone 값이 올바르지 않습니다.`;
+    if (ts.required_move && !ALLOWED_REQUIRED_MOVES.has(String(ts.required_move).toLowerCase())) return `Row ${idx}: required_move 값이 올바르지 않습니다.`;
+    return null;
+  }
+  function removeTs(btn) {
+    btn.closest('.ts-row').remove();
+  }
+  async function submitVideo() {
+    const title = document.getElementById('vid-title').value.trim();
+    if (!title) { showToast('제목을 입력해 주세요.', 'error'); return; }
+
+    const filePath = document.getElementById('vid-path').value.trim();
+    if (!filePath) { showToast('file_path를 입력해 주세요.', 'error'); return; }
+
+    const tsRows = document.querySelectorAll('#timestamps-container .ts-row');
+    const timestamps = Array.from(tsRows).map(row => {
+      const impact = row.querySelector('.ts-impact') || row.querySelectorAll('input')[0];
+      const windowMs = row.querySelector('.ts-window') || row.querySelectorAll('input')[1];
+      const typeSel = row.querySelector('.ts-type') || row.querySelector('select');
+      const radius = row.querySelector('.ts-radius');
+      const shape = row.querySelector('.ts-shape');
+      const zone = row.querySelector('.ts-zone');
+      const move = row.querySelector('.ts-move');
+      const minDisp = row.querySelector('.ts-min');
+
+      const inferred = inferDefaultsForAttackType(typeSel?.value);
+      return {
+        impact_time: parseFloat(impact?.value) || 0,
+        dodge_window_ms: parseInt(windowMs?.value, 10) || 500,
+        hitbox_radius: radius ? (parseFloat(radius.value) || 0.15) : 0.15,
+        attack_type: typeSel?.value,
+        judge_shape: (shape?.value || inferred.judge_shape || null) || null,
+        target_zone: (zone?.value || inferred.target_zone || null) || null,
+        required_move: (move?.value || inferred.required_move || null) || null,
+        min_displacement: minDisp?.value ? (parseFloat(minDisp.value) || null) : null
+      };
+    }).filter(t => t.impact_time > 0);
+
+    if (timestamps.length === 0) { showToast('impact_time이 0보다 큰 타임스탬프를 최소 1개 추가해 주세요.', 'error'); return; }
+
+    for (let i = 0; i < timestamps.length; i++) {
+      const err = validateTimestamp(timestamps[i], i);
+      if (err) { showToast(err, 'error'); return; }
+    }
+
+    const payload = {
+      title,
+      file_path: filePath,
+      attack_type: document.getElementById('vid-type').value,
+      difficulty: document.getElementById('vid-difficulty').value,
+      duration_sec: parseFloat(document.getElementById('vid-duration').value) || 5.0,
+      is_premium: false,
+      timestamps
+    };
+
+    try {
+      if (editingVideo?.id) {
+        await api.put(`/api/admin/videos/${editingVideo.id}`, payload);
+        showToast('영상이 수정되었습니다.', 'success');
+      } else {
+        await api.post('/api/admin/videos', payload);
+        showToast('영상이 추가되었습니다.', 'success');
+      }
+      hideVideoForm();
+      await loadVideos();
+    } catch (err) {
+      showToast('저장 실패: ' + err.message, 'error');
+    }
+  }
+
+  function editVideo(id) {
+    const video = allVideos.find(v => String(v.id) === String(id));
+    if (!video) {
+      showToast('편집할 영상을 찾지 못했습니다.', 'error');
+      return;
+    }
+    showVideoForm(video);
+    window.scrollTo({ top: document.getElementById('video-form-panel').offsetTop - 80, behavior: 'smooth' });
+  }
+
+  async function deleteVideo(id) {
+    if (!confirm(`영상 #${id}를 삭제하시겠습니까?`)) return;
+    try {
+      await api.delete(`/api/admin/videos/${id}`);
+      showToast('삭제되었습니다.', 'success');
+      await loadVideos();
+    } catch (err) {
+      showToast('삭제 실패: ' + err.message + ' (admin API 필요)', 'error');
+    }
+  }
+
+  // 사용자 모달
+  function openUserModal(userDataStr) {
+    let rowData;
+    try { rowData = typeof userDataStr === 'string' ? JSON.parse(userDataStr) : userDataStr; }
+    catch { return; }
+
+    editingUser = rowData;
+    document.getElementById('user-modal-info').textContent =
+      (rowData.username || ('#' + rowData.user_id)) + ' 사용자 티어 관리';
+    document.getElementById('user-modal').classList.add('open');
+  }
+
+  function closeUserModal() {
+    document.getElementById('user-modal').classList.remove('open');
+    editingUser = null;
+  }
+
+  function closeUserModalOnOverlay(e) {
+    if (e.target === document.getElementById('user-modal')) closeUserModal();
+  }
+
+  async function saveUserTier() {
+    if (!editingUser) return;
+    const tier = document.getElementById('user-modal-tier').value;
+    try {
+      await api.put(`/api/admin/users/${editingUser.user_id}/tier`, { tier });
+      showToast('티어가 변경되었습니다.', 'success');
+      closeUserModal();
+      await loadLeaderboard();
+    } catch (err) {
+      showToast('변경 실패: ' + err.message + ' (admin API 필요)', 'error');
+    }
+  }
+
+  // 관리자 시드 SQL 생성
+  function generateSeedSql() {
+    document.getElementById('seed-tutorial-sql').value = `-- 튜토리얼 시드 데이터
+USE boxer_db;
+
+INSERT INTO boxing_tutorials (title, description, target_pose_json, difficulty_level, is_premium, reward_exp, reward_coins, order_sequence) VALUES
+('기본 가드 자세', '초보자가 가장 먼저 익혀야 할 가드와 자세를 설명합니다.', '{"guard":{"min_elbow_angle":80},"stance":{"min_width_ratio":0.9},"balance":{"max_hip_offset":0.08}}', 1, FALSE, 100, 10, 1),
+('기본 스탠스', '발 간격과 체중 분배를 익히는 첫 단계입니다.', '{"stance":{"min_width_ratio":1.0},"weight_distribution":{"center_offset":0.06}}', 1, FALSE, 100, 10, 2),
+('잽 기본', '전진 잽 동작을 정확하게 익히는 튜토리얼입니다.', '{"jab_extension":{"min_arm_angle":140},"guard":{"right_hand_up":true}}', 1, FALSE, 120, 12, 3),
+('스트레이트', '강한 직선 공격과 기본 회전 감각을 익힙니다.', '{"cross_extension":{"min_arm_angle":150},"hip_rotation":{"min_angle":20}}', 2, FALSE, 150, 15, 4),
+('훅', '옆으로 휘는 공격과 상체 회전을 익힙니다.', '{"hook":{"elbow_angle_range":[80,110]},"body_rotation":{"min_angle":30}}', 2, FALSE, 150, 15, 5),
+('어퍼컷', '아래에서 위로 올리는 펀치와 하체 반응을 익힙니다.', '{"uppercut":{"arm_angle_range":[50,90]},"knee_bend":{"min_angle":15}}', 2, FALSE, 150, 15, 6),
+('스텝 이동', '발을 움직이며 거리와 리듬을 조절하는 기본 훈련입니다.', '{"balance":{"max_hip_offset":0.05},"stance":{"dynamic":true}}', 2, FALSE, 180, 18, 7),
+('풀 가드와 방어', '고급 방어 자세와 시선을 유지하는 실전형 튜토리얼입니다.', '{"full_guard":true,"chin_down":true,"shoulders_relaxed":true}', 3, TRUE, 200, 20, 8);`;
+
+        document.getElementById('seed-video-sql').value = `-- Sparring video seed data
+USE boxer_db;
+
+INSERT INTO attack_videos (title, file_path, attack_type, difficulty, duration_sec, is_premium) VALUES
+('Beginner Jab 01', '/frontend/assets/videos/sparring/sparring_beginner_jab_01.mp4', 'jab', 'beginner', 5.0, FALSE),
+('Beginner Jab 02', '/frontend/assets/videos/sparring/sparring_beginner_jab_02.mp4', 'jab', 'beginner', 5.2, FALSE),
+('Beginner Jab 03', '/frontend/assets/videos/sparring/sparring_beginner_jab_03.mp4', 'jab', 'beginner', 5.4, FALSE),
+('Intermediate Straight 01', '/frontend/assets/videos/sparring/sparring_intermediate_straight_01.mp4', 'straight', 'intermediate', 6.0, FALSE),
+('Intermediate Straight 02', '/frontend/assets/videos/sparring/sparring_intermediate_straight_02.mp4', 'straight', 'intermediate', 6.2, FALSE),
+('Intermediate Straight 03', '/frontend/assets/videos/sparring/sparring_intermediate_straight_03.mp4', 'straight', 'intermediate', 6.4, FALSE),
+('Advanced Hook 01', '/frontend/assets/videos/sparring/sparring_advanced_hook_01.mp4', 'hook', 'advanced', 6.6, TRUE),
+('Advanced Hook 02', '/frontend/assets/videos/sparring/sparring_advanced_hook_02.mp4', 'hook', 'advanced', 6.8, TRUE),
+('Advanced Hook 03', '/frontend/assets/videos/sparring/sparring_advanced_hook_03.mp4', 'hook', 'advanced', 7.0, TRUE),
+('Pro Mixed 01', '/frontend/assets/videos/sparring/sparring_pro_mixed_01.mp4', 'mixed', 'pro', 7.2, TRUE),
+('Pro Mixed 02', '/frontend/assets/videos/sparring/sparring_pro_mixed_02.mp4', 'mixed', 'pro', 7.5, TRUE),
+('Pro Mixed 03', '/frontend/assets/videos/sparring/sparring_pro_mixed_03.mp4', 'mixed', 'pro', 7.8, TRUE);`;
+
+    document.getElementById('seed-shop-sql').value = `-- 상점 시드 데이터
+USE boxer_db;
+
+INSERT INTO shop_items (name, description, item_type, price_coins, is_active) VALUES
+('프리미엄 구독', '프리미엄 전용 콘텐츠와 기능을 사용할 수 있습니다.', 'premium', 0, TRUE),
+('아웃핏 스킨', 'AI 코치용 신규 의상 스킨입니다.', 'skin', 500, TRUE),
+('네온 스킨', 'AI 코치용 네온 스타일 스킨입니다.', 'skin', 500, TRUE),
+('자세 분석 리포트', 'PDF 형식의 자세 분석 리포트를 제공합니다.', 'report', 300, TRUE),
+('스텝 마스터', '하체 이동과 리듬 훈련에 도움이 되는 콘텐츠입니다.', 'tutorial', 800, TRUE),
+('훅 타이밍 마스터', '훅 타이밍을 집중적으로 연습하는 콘텐츠입니다.', 'tutorial', 800, TRUE);`;
+
+    document.getElementById('admin-route-template').value = `# backend/app/routers/admin.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+from app.database import get_db
+from app.models.user import User
+from app.utils.dependencies import get_current_user
+
+router = APIRouter()
+
+def require_admin(current_user: User = Depends(get_current_user)):
+    # 간단한 관리자 체크: 실제 운영에서는 role 컬럼으로 확장하세요.
+    if current_user.id != 1 and current_user.username != "admin":
+        raise HTTPException(status_code=403, detail="관리자 권한이 필요합니다.")
+    return current_user
+
+@router.get("/users")
+async def list_all_users(db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    result = await db.execute(select(User))
+    users = result.scalars().all()
+    return {"success": True, "data": [{"id": u.id, "username": u.username, "email": u.email, "tier": u.tier, "coins": u.coins} for u in users]}
+
+@router.put("/users/{user_id}/tier")
+async def update_user_tier(user_id: int, body: dict, db: AsyncSession = Depends(get_db), admin = Depends(require_admin)):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    user.tier = body.get("tier", user.tier)
+    await db.commit()
+    return {"success": True, "message": "티어가 변경되었습니다."}
+
+# main.py에 추가:
+# from app.routers import admin
+# app.include_router(admin.router, prefix="/api/admin", tags=["admin"])`;
+  }
+
+  // SQL 복사
+  function copySeedSql(id) {
+    const el = document.getElementById(id);
+    el.select();
+    document.execCommand('copy');
+    showToast('클립보드에 복사되었습니다!', 'success');
+  }
+
+  // 관리자 화면 시작
+  initAdmin();
+</script>
+  <script src="js/ui/auto-scale.js"></script>
+</body>
+</html>
+
+

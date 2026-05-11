@@ -1,0 +1,146 @@
+# 🥊 AI 복싱 펀치 감지 앱 설치 및 활용 가이드
+
+이 문서는 Roboflow에서 직접 학습시킨 인공지능 모델을 나만의 복싱 앱(FastAPI + TF.js)에 연결하는 방법을 단계별로 안내합니다.
+
+---
+
+## 📁 1. 필수 파일 준비
+* **AI 모델 폴더**: 코랩에서 변환한 `best_web_model` 폴더 (안에 `model.json`과 `.bin` 파일들이 있어야 함).
+* **환경 설정**: Python 3.11 버전 이상과 MySQL(`boxer_db`)이 준비되어야 합니다.
+
+---
+
+## 🚀 2. 개발 및 적용 단계
+
+### 1단계: 모델 파일 배치하기
+AI의 두뇌 역할을 하는 모델 파일들을 웹 서버가 읽을 수 있는 곳에 둡니다.
+- 위치: `프로젝트_폴더/static/best_web_model/`
+
+### 2단계: 백엔드(FastAPI)와 DB 연결
+인공지능이 펀치를 인식하면 그 결과를 저장할 서버가 필요합니다.
+- `Alembic`을 사용해 데이터베이스에 운동 기록용 테이블을 만듭니다.
+- FastAPI의 `StaticFiles` 기능을 사용해 브라우저가 모델 파일을 내려받을 수 있게 설정합니다.
+
+### 3단계: 웹캠 연동 및 펀치 감지 (가장 중요!)
+사용자의 브라우저에서 실시간으로 웹캠을 켜고 AI를 작동시킵니다.
+- **튜토리얼**: 자세가 맞는지 AI가 실시간으로 피드백을 줍니다.
+- **스파링**: 정해진 시간 동안 펀치를 몇 번 날리는지 AI가 자동으로 카운트합니다.
+
+---
+
+## 🧠 3. 핵심 원리 (AI는 어떻게 펀치를 세나요?)
+
+1.  **프레임 분석**: 웹캠 영상이 초당 수십 장의 사진으로 AI에게 전달됩니다.
+2.  **동작 인식**: AI가 사진마다 "지금 이건 훅이다!"라고 판단합니다.
+3.  **상태 전이(State Transition)**:
+    - AI가 '대기' 상태였다가 '훅'을 발견하면 **카운트를 1 올립니다.**
+    - 펀치 동작이 유지되는 동안에는 중복으로 세지 않습니다.
+    - 다시 '대기' 상태로 돌아가야만 다음 펀치를 인식합니다.
+
+---
+
+## 🛠️ 4. 실행 및 테스트
+1.  **서버 실행**: `uvicorn main:app --reload` 명령어로 서버를 켭니다.
+2.  **접속**: 브라우저에서 `localhost:8000`에 접속합니다.
+3.  **훈련 시작**: 웹캠 허용을 누르고, 학습시킨 대로 펀치를 날려보세요!
+
+---
+**Tip**: 펀치 인식이 너무 예민하거나 둔하다면, 코드 내의 `confidence`(신뢰도) 수치를 조절(예: 0.7 ↔ 0.85)하여 최적의 감도를 찾을 수 있습니다.
+
+
+# 🥊 AI 복싱 & 물건 감지 앱 개발 통합 가이드
+
+이 문서는 로보플로우 데이터셋 준비부터 학습, 웹 모델 변환, 그리고 FastAPI 백엔드 연동까지의 전 과정을 담고 있습니다.
+
+---
+
+## 📑 목차
+1. [환경 설정 및 구글 드라이브 연동](#1-환경-설정-및-구글-드라이브-연동)
+2. [Roboflow 데이터셋 학습 (안전 루트)](#2-roboflow-데이터셋-학습-안전-루트)
+3. [학습 중단 시 복구 방법 (Resume)](#3-학습-중단-시-복구-방법-resume)
+4. [웹용 모델(TF.js) 변환 및 다운로드](#4-웹용-모델tfjs-변환-및-다운로드)
+5. [VS Code 프로젝트 배치 및 FastAPI 연동](#5-vs-code-프로젝트-배치-및-fastapi-연동)
+
+---
+
+## 1. 환경 설정 및 구글 드라이브 연동
+코랩 세션이 끊겨도 데이터가 사라지지 않도록 가장 먼저 수행해야 합니다.
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+!pip install ultralytics roboflow
+
+
+## Roboflow 데이터셋 학습 (안전 루트)- 구글 드라이브 내 특정 폴더에 학습 결과가 실시간 저장되도록 설정합니다.
+
+from roboflow import Roboflow
+from ultralytics import YOLO
+
+# 1. 데이터셋 로드
+rf = Roboflow(api_key="여기에_API키_입력")
+project = rf.workspace("s-workspace-ipg6l").project("room-df62t-minjy")
+dataset = project.version(1).download("yolov11")
+
+# 2. 학습 시작 (드라이브 저장 설정)
+model = YOLO('yolo11n.pt')
+model.train(
+    data=f"{dataset.location}/data.yaml",
+    epochs=50,
+    imgsz=640,
+    project="/content/drive/MyDrive/BoxingAI",
+    name="room_detection_run",
+    exist_ok=True
+)
+
+# 3. 학습 중단 시 복구 방법 (Resume)
+GPU 연결이 끊겼을 때 처음부터 다시 하지 않고 이어서 하는 방법입니다.
+
+**1번(드라이브 마운트)**과 2번(Roboflow 로드) 셀을 다시 실행합니다.
+
+아래 코드로 마지막 저장 지점(last.pt)부터 재개합니다.
+
+from ultralytics import YOLO
+model = YOLO('/content/drive/MyDrive/BoxingAI/room_detection_run/weights/last.pt')
+model.train(resume=True)
+
+# 4. 웹용 모델(TF.js) 변환 및 다운로드
+# 1. 변환 실행
+best_model = YOLO('/content/drive/MyDrive/BoxingAI/room_detection_run/weights/best.pt')
+best_model.export(format='tfjs')
+
+# 2. 압축 및 다운로드
+import shutil
+from google.colab import files
+target = '/content/drive/MyDrive/BoxingAI/room_detection_run/weights/best_web_model'
+shutil.make_archive('ai_model_final', 'zip', target)
+files.download('ai_model_final.zip')
+
+# 5. VS Code 프로젝트 배치 및 FastAPI 연동
+
+my_project/
+├── main.py (FastAPI 서버)
+├── static/
+│   └── best_web_model/  <-- 압축 푼 파일들 (model.json 등)
+└── templates/
+    └── index.html (프론트엔드)
+
+#  FastAPI 설정 (main.py)
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+app = FastAPI()
+# static 폴더를 외부에 공개하여 모델 파일을 읽을 수 있게 함
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# 프론트엔드 모델 로드 (JS)
+// index.html <head> 부분에 추가
+// <script src="[https://cdn.jsdelivr.net/npm/@tensorflow/tfjs](https://cdn.jsdelivr.net/npm/@tensorflow/tfjs)"></script>
+
+async function loadAI() {
+    // /static 경로를 통해 모델 로드
+    const model = await tf.loadGraphModel('/static/best_web_model/model.json');
+    console.log("AI Ready!");
+}

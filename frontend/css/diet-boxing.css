@@ -1,0 +1,874 @@
+/* diet-boxing.css — 다이어트 복싱 전용 화면 (global.css 변수 재사용) */
+
+.diet-page {
+  min-height: 100%;
+  padding: 112px 1.25rem 3rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* 한글 주석 정리됨 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 상단: 실험용 페이지 표시 → 나중에 메인과 합칠 때 제거 가능 */
+.diet-ribbon {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-bg-primary);
+  background: linear-gradient(90deg, var(--color-accent-green), #5ae88a);
+  box-shadow: 0 2px 12px rgba(48, 209, 88, 0.35);
+}
+
+.diet-hero {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.diet-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 2.8rem, 3.2rem);
+  letter-spacing: 3px;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #fff 0%, var(--color-accent-green) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.diet-hero p {
+  color: var(--color-text-secondary);
+  max-width: 36rem;
+  margin: 0 auto;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+/* 프로그램 선택 */
+.diet-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.diet-programs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.diet-program {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  text-align: left;
+}
+
+.diet-program:hover {
+  border-color: rgba(48, 209, 88, 0.45);
+  box-shadow: 0 0 24px rgba(48, 209, 88, 0.12);
+  transform: translateY(-2px);
+}
+
+.diet-program.is-selected {
+  border-color: var(--color-accent-green);
+  box-shadow: 0 0 28px rgba(48, 209, 88, 0.25);
+}
+
+.diet-program h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diet-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(48, 209, 88, 0.2);
+  color: var(--color-accent-green);
+}
+
+.diet-program p {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.diet-program-meta {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent-gold);
+}
+
+.diet-program-links {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.diet-program-links-label {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.diet-program-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.03);
+}
+
+.diet-program-link:hover {
+  border-color: rgba(48, 209, 88, 0.55);
+  color: var(--color-accent-green);
+}
+
+/* 운동 패널 */
+.diet-workout {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem 1.25rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.diet-workout-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.diet-phase {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-green);
+  margin-bottom: 0.25rem;
+}
+
+.diet-round-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.diet-stats-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.diet-stat {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.85rem;
+  min-width: 5.5rem;
+}
+
+.diet-stat span {
+  display: block;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.diet-stat strong {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  color: var(--color-text-primary);
+}
+
+/* 큰 타이머 링 */
+.diet-timer-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0 1.25rem;
+}
+
+.diet-timer-ring {
+  position: relative;
+  width: min(220px, 70%);
+  height: min(220px, 70%);
+}
+
+.diet-timer-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.diet-timer-ring-bg {
+  fill: none;
+  stroke: var(--color-bg-tertiary);
+  stroke-width: 8;
+}
+
+.diet-timer-ring-progress {
+  fill: none;
+  stroke: var(--color-accent-green);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.35s linear;
+  filter: drop-shadow(0 0 8px rgba(48, 209, 88, 0.5));
+}
+
+.diet-timer-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.diet-timer-center time {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 2.4rem, 2.75rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.diet-timer-center small {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.diet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.diet-btn-green {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-accent-green);
+  color: #041208;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 26px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 0 20px rgba(48, 209, 88, 0.35);
+}
+
+.diet-btn-green:hover:not(:disabled) {
+  transform: scale(1.03);
+}
+
+.diet-btn-green:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.diet-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 1rem;
+  line-height: 1.55;
+}
+
+.diet-footer-note {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  opacity: 0.85;
+}
+
+.diet-inline-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.diet-analyzer {
+  margin-bottom: 1.25rem;
+}
+
+.diet-source-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.diet-analyze-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.5rem;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.diet-analyze-options input[type='number'] {
+  width: 5.5rem;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.diet-analyze-options .btn-outline {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.diet-analyze-help {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.diet-ref-progress-track {
+  width: 100%;
+  max-width: 760px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-tertiary);
+  overflow: hidden;
+  margin-bottom: 0.8rem;
+}
+
+.diet-ref-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-green));
+  transition: width 0.2s linear;
+}
+
+.diet-ref-progress-fill.is-running {
+  background-image:
+    linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-green)),
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2) 0,
+      rgba(255, 255, 255, 0.2) 8px,
+      rgba(255, 255, 255, 0) 8px,
+      rgba(255, 255, 255, 0) 16px
+    );
+  background-size: 100% 100%, 32px 100%;
+  animation: diet-ref-progress-stripes 0.9s linear infinite;
+}
+
+.diet-ref-progress-fill.is-done {
+  background: linear-gradient(90deg, #26c463, #39e277);
+}
+
+.diet-ref-progress-fill.is-fail {
+  background: linear-gradient(90deg, #d53055, #ff4d6d);
+}
+
+.diet-ref-progress-fill.is-low {
+  background: linear-gradient(90deg, #c79c0a, #ffd60a);
+}
+
+@keyframes diet-ref-progress-stripes {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 0 0, 32px 0;
+  }
+}
+
+.diet-upload-label {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#diet-video-upload {
+  display: none;
+}
+
+.diet-analyzer-hint {
+  text-align: left;
+  margin-bottom: 0.8rem;
+}
+
+.diet-video-compare {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.diet-video-stack {
+  position: relative;
+  width: min(100%, 760px);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: #020309;
+  margin: 0 auto 1rem;
+}
+
+.diet-video-embed {
+  width: min(100%, 760px);
+  margin: 0 auto 1rem;
+}
+
+#diet-youtube-embed {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #000;
+}
+
+@media (min-width: 1080px) {
+  .diet-video-compare {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+  .diet-video-stack,
+  .diet-video-embed {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+#diet-source-video,
+#diet-overlay {
+  width: 100%;
+  height: 100%;
+  /* 한글 주석 정리됨 */
+  object-fit: contain;
+  object-position: center;
+  transform-origin: center center;
+}
+
+#diet-source-video {
+  display: block;
+}
+
+#diet-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 전면 웹캠: 거울처럼 보이게 하고, 비디오·스켈레톤을 같은 변환으로 맞춤 (selfieMode와 중복 반전 방지 위해 JS에서 selfieMode는 false) */
+.diet-video-stack.is-camera-mirror #diet-source-video,
+.diet-video-stack.is-camera-mirror #diet-overlay {
+  transform: scaleX(-1);
+}
+
+.diet-score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+.diet-score-card {
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-tertiary);
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--color-border);
+}
+
+.diet-score-card h3 {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.diet-score-card p {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+}
+
+.diet-score-card strong {
+  font-size: 1.4rem;
+  color: var(--color-accent-green);
+}
+
+.diet-feedback {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.diet-round-summary {
+  margin-top: 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.75rem 0.85rem;
+}
+
+.diet-round-summary h3 {
+  font-size: 12px;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.35rem;
+}
+
+.diet-round-summary p {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.diet-coach-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.diet-coach-controls select {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.diet-coach-controls input[type='text'] {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 12px;
+  min-width: 150px;
+}
+
+.diet-tts-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.diet-history-list {
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.diet-history-list li {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.diet-report-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.diet-report-badge.good {
+  background: rgba(48, 209, 88, 0.2);
+  color: #78f3a3;
+}
+
+.diet-report-badge.warn {
+  background: rgba(255, 214, 10, 0.2);
+  color: #ffe78a;
+}
+
+.diet-report-badge.bad {
+  background: rgba(255, 45, 85, 0.2);
+  color: #ff8ba2;
+}
+
+.diet-reference-status {
+  font-size: 12px;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.6rem;
+  line-height: 1.5;
+}
+
+#diet-similarity-summary strong {
+  color: var(--color-accent-green);
+  font-family: var(--font-mono);
+}
+
+#diet-segment-summary strong {
+  color: var(--color-accent-blue);
+  font-family: var(--font-mono);
+}
+
+.diet-similarity-graph-wrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #070811;
+  margin-bottom: 0.7rem;
+}
+
+#diet-similarity-graph {
+  display: block;
+  width: 100%;
+  height: 140px;
+}
+
+/* 점수 기준 튜닝 패널 */
+.diet-tuning {
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-primary);
+  padding: 0.75rem 1rem 1rem;
+}
+
+.diet-tuning-summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  list-style: none;
+}
+
+.diet-tuning-summary::-webkit-details-marker {
+  display: none;
+}
+
+.diet-tuning-summary::before {
+  content: '▸ ';
+  color: var(--color-accent-green);
+}
+
+.diet-tuning[open] .diet-tuning-summary::before {
+  content: '▾ ';
+}
+
+.diet-tuning-lead {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0.75rem 0 1rem;
+  line-height: 1.55;
+}
+
+.diet-tuning-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.diet-tuning-label-inline {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-right: 0.25rem;
+}
+
+.diet-preset-btn {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.diet-tuning-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.diet-tuning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.diet-tuning-group {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.85rem;
+  background: var(--color-bg-secondary);
+}
+
+.diet-tuning-group-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.65rem;
+}
+
+.diet-tuning-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(120px, 1.2fr) 3.2rem;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  font-size: 12px;
+}
+
+.diet-tuning-row:last-child {
+  margin-bottom: 0;
+}
+
+.diet-tuning-row label {
+  color: var(--color-text-secondary);
+  line-height: 1.35;
+}
+
+.diet-tuning-row input[type='range'] {
+  width: 100%;
+  accent-color: var(--color-accent-green);
+}
+
+.diet-tuning-row output {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-accent-green);
+  text-align: right;
+}
+
+@media (max-width: 520px) {
+  .diet-workout-header {
+    flex-direction: column;
+  }
+
+  .diet-tuning-row {
+    grid-template-columns: 1fr;
+  }
+
+  .diet-tuning-row output {
+    text-align: left;
+  }
+}
+
+/* Compatibility for alternate diet-boxing markup */
+.diet-splash {
+  display: none;
+}
+
+.diet-main {
+  min-height: 100%;
+  padding: 112px 1.25rem 3rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.diet-main--hidden {
+  display: block;
+}
+
+.diet-mode-gate {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.diet-mode-btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.diet-main-mode[hidden] {
+  display: none !important;
+}
+
+.diet-selection-panel {
+  margin-top: 0.75rem;
+}
+
+.diet-start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.diet-theater[hidden] {
+  display: none !important;
+}

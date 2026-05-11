@@ -1,0 +1,658 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER HOME TRAINING</title>
+    <!-- favicon: 파일 없어도 404 안 뜨도록 data URI로 빈 아이콘 지정 -->
+    <link rel="icon" href="data:,">
+    <!-- Google Fonts preconnect: global.css @import 로드 속도 개선 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <!-- 무엇: 히어로 대표 이미지 선로드 / 왜: LCP·표시 순서 개선 (드라이브는 crossorigin 없이만 안정적으로 로드됨) -->
+    <link rel="preload" as="image" href="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000" />
+  </head>
+
+  <body>
+
+    <!-- ══════════════════════════════════════════
+         내비게이션 (fixed)
+         Figma: x:1247 y:20  w:623 h:70  radius:100px
+    ══════════════════════════════════════════ -->
+    <nav class="hero-nav" aria-label="메인 내비게이션">
+      <a href="index.html" class="active">홈</a>
+      <a href="tutorial-new.html">트레이닝</a>
+      <a href="diet-boxing.html">다이어트 복싱</a>
+      <a href="sparring.html">스파링</a>
+      <a href="stretch.html">스트레칭</a>
+      <button id="navLoginBtn" type="button" class="drawer-auth-link">
+        <span id="userLabel">로그인</span>
+      </button>
+    </nav>
+
+
+    <!-- ══════════════════════════════════════════
+         섹션 1 — 히어로
+         Figma: 1920 × 1080 px
+         배경: 구글 드라이브 직통 이미지(본 페이지 img src와 동일 file id)
+
+         Left col  (42.71%): 로고·서브타이틀·가로선·버튼
+         Right col (57.29%): 배경도형·복서 이미지
+    ══════════════════════════════════════════ -->
+    <section class="s1">
+      <div class="s1-inner">
+
+        <!-- 좌측: 로고 + 텍스트 + 버튼 -->
+        <div class="s1-left">
+          <img crossorigin="anonymous" referrerpolicy="no-referrer" class="s1-logo"
+            src="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000"
+            alt="BOXER 로고"
+          />
+          <div class="s1-line" aria-hidden="true"></div>
+          <button
+            class="s1-btn"
+            type="button"
+            onclick="location.href='tutorial-new.html'"
+          >
+            복서 시작하기
+          </button>
+        </div>
+
+        <!-- 우측: 배경 도형 + 복서 이미지 (z-index 레이어) -->
+        <div class="s1-right">
+          <!-- 배경 도형: 피그마 그룹 x:657 y:-2.5 w:1242 h:1080 -->
+          <img crossorigin="anonymous" referrerpolicy="no-referrer" class="s1-shape"
+            src="https://lh3.googleusercontent.com/d/1CFTAkSBoHfnxLvybI0pQyUoYdgycocIi=w2000"
+            alt=""
+            aria-hidden="true"
+          />
+          <!-- 복서: 피그마 x:845 y:76 w:1173 h:1004 -->
+          <img crossorigin="anonymous" referrerpolicy="no-referrer" class="s1-boxer"
+            src="https://lh3.googleusercontent.com/d/1qbEsaRfOnN7EduZ3goZL2RAHXbN0igBt=w2000"
+            alt="메인 복서 캐릭터"
+          />
+        </div>
+
+      </div>
+      <!-- 하단 빨간 띠: y:1030 h:54 -->
+      <div class="s1-strip" aria-hidden="true"></div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════
+         섹션 2 — AI 복싱 플랫폼 (흰 배경)
+         Figma: y:1080  h:1094
+
+         Left col  (50.89%): 배경글자 이미지 + 복서 이미지 (z-index 겹침)
+         Right col (49.11%): 제목 + 본문
+    ══════════════════════════════════════════ -->
+    <section class="s2">
+      <div class="s2-inner">
+
+        <!-- 좌측: 빨간 원형 도형(뒤) + 복서 이미지(앞) -->
+        <div class="s2-left">
+          <div class="s2-circle" aria-hidden="true"></div>
+          <img crossorigin="anonymous" referrerpolicy="no-referrer" class="s2-boxer-img"
+            src="https://lh3.googleusercontent.com/d/1HVY1if5oj5NL8BNPkwVElC6A0V8llj4P=w2000"
+            alt="실시간 AI 자세 분석 복서"
+          />
+        </div>
+
+        <!-- 우측: 배경 글자(z:0) + 제목(z:1) + 본문(z:1) -->
+        <div class="s2-right">
+          <!-- 연한 회색 배경 글자: 우측 영역 배경으로 깔림 (z:0) -->
+          <img crossorigin="anonymous" referrerpolicy="no-referrer" class="s2-bg-text"
+            src="https://lh3.googleusercontent.com/d/1OsCn8YAAfVF5kdRT5HuLhEaRi6dAfR-p=w2000"
+            alt=""
+            aria-hidden="true"
+          />
+          <!-- Figma: x:1071 y:1255 w:710 h:160 → font 75px -->
+          <h2 class="s2-heading">
+            완벽한 AI 복싱 플랫폼<br />
+            집에서 쉽게 시작 하세요
+          </h2>
+          <!-- Figma: x:1071 y:1504 w:840 h:240 → font 34px -->
+          <div class="s2-body">
+            <p>웹캠 하나만 켜면 내 방이 실시간 AI 복싱 짐으로 변합니다.</p>
+            <p>화면 속 파란색 가이드에 몸을 맞추고 펀치를 뻗어보세요.</p>
+            <p>인공지능이 1초에 30번씩 관절의 움직임을 정밀하게</p>
+            <p>추적하여, 틀어진 가드와 타격 자세를 즉각적인</p>
+            <p>음성으로 바로잡아 줍니다.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════
+         섹션 3 — 다양한 모드
+         Figma: y:2174  h:1103
+         배경: 구글 드라이브 직통 이미지(본 페이지 img src와 동일 file id)
+
+         카드 배치 (1920 기준):
+         · left margin : 212px = 11.04vw
+         · card width  : 465.78px = 24.26vw
+         · card gap    : 50px    =  2.6vw
+         · 카드 순서: 트레이닝 / 다이어트복싱 / 스파링
+    ══════════════════════════════════════════ -->
+    <section class="s3">
+
+      <!-- 상단 빨간 띠: y:2174 h:54 -->
+      <div class="s3-strip" aria-hidden="true"></div>
+
+      <div class="s3-inner">
+
+        <!-- 타이틀: x:265 y:2265 w:1391 h:120 — KBL Jump EB ~100px -->
+        <h2 class="s3-title">다양한 모드를 즐겨 보세요</h2>
+
+        <!-- 카드 3열 -->
+        <div class="s3-cards">
+
+          <!-- 카드 1 — 트레이닝
+               Figma: x:212 y:2422.99 w:465.78 h:672.79
+               이미지: 구글 드라이브 직통(동일 file id)  w:398 h:498 -->
+          <div
+            class="s3-card"
+            onclick="location.href='tutorial-new.html'"
+            role="button"
+            tabindex="0"
+            aria-label="트레이닝 모드"
+          >
+            <div class="s3-card-inner">
+              <div class="s3-card-img">
+                <img crossorigin="anonymous" referrerpolicy="no-referrer" src="https://lh3.googleusercontent.com/d/1-im4x2fSa-ZPPT18CaF0E_atqIXVTosC=w2000" alt="트레이닝" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 카드 2 — 다이어트 복싱 -->
+          <div
+            class="s3-card"
+            onclick="location.href='diet-boxing.html'"
+            role="button"
+            tabindex="0"
+            aria-label="다이어트복싱 모드"
+          >
+            <div class="s3-card-inner">
+              <div class="s3-card-img">
+                <img crossorigin="anonymous" referrerpolicy="no-referrer" src="https://lh3.googleusercontent.com/d/1iESKt0gYpCTnbXXZB9RFx-AHI68X8kD1=w2000" alt="다이어트 복싱" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 카드 3 — 스파링 -->
+          <div
+            class="s3-card"
+            onclick="location.href='sparring.html'"
+            role="button"
+            tabindex="0"
+            aria-label="스파링 모드"
+          >
+            <div class="s3-card-inner">
+              <div class="s3-card-img">
+                <img crossorigin="anonymous" referrerpolicy="no-referrer" src="https://lh3.googleusercontent.com/d/1wNDyG62sB_0Z_oLJxI2Ha9I6YodkOenG=w2000" alt="스파링" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 하단 빨간 띠: y:3186 h:54 -->
+      <div class="s3-strip" aria-hidden="true"></div>
+
+    </section>
+
+
+    <!-- ══════════════════════════════════════════
+         Drawer
+    ══════════════════════════════════════════ -->
+    <div id="dimLayer" class="dim" aria-hidden="true"></div>
+    <aside id="drawer" class="drawer" aria-hidden="true">
+      <button id="closeDrawerBtn" class="drawer-close" aria-label="메뉴 닫기">&times;</button>
+      <div id="drawerInner" class="drawer-inner"></div>
+    </aside>
+
+
+    <!-- ══════════════════════════════════════════
+         로그인 / 회원가입 모달
+    ══════════════════════════════════════════ -->
+    <div id="authModal" class="auth-modal-overlay" onclick="closeAuthModalOnOverlay(event)">
+      <div class="auth-modal" role="dialog" aria-modal="true" aria-label="로그인 및 회원가입">
+        <div class="auth-brand">
+          <img crossorigin="anonymous" referrerpolicy="no-referrer" class="auth-brand__img" src="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000" alt="BOXER" />
+        </div>
+        <div class="auth-mode" role="tablist">
+          <button class="auth-mode__btn" type="button" role="tab" id="tabLogin"
+            aria-selected="true" onclick="switchAuthTab('login')">로그인</button>
+          <button class="auth-mode__btn" type="button" role="tab" id="tabSignup"
+            aria-selected="false" onclick="switchAuthTab('signup')">회원가입</button>
+        </div>
+
+        <!-- 로그인 패널 -->
+        <div class="auth-pane active" id="paneLogin">
+          <p class="auth-inset-title">아이디(이메일) 로그인</p>
+          <form onsubmit="handleLogin(event)">
+            <div class="auth-inset">
+              <div class="auth-inset__row">
+                <input id="loginEmail" class="naver-inp" type="email"
+                  inputmode="email" autocomplete="username" placeholder=" " required />
+                <label class="auth-float" for="loginEmail">아이디(이메일)</label>
+              </div>
+              <div class="auth-inset__row">
+                <input id="loginPassword" class="naver-inp" type="password"
+                  autocomplete="current-password" minlength="8" placeholder=" " required />
+                <label class="auth-float" for="loginPassword">비밀번호</label>
+              </div>
+            </div>
+            <div class="auth-extras">
+              <label class="auth-keep">
+                <input type="checkbox" id="authKeepLogin" name="keep" />로그인 상태 유지
+              </label>
+            </div>
+            <p id="loginError" class="auth-error"></p>
+            <button class="auth-btn-main" type="submit">로그인</button>
+          </form>
+          <div class="auth-foot">
+            <a href="#" onclick="return showAuthNotReady(event);">비밀번호 찾기</a>
+            <span class="auth-foot-sep">|</span>
+            <a href="#" onclick="return showAuthNotReady(event);">아이디 찾기</a>
+            <span class="auth-foot-sep">|</span>
+            <button type="button" class="auth-foot__btn" onclick="switchAuthTab('signup')">회원가입</button>
+          </div>
+        </div>
+
+        <!-- 회원가입 패널 -->
+        <div class="auth-pane" id="paneSignup">
+          <p class="auth-inset-title">새 계정으로 회원가입</p>
+          <form onsubmit="handleSignup(event)">
+            <div class="auth-inset">
+              <div class="auth-inset__row">
+                <input id="signupUsername" class="naver-inp" type="text"
+                  minlength="3" maxlength="20" autocomplete="nickname" placeholder=" " required />
+                <label class="auth-float" for="signupUsername">닉네임 (3~20자)</label>
+              </div>
+              <div class="auth-inset__row">
+                <input id="signupEmail" class="naver-inp" type="email"
+                  inputmode="email" autocomplete="email" placeholder=" " required />
+                <label class="auth-float" for="signupEmail">아이디(이메일)</label>
+              </div>
+              <div class="auth-inset__row">
+                <input id="signupPassword" class="naver-inp" type="password"
+                  minlength="8" autocomplete="new-password" placeholder=" " required />
+                <label class="auth-float" for="signupPassword">비밀번호 (8자 이상)</label>
+              </div>
+            </div>
+            <p id="signupError" class="auth-error"></p>
+            <button class="auth-btn-main" type="submit">회원가입</button>
+          </form>
+          <div class="auth-foot">
+            <a href="#" onclick="return showAuthNotReady(event);">비밀번호 찾기</a>
+            <span class="auth-foot-sep">|</span>
+            <a href="#" onclick="return showAuthNotReady(event);">아이디 찾기</a>
+            <span class="auth-foot-sep">|</span>
+            <button type="button" class="auth-foot__btn" onclick="switchAuthTab('login')">로그인</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         프로필 수정 모달
+    ══════════════════════════════════════════ -->
+    <div id="profileModal" class="profile-modal-overlay" onclick="closeProfileModalOnOverlay(event)">
+      <div class="profile-modal" role="dialog" aria-modal="true" aria-label="프로필 수정">
+        <h3 class="profile-title">프로필 수정</h3>
+        <img crossorigin="anonymous" referrerpolicy="no-referrer" id="profilePreview" class="profile-preview"
+          src="https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000" alt="프로필 미리보기" />
+        <form onsubmit="handleProfileSave(event)">
+          <div class="profile-grid">
+            <div class="auth-field">
+              <input id="profileName" class="auth-input" type="text" placeholder=" " />
+              <label class="auth-label" for="profileName">이름</label>
+            </div>
+            <div class="auth-field">
+              <input id="profilePhone" class="auth-input" type="tel" placeholder=" " />
+              <label class="auth-label" for="profilePhone">전화번호</label>
+            </div>
+            <div class="auth-field">
+              <input id="profileNickname" class="auth-input" type="text" placeholder=" " />
+              <label class="auth-label" for="profileNickname">닉네임</label>
+            </div>
+            <div class="auth-field">
+              <input id="profilePassword" class="auth-input" type="password" placeholder=" " />
+              <label class="auth-label" for="profilePassword">비밀번호</label>
+            </div>
+            <div class="auth-field">
+              <input id="profilePhoto" class="auth-input" type="file" accept="image/*" />
+            </div>
+          </div>
+          <p id="profileError" class="auth-error"></p>
+          <div class="profile-actions">
+            <button type="button" class="btn-secondary" onclick="closeProfileModal()">취소</button>
+            <button class="auth-submit" type="submit">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         Scripts
+    ══════════════════════════════════════════ -->
+    <script src="js/core/api.js?v=8000"></script>
+    <script src="js/core/auth.js?v=8000"></script>
+    <script>
+      /* 무엇: 프로필·UI 이미지 URL을 lh3 임베드로 통일 / 왜: drive uc→usercontent 리다이렉트는 CORP 등으로 로컬에서 img가 깨질 수 있음 */
+      (function () {
+        var DEFAULT_DRIVE =
+          "https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000";
+        function lh3FromId(id) {
+          if (!id) return DEFAULT_DRIVE;
+          return "https://lh3.googleusercontent.com/d/" + id + "=w2000";
+        }
+        function toDriveViewUrl(u) {
+          if (!u || typeof u !== "string") return DEFAULT_DRIVE;
+          if (u.indexOf("data:") === 0) return u;
+          var baseClean = u.split("#")[0].split("&_bxcb=")[0];
+          if (baseClean.indexOf("lh3.googleusercontent.com/d/") >= 0) return baseClean;
+          if (baseClean.indexOf("drive.google.com/uc") >= 0 && baseClean.indexOf("id=") >= 0) {
+            var idFromUc = baseClean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idFromUc) return lh3FromId(idFromUc[1]);
+          }
+          if (u.indexOf("drive.google.com") === -1) return u;
+          var id = null;
+          var m = u.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+          if (m) id = m[1];
+          if (!id) {
+            m = u.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m) id = m[1];
+          }
+          if (!id) return baseClean;
+          return lh3FromId(id);
+        }
+        function wireImgFallback(img) {
+          if (!img || img.tagName !== "IMG" || img.dataset.bxWired === "1") return;
+          var s = img.getAttribute("src") || "";
+          if (
+            s.indexOf("drive.google.com") === -1 &&
+            s.indexOf("lh3.googleusercontent.com") === -1 &&
+            s.indexOf("/file/d/") === -1
+          )
+            return;
+          img.dataset.bxWired = "1";
+          var fixed = toDriveViewUrl(s);
+          if (fixed !== s) img.setAttribute("src", fixed);
+          img.setAttribute("referrerpolicy", "no-referrer");
+          img.addEventListener("error", function onBxImgErr() {
+            if (img.dataset.bxImgErr === "1") {
+              img.removeAttribute("src");
+              img.classList.add("bx-img-fallback");
+              img.removeAttribute("alt");
+              img.removeEventListener("error", onBxImgErr);
+              return;
+            }
+            img.dataset.bxImgErr = "1";
+            if (img.hasAttribute("crossorigin")) img.removeAttribute("crossorigin");
+            var u = toDriveViewUrl(img.getAttribute("src") || "");
+            var base = u.split("&_bxcb=")[0].split("#")[0];
+            /* 무엇: lh3 URL은 쿼리 붙이면 404가 날 수 있어 해시로만 캐시 무력화 / 왜: 재시도 시에도 이미지가 뜨게 함 */
+            img.src = base + "#bxcb=" + Date.now();
+          });
+        }
+        function scan() {
+          document.querySelectorAll("img").forEach(wireImgFallback);
+        }
+        window.bxNormalizeDriveImageUrl = toDriveViewUrl;
+        window.bxWireDriveImageFallbacks = scan;
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", scan);
+        } else {
+          scan();
+        }
+      })();
+    </script>
+    <script>
+      let isLoggedIn = typeof auth !== "undefined" && typeof auth.isLoggedIn === "function"
+        ? auth.isLoggedIn() : false;
+      let isDrawerOpen = false;
+
+      const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+      const dimLayer       = document.getElementById("dimLayer");
+      const drawer         = document.getElementById("drawer");
+      const drawerInner    = document.getElementById("drawerInner");
+      const userLabel      = document.getElementById("userLabel");
+      const navLoginBtn    = document.getElementById("navLoginBtn");
+      const profilePhotoInput = document.getElementById("profilePhoto");
+      const profilePreview    = document.getElementById("profilePreview");
+
+      function beforeOverlay() {
+        return `<div style="position:relative;width:100%;height:100%;background:#fff;overflow:hidden;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:30px;position:relative;z-index:10;">
+            <img crossorigin="anonymous" referrerpolicy="no-referrer" src="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000" alt="BOXER" style="width:80px;height:80px;object-fit:contain;" />
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:15px;">
+              <div style="background:#F2F2F2;padding:10px 20px;border-radius:5px;font-size:16px;color:#666;font-weight:500;">로그인 후 이용 하실 수 있습니다.</div>
+              <div style="display:flex;gap:20px;">
+                <button type="button" onclick="openAuthModal('login')" style="border:none;background:transparent;font-size:20px;font-weight:800;color:#000;cursor:pointer;padding:0;">로그인</button>
+                <button type="button" onclick="openAuthModal('signup')" style="border:none;background:transparent;font-size:20px;font-weight:800;color:#000;cursor:pointer;padding:0;">회원가입</button>
+              </div>
+            </div>
+          </div>
+          <div style="padding:0 40px;margin-top:50px;position:relative;z-index:5;">
+            <h2 style="margin:0;font-size:72px;font-weight:900;line-height:1.1;letter-spacing:-3px;color:#000;"><span style="display:block;">집에서 쉽게</span><span style="display:block;">복싱을 즐기세요</span></h2>
+          </div>
+          <div style="position:absolute;bottom:0;left:0;width:100%;height:70%;z-index:1;pointer-events:none;">
+            <img crossorigin="anonymous" referrerpolicy="no-referrer" src="https://lh3.googleusercontent.com/d/19ZNW9ic3jcD0cefm9UWToxY_kyxJG8N0=w2000" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center top;" />
+          </div>
+          <button onclick="closeDrawer()" style="position:absolute;top:20px;right:20px;border:none;background:transparent;font-size:40px;font-weight:300;color:#000;cursor:pointer;z-index:100;">&times;</button>
+        </div>`;
+      }
+
+      function afterOverlay() {
+        const rawProfile =
+          localStorage.getItem("boxer_profile_image") ||
+          "https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000";
+        const profileImg =
+          typeof window.bxNormalizeDriveImageUrl === "function"
+            ? window.bxNormalizeDriveImageUrl(rawProfile)
+            : rawProfile;
+        const graphImg =
+          typeof window.bxNormalizeDriveImageUrl === "function"
+            ? window.bxNormalizeDriveImageUrl(
+                "https://lh3.googleusercontent.com/d/1E58-Ar9HJovqNrhjRTCRZ5bArTU8Q1Hg=w2000"
+              )
+            : "https://lh3.googleusercontent.com/d/1E58-Ar9HJovqNrhjRTCRZ5bArTU8Q1Hg=w2000";
+        const cachedUser = typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() : null;
+        const nickname   = cachedUser?.username || "User NickName님";
+        return `<section class="drawer-profile"><img referrerpolicy="no-referrer" src="${profileImg}" alt="프로필" /><div><p style="margin:0;font-size:25px;line-height:1.2;">${nickname}</p><p style="margin:18px 0 0;font-size:25px;line-height:1.2;">오늘도 트레이닝 해요!</p><div class="drawer-links" style="margin-top:16px;"><button type="button" class="drawer-action-btn" onclick="openProfileModal()">프로필 수정</button><button type="button" class="drawer-action-btn" onclick="performLogout()">로그아웃</button></div></div></section><section class="stat-box"><div class="stat-grid"><div class="stat-cell"><p class="stat-label">최고 점수</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">점</p></div></div><div class="stat-cell"><p class="stat-label">최고 콤보</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">콤보</p></div></div><div class="stat-cell"><p class="stat-label">회피율</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">%</p></div></div><div class="stat-cell"><p class="stat-label">총 운동 횟수</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">회</p></div></div></div></section><section class="graph-box"><h4>최근 회피율 그래프</h4><img referrerpolicy="no-referrer" src="${graphImg}" alt="회피율 그래프" /></section>`;
+      }
+
+      function getDisplayNickname() {
+        const cachedUser = typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() : null;
+        const rawName    = (cachedUser?.username || "").trim();
+        if (!rawName) return null;
+        return rawName.endsWith("님") ? rawName : `${rawName}님`;
+      }
+
+      function syncLoginState() {
+        const tokenBased = typeof auth !== "undefined" && typeof auth.isLoggedIn === "function"
+          ? auth.isLoggedIn() : false;
+        isLoggedIn = isLoggedIn || tokenBased;
+        return isLoggedIn;
+      }
+
+      function render() {
+        const loggedIn = syncLoginState();
+        const nickname = getDisplayNickname();
+        if (loggedIn) {
+          userLabel.textContent = nickname || "내 계정";
+          userLabel.style.color = "#ED1D32";
+        } else {
+          userLabel.textContent = "로그인";
+          userLabel.style.color = "";
+        }
+        drawerInner.innerHTML = loggedIn ? afterOverlay() : beforeOverlay();
+        if (typeof window.bxWireDriveImageFallbacks === "function") {
+          window.bxWireDriveImageFallbacks();
+        }
+      }
+
+      async function initAuthState() {
+        if (typeof auth === "undefined") { isLoggedIn = false; render(); return; }
+        if (typeof auth.handlePageLoadSessionCheck === "function" && !auth.handlePageLoadSessionCheck()) {
+          isLoggedIn = false; render(); return;
+        }
+        if (typeof auth.validateSession === "function") {
+          try { isLoggedIn = await auth.validateSession(); } catch { isLoggedIn = false; }
+        } else if (typeof auth.isLoggedIn === "function") {
+          isLoggedIn = auth.isLoggedIn();
+        } else {
+          isLoggedIn = false;
+        }
+        render();
+      }
+
+      function openDrawer()  {
+        if (isLoggedIn) {
+          window.location.href = "mypage.html";
+          return;
+        }
+        isDrawerOpen = true;
+        document.body.classList.add("drawer-open");
+        drawer.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() { isDrawerOpen = false; document.body.classList.remove("drawer-open"); drawer.setAttribute("aria-hidden", "true"); }
+
+      function openAuthModal(tab = "login") { document.getElementById("authModal").classList.add("open"); switchAuthTab(tab); }
+      function closeAuthModal()             { document.getElementById("authModal").classList.remove("open"); }
+      function closeAuthModalOnOverlay(e)   { if (e.target.id === "authModal") closeAuthModal(); }
+
+      function openProfileModal() {
+        const user = typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() : null;
+        const rawImg = localStorage.getItem("boxer_profile_image") || "https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000";
+        const img =
+          typeof window.bxNormalizeDriveImageUrl === "function"
+            ? window.bxNormalizeDriveImageUrl(rawImg)
+            : rawImg;
+        document.getElementById("profileName").value     = user?.name || "";
+        document.getElementById("profilePhone").value    = user?.phone || "";
+        document.getElementById("profileNickname").value = user?.username || "";
+        document.getElementById("profilePassword").value = "";
+        document.getElementById("profileError").style.display = "none";
+        profilePreview.src = img;
+        document.getElementById("profileModal").classList.add("open");
+      }
+      function closeProfileModal()           { document.getElementById("profileModal").classList.remove("open"); }
+      function closeProfileModalOnOverlay(e) { if (e.target.id === "profileModal") closeProfileModal(); }
+
+      async function handleProfileSave(e) {
+        e.preventDefault();
+        const err = document.getElementById("profileError"); err.style.display = "none";
+        try {
+          const cu = typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() || {} : {};
+          const mu = {
+            ...cu,
+            name:     document.getElementById("profileName").value.trim(),
+            phone:    document.getElementById("profilePhone").value.trim(),
+            username: document.getElementById("profileNickname").value.trim() || cu.username
+          };
+          localStorage.setItem("boxer_user", JSON.stringify(mu));
+          closeProfileModal(); render();
+        } catch (ex) {
+          err.textContent = ex.message || "프로필 저장에 실패했습니다.";
+          err.style.display = "block";
+        }
+      }
+
+      function performLogout() {
+        if (typeof auth !== "undefined" && typeof auth.logout === "function") {
+          auth.logout({ redirect: false }); isLoggedIn = false; closeDrawer(); render(); return;
+        }
+        ["boxer_token","boxer_user","boxer_logged_in","boxer_last_activity"].forEach(k => localStorage.removeItem(k));
+        isLoggedIn = false; closeDrawer(); render();
+      }
+
+      function switchAuthTab(tab) {
+        document.getElementById("tabLogin").setAttribute("aria-selected",  tab === "login"  ? "true" : "false");
+        document.getElementById("tabSignup").setAttribute("aria-selected", tab === "signup" ? "true" : "false");
+        document.getElementById("paneLogin").classList.toggle("active",  tab === "login");
+        document.getElementById("paneSignup").classList.toggle("active", tab === "signup");
+        const le = document.getElementById("loginError");
+        const se = document.getElementById("signupError");
+        if (le) le.style.display = "none";
+        if (se) se.style.display = "none";
+      }
+
+      function showAuthNotReady(e) { e.preventDefault(); alert("해당 기능은 준비 중입니다."); return false; }
+
+      async function handleLogin(e) {
+        e.preventDefault();
+        const err = document.getElementById("loginError"); err.style.display = "none";
+        if (typeof auth === "undefined") { err.textContent = "인증 모듈을 불러오지 못했습니다."; err.style.display = "block"; return; }
+        try {
+          let user = await auth.login(
+            document.getElementById("loginEmail").value.trim(),
+            document.getElementById("loginPassword").value
+          );
+          if (!user && typeof auth.fetchCurrentUser === "function") user = await auth.fetchCurrentUser();
+          isLoggedIn = !!((typeof auth.isLoggedIn === "function" && auth.isLoggedIn()) || user);
+          closeAuthModal(); closeDrawer(); render();
+        } catch (ex) { err.textContent = ex.message || "로그인에 실패했습니다."; err.style.display = "block"; }
+      }
+
+      async function handleSignup(e) {
+        e.preventDefault();
+        const err = document.getElementById("signupError"); err.style.display = "none";
+        if (typeof auth === "undefined") { err.textContent = "인증 모듈을 불러오지 못했습니다."; err.style.display = "block"; return; }
+        try {
+          const r = await auth.signup(
+            document.getElementById("signupUsername").value.trim(),
+            document.getElementById("signupEmail").value.trim(),
+            document.getElementById("signupPassword").value
+          );
+          isLoggedIn = !!((typeof auth.isLoggedIn === "function" && auth.isLoggedIn()) || r?.token || r?.access_token);
+          closeAuthModal(); closeDrawer(); render();
+        } catch (ex) { err.textContent = ex.message || "회원가입에 실패했습니다."; err.style.display = "block"; }
+      }
+
+      /* 카드 키보드 접근성 */
+      document.querySelectorAll('.s3-card').forEach(card => {
+        card.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+        });
+      });
+
+      navLoginBtn.addEventListener("click", () => {
+        if (isLoggedIn) {
+          window.location.href = "mypage.html";
+          return;
+        }
+        openAuthModal("login");
+      });
+
+      profilePhotoInput.addEventListener("change", e => {
+        const file = e.target.files?.[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const r = String(reader.result || "");
+          localStorage.setItem("boxer_profile_image", r);
+          profilePreview.src = r;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.addEventListener("keydown", e => { if (e.key === "Escape" && isDrawerOpen) closeDrawer(); });
+      window.addEventListener("storage", e => {
+        if (["boxer_logged_in","boxer_user","boxer_auth_event"].includes(e.key)) initAuthState();
+      });
+
+      initAuthState();
+    </script>
+
+  </body>
+</html>

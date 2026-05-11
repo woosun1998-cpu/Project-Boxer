@@ -1,0 +1,18 @@
+# 통합 7클래스 (학습은 프로젝트 루트에서: --data dataset/data.yaml)
+# 과거 학습 데이터 일괄 병합: python scripts/merge_past_datasets_into_unified.py --yes
+# Roboflow bottle 받은 뒤 병합: scripts/run_roboflow_bottle_then_merge.ps1 (키는 환경 변수)
+# book 만 넣기: python scripts/sync_unified_7class_dataset.py
+path: dataset
+nc: 7
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: chair
+  1: dining table
+  2: couch
+  3: bottle
+  4: cup
+  5: laptop
+  6: book

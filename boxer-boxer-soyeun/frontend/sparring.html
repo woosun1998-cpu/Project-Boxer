@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOXER - 스파링</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body { background: #000; overflow: hidden; height: 100vh; }
+
+    /* 전체 게임 레이아웃 */
+    #game-area {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 64px);
+      max-width: 1400px;
+      margin: 64px auto 0;
+    }
+
+    /* 상단 HUD */
+    .hud {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 12px 1.5rem;
+      background: rgba(10,10,15,0.9);
+      border-bottom: 1px solid var(--color-border);
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+    }
+
+    /* HP 바 */
+    .hp-section { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .hp-label { font-family: var(--font-display); font-size: 1rem; letter-spacing: 1px; color: var(--color-text-secondary); }
+    #hp-bar-wrap {
+      flex: 1;
+      height: 16px;
+      background: var(--color-bg-tertiary);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 200px;
+    }
+    #hp-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--color-accent-green);
+      border-radius: 8px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    #hp-num {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 28px;
+    }
+
+    /* 점수와 콤보 */
+    .hud-center { flex: 1; text-align: center; }
+    #score-display {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: var(--color-accent-gold);
+      line-height: 1;
+    }
+    #combo-display {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--color-accent-red);
+      letter-spacing: 2px;
+      height: 20px;
+    }
+
+    /* 메뉴 버튼 */
+    .hud-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .hud-btn {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      color: var(--color-text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .hud-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+
+    /* 메인 경기 영역 */
+    .game-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* AI 공격 영상 */
+    .game-video-wrap {
+      flex: 1;
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--color-border);
+    }
+    #attack-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .video-placeholder {
+      position: absolute; inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: var(--color-text-secondary);
+    }
+    .video-placeholder.hidden { display: none; }
+
+    /* AI 공격 오버레이 */
+    .attack-type-badge {
+      position: absolute;
+      top: 1rem; left: 1rem;
+      background: rgba(255,45,85,0.2);
+      border: 1px solid rgba(255,45,85,0.4);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: var(--color-accent-red);
+    }
+
+    /* 웹캠 영역 */
+    .game-webcam-wrap {
+      width: 380px;
+      position: relative;
+      background: #0A0A0F;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    #player-video, #player-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #player-canvas { pointer-events: none; }
+
+    .webcam-status {
+      position: absolute;
+      bottom: 8px; left: 8px;
+      background: rgba(0,0,0,0.7);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--color-accent-green);
+    }
+
+    /* 하단 상태 바 */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 1.5rem;
+      background: rgba(10,10,15,0.9);
+      border-top: 1px solid var(--color-border);
+      flex-shrink: 0;
+    }
+
+    /* 회피 경고 */
+    #dodge-alert {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 4px;
+      color: var(--color-accent-red);
+      text-shadow: var(--shadow-glow-red);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    #dodge-alert.show { opacity: 1; animation: pulseRed 0.5s ease infinite; }
+
+    .status-right { display: flex; gap: 2rem; align-items: center; }
+    .status-item { text-align: center; }
+    .status-num {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .status-label { font-size: 11px; color: var(--color-text-secondary); }
+
+    /* 히트박스 오버레이 (공격 영상 위) */
+    #hitbox-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      width: 100%; height: 100%;
+    }
+
+    /* 시작 화면 */
+    #start-screen {
+      position: fixed; inset: 0;
+      background: #050507;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .start-bg-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.34) saturate(1.08) contrast(1.05);
+      transform: scale(1.02);
+    }
+    .start-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top left, rgba(255, 95, 95, 0.14), transparent 24%),
+        radial-gradient(circle at 80% 20%, rgba(255, 196, 0, 0.06), transparent 22%),
+        linear-gradient(180deg, rgba(0,0,0,0.24), rgba(0,0,0,0.58));
+      pointer-events: none;
+    }
+    .start-hero {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100vw - 48px));
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 18px;
+      padding: 34px 0 20px;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      margin-bottom: 0;
+    }
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 28px rgba(255,95,95,0.22);
+      object-fit: contain;
+      padding: 4px;
+      backdrop-filter: blur(8px);
+    }
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+    .brand-kicker {
+      font-size: 11px;
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.34em;
+    }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 0.26em;
+      color: white;
+    }
+    .brand-tagline {
+      font-size: 12px;
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .hero-copy {
+      width: min(50%, 560px);
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .start-title {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.16em;
+      font-family: var(--font-display), "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 7.4vw, 6.8rem);
+      letter-spacing: 0.03em;
+      line-height: 0.92;
+      margin: 0;
+      width: fit-content;
+      color: #fff;
+      text-transform: uppercase;
+      text-shadow:
+        0 14px 34px rgba(0,0,0,0.38),
+        0 0 24px rgba(255,45,85,0.18);
+      font-feature-settings: "kern" 1, "liga" 1;
+    }
+    .start-subtitle {
+      color: rgba(255,255,255,0.78);
+      font-size: 0.98rem;
+      max-width: 560px;
+      text-align: left;
+      line-height: 1.65;
+      margin: 18px 0 0;
+      min-height: 118px;
+      letter-spacing: 0.02em;
+    }
+    .subtitle-line {
+      display: block;
+      min-height: 1.55em;
+    }
+    .start-title .title-word,
+    .start-title .wordmark-tm {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(22px);
+      animation: titleReveal 1.4s cubic-bezier(.2,.9,.2,1) forwards;
+    }
+    .start-title .title-word {
+      margin-right: 0;
+      display: inline-block;
+    }
+    .start-title .wordmark-main {
+      color: #ffffff;
+    }
+    .start-title .wordmark-in {
+      position: relative;
+      top: -0.08em;
+      font-size: 0.43em;
+      letter-spacing: 0.03em;
+      color: var(--color-accent-red);
+    }
+    .start-title .wordmark-motion {
+      color: #ffffff;
+    }
+    .start-title .wordmark-tm {
+      position: relative;
+      top: -0.68em;
+      align-self: flex-start;
+      margin-left: -0.1em;
+      font-size: 0.14em;
+      letter-spacing: 0;
+      color: var(--color-accent-red);
+      font-weight: 800;
+    }
+    .word-white { color: #ffffff; }
+    .word-red { color: var(--color-accent-red); }
+    .subtitle-white { color: rgba(255,255,255,0.94); }
+    .subtitle-red { color: var(--color-accent-red); }
+    .start-layout {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 26px;
+      margin-top: 10px;
+    }
+    .start-panel {
+      width: min(46%, 420px);
+      align-self: flex-end;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px 18px 16px;
+      border-radius: 20px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.18);
+    }
+    .video-select {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: white;
+      font-family: var(--font-body);
+      font-size: 15px;
+      width: 320px;
+      outline: none;
+    }
+    .video-select option { background: var(--color-bg-tertiary); }
+
+    .setup-shell {
+      width: 100%;
+      max-height: none;
+      overflow-y: auto;
+      padding: 0;
+      scrollbar-width: thin;
+    }
+    .battle-intro-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 180;
+      padding: 16px;
+    }
+    .battle-intro-modal.open { display: flex; }
+    .battle-intro-modal.open .battle-intro-card {
+      animation: battleIntroIn 0.28s ease both;
+    }
+    .battle-intro-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 6, 16, 0.78);
+      backdrop-filter: blur(18px);
+    }
+    .battle-intro-card {
+      position: relative;
+      z-index: 1;
+      width: min(920px, calc(100vw - 32px));
+      height: min(680px, calc(100vh - 32px));
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1px solid rgba(118, 218, 255, 0.16);
+      background:
+        radial-gradient(circle at top left, rgba(93, 211, 255, 0.20), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.06), transparent 24%),
+        linear-gradient(135deg, rgba(5, 10, 18, 0.98), rgba(12, 18, 32, 0.96));
+      box-shadow: 0 34px 90px rgba(0, 0, 0, 0.58);
+      display: flex;
+      flex-direction: row;
+    }
+    .battle-intro-visual {
+      position: relative;
+      flex: 0 0 40%;
+      min-width: 280px;
+      height: 100%;
+      background: #061019;
+    }
+    .battle-intro-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(5, 10, 18, 0.18), rgba(5, 10, 18, 0.72)),
+        radial-gradient(circle at 20% 18%, rgba(102, 220, 255, 0.20), transparent 26%),
+        radial-gradient(circle at 80% 24%, rgba(255, 255, 255, 0.10), transparent 18%);
+      pointer-events: none;
+    }
+    .battle-intro-player {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(1.05) saturate(1.08) brightness(0.82);
+      transform: scale(1.02);
+    }
+    .battle-intro-badge {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(9, 15, 26, 0.76);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      backdrop-filter: blur(14px);
+    }
+    .battle-intro-attack {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.48);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: #fff;
+      backdrop-filter: blur(14px);
+    }
+    .battle-intro-attack span {
+      display: block;
+    }
+    .battle-intro-attack .attack-label {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+    }
+    .battle-intro-attack .attack-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.72);
+      line-height: 1.45;
+    }
+    .battle-intro-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 22px 22px 18px;
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+    }
+    .battle-intro-kicker {
+      font-size: 11px;
+      letter-spacing: 0.30em;
+      color: rgba(255, 255, 255, 0.62);
+      text-transform: uppercase;
+    }
+    .battle-intro-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.2vw, 3.5rem);
+      line-height: 0.96;
+      letter-spacing: 0.02em;
+      color: white;
+    }
+    .battle-intro-desc {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+    .battle-intro-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .battle-intro-stat {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .battle-intro-stat span {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.56);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .battle-intro-stat strong {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: white;
+    }
+    .battle-intro-sequences {
+      display: none;
+    }
+    .battle-intro-choices {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .battle-intro-focus {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(112, 223, 255, 0.16);
+    }
+    .battle-intro-focus-label {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.56);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .battle-intro-focus-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: white;
+      margin-bottom: 6px;
+    }
+    .battle-intro-focus-desc {
+      font-size: 13px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.76);
+    }
+    .battle-intro-focus-file {
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(165, 231, 255, 0.82);
+      word-break: break-all;
+    }
+    .battle-intro-choice {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: white;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+    .battle-intro-choice:hover {
+      transform: translateY(-1px);
+      border-color: rgba(112, 223, 255, 0.35);
+      background: rgba(112, 223, 255, 0.08);
+    }
+    .battle-intro-choice.active {
+      border-color: rgba(112, 223, 255, 0.65);
+      background: linear-gradient(180deg, rgba(112, 223, 255, 0.18), rgba(255, 255, 255, 0.05));
+      box-shadow: 0 0 0 1px rgba(112, 223, 255, 0.14) inset;
+    }
+    .battle-intro-choice-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      letter-spacing: 0.06em;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .battle-intro-choice-file {
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.62);
+      word-break: break-all;
+      line-height: 1.45;
+    }
+    .battle-intro-sequence {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .battle-intro-step {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(112, 223, 255, 0.20), rgba(255, 255, 255, 0.04));
+      border: 1px solid rgba(112, 223, 255, 0.22);
+      color: white;
+      font-family: var(--font-display);
+      letter-spacing: 0.08em;
+    }
+    .battle-intro-sequence-title {
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      color: white;
+      margin-bottom: 4px;
+    }
+    .battle-intro-sequence-desc {
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .battle-intro-sequence-code {
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(165, 231, 255, 0.72);
+      letter-spacing: 0.04em;
+    }
+    .battle-intro-help {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.64);
+      line-height: 1.5;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .battle-intro-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 4px;
+      position: sticky;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(12, 18, 32, 0), rgba(12, 18, 32, 0.86) 18%, rgba(12, 18, 32, 0.98) 100%);
+      padding-bottom: 2px;
+    }
+    .battle-intro-actions .btn-primary,
+    .battle-intro-actions .btn-outline {
+      min-width: 180px;
+      justify-content: center;
+    }
+    .battle-intro-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 2;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(7, 12, 22, 0.72);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+    }
+    .battle-intro-close:hover {
+      background: rgba(18, 26, 42, 0.88);
+    }
+    .score-guide,
+    .battle-brief,
+    .demo-notice { display: none; }
+
+    @keyframes battleIntroIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* 웹캠 히트박스 힌트 */
+    .webcam-hitbox-hint {
+      position: absolute;
+      bottom: 44px; left: 0; right: 0;
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      pointer-events: none;
+      font-family: var(--font-mono);
+    }
+
+    @keyframes titleReveal {
+      0% { opacity: 0; transform: translateY(18px) scale(0.98); filter: blur(8px); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    @keyframes caretBlink {
+      0%, 45% { border-color: rgba(255,255,255,0.42); }
+      46%, 100% { border-color: transparent; }
+    }
+
+    /* KO 화면 */
+    #ko-screen {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      z-index: 200;
+      animation: fadeIn 0.5s ease;
+    }
+    .ko-title {
+      font-family: var(--font-display);
+      font-size: 6rem;
+      letter-spacing: 8px;
+      color: var(--color-accent-red);
+      text-shadow: var(--shadow-glow-red);
+    }
+    .result-cards {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .result-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      min-width: 120px;
+    }
+    .result-card-num {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      line-height: 1;
+    }
+    .result-card-label { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+    .ko-actions { display: flex; gap: 1rem; }
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      width: min(760px, 100%);
+      margin-top: 4px;
+    }
+    .level-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: white;
+      text-align: left;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+      cursor: pointer;
+    }
+    .level-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,92,92,0.32);
+      box-shadow: 0 12px 28px rgba(255,92,92,0.08);
+    }
+    .level-card.active {
+      border-color: rgba(255,92,92,0.75);
+      background: linear-gradient(135deg, rgba(255,92,92,0.18), rgba(255,255,255,0.05));
+      box-shadow: 0 14px 34px rgba(255,92,92,0.16);
+    }
+    .level-card small {
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+      font-size: 12px;
+    }
+    .setup-locked-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .setup-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: white;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    @media (max-width: 900px) {
+      .game-main { flex-direction: column; }
+      .game-webcam-wrap { width: 100%; height: 220px; }
+      .game-video-wrap { height: 50vw; }
+      .start-title { font-size: 3rem; }
+      .ko-title { font-size: 4rem; }
+      .level-grid { grid-template-columns: 1fr; }
+      .brand-title { font-size: 1.45rem; }
+      .start-hero { padding-top: 22px; }
+      .start-title { white-space: normal; }
+      .start-layout { flex-direction: column; }
+      .hero-copy,
+      .start-panel { width: 100%; }
+      .start-panel { align-self: stretch; }
+      .start-title { font-size: clamp(2.8rem, 11vw, 4.2rem); flex-wrap: wrap; row-gap: 0.04em; }
+      .battle-intro-card { flex-direction: column; height: min(88vh, 720px); }
+      .battle-intro-visual { flex: 0 0 auto; min-height: 240px; max-height: 280px; }
+      .battle-intro-choices { grid-template-columns: 1fr; }
+      .battle-intro-actions .btn-primary,
+      .battle-intro-actions .btn-outline { min-width: 0; flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 시작 화면 -->
+<div id="start-screen">
+  <video class="start-bg-video" autoplay muted loop playsinline>
+    <source src="/frontend/assets/videos/sparring-lobby-bg.mp4" type="video/mp4">
+  </video>
+  <div class="start-overlay"></div>
+  <div class="start-hero">
+    <div class="start-layout">
+      <div class="hero-copy">
+        <div class="brand-row" aria-hidden="true">
+          <img class="brand-mark" src="/frontend/assets/images/logo.png" alt="BOXER logo">
+          <div class="brand-copy">
+            <div class="brand-kicker">AI SPARRING ARENA</div>
+            <div class="brand-title">BOXER</div>
+            <div class="brand-tagline">Train smart. Move sharp.</div>
+          </div>
+        </div>
+        <div class="start-title" id="hero-title" aria-label="SOUL IN MOTION"></div>
+        <p class="start-subtitle" id="hero-subtitle"></p>
+      </div>
+
+      <div class="start-panel">
+        <div class="start-mini-copy">Choose your level</div>
+        <div class="level-grid" id="level-grid">
+          <button class="level-card active" type="button" data-level-choice="beginner">
+            <span style="font-family:var(--font-display);font-size:1.05rem;letter-spacing:1px;">초급</span>
+          </button>
+          <button class="level-card" type="button" data-level-choice="intermediate">
+            <span style="font-family:var(--font-display);font-size:1.05rem;letter-spacing:1px;">중급</span>
+          </button>
+          <button class="level-card" type="button" data-level-choice="advanced">
+            <span style="font-family:var(--font-display);font-size:1.05rem;letter-spacing:1px;">상급</span>
+          </button>
+          <button class="level-card" type="button" data-level-choice="pro">
+            <span style="font-family:var(--font-display);font-size:1.05rem;letter-spacing:1px;">프로급</span>
+          </button>
+        </div>
+
+        <div style="display:none;">
+          <select class="video-select" id="video-select">
+            <option value="">스파링 영상을 선택하세요...</option>
+          </select>
+          <select class="video-select" id="difficulty-select">
+            <option value="beginner">초급</option>
+            <option value="intermediate">중급</option>
+            <option value="advanced">상급</option>
+            <option value="pro">프로급</option>
+          </select>
+          <select class="video-select" id="attack-type-select">
+            <option value="jab">잽</option>
+            <option value="straight">스트레이트</option>
+            <option value="hook">훅</option>
+            <option value="uppercut">어퍼컷</option>
+            <option value="mixed">혼합</option>
+          </select>
+          <select class="video-select" id="round-length-select">
+            <option value="90" selected>90초</option>
+          </select>
+          <select class="video-select" id="mode-select">
+            <option value="training" selected>연습전</option>
+          </select>
+          <label style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);width:100%;">
+            <span style="text-align:left;">
+              <strong style="display:block;color:white;">Assist</strong>
+              <span style="font-size:12px;color:var(--color-text-secondary);">히트박스와 코치 피드백을 보여줍니다.</span>
+            </span>
+            <input type="checkbox" id="assist-toggle" checked>
+          </label>
+        </div>
+
+        <button class="btn-primary" style="font-size:18px;padding:16px 48px;letter-spacing:2px;" id="start-btn" onclick="startGame()">
+          FIGHT!
+        </button>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div id="battle-intro-modal" class="battle-intro-modal" aria-hidden="true">
+  <div class="battle-intro-backdrop" onclick="closeBattleIntro()"></div>
+  <div class="battle-intro-card" role="dialog" aria-modal="true" aria-labelledby="battle-intro-title">
+    <button class="battle-intro-close" type="button" aria-label="Close intro" onclick="closeBattleIntro()">×</button>
+    <div class="battle-intro-visual">
+      <img id="battle-intro-player-image" class="battle-intro-player" src="/frontend/assets/images/logo.png" alt="fighter preview">
+      <div class="battle-intro-badge" id="battle-intro-level-badge">LEVEL</div>
+      <div class="battle-intro-attack">
+        <div>
+          <span class="attack-label" id="battle-intro-attack-label">JAB</span>
+          <span class="attack-desc" id="battle-intro-attack-desc">READY</span>
+        </div>
+      </div>
+    </div>
+    <div class="battle-intro-copy">
+      <div class="battle-intro-kicker">Match Brief</div>
+      <h2 class="battle-intro-title" id="battle-intro-headline">Battle Brief</h2>
+      <p class="battle-intro-desc" id="battle-intro-description"></p>
+      <div class="battle-intro-stats">
+        <div class="battle-intro-stat">
+          <span>Difficulty</span>
+          <strong id="battle-intro-stat-difficulty">-</strong>
+        </div>
+        <div class="battle-intro-stat">
+          <span>Attack Type</span>
+          <strong id="battle-intro-stat-attack">-</strong>
+        </div>
+        <div class="battle-intro-stat">
+          <span>Round Length</span>
+          <strong id="battle-intro-stat-round">-</strong>
+        </div>
+        <div class="battle-intro-stat">
+          <span>Coach Tip</span>
+          <strong id="battle-intro-stat-tip">-</strong>
+        </div>
+      </div>
+      <div class="battle-intro-help">Press <strong>1</strong>, <strong>2</strong>, or <strong>3</strong> to choose the match clip before starting.</div>
+      <div class="battle-intro-choices" id="battle-intro-choices"></div>
+      <div class="battle-intro-focus" id="battle-intro-focus">
+        <div class="battle-intro-focus-label">Selected Drill</div>
+        <div class="battle-intro-focus-title" id="battle-intro-focus-title">-</div>
+        <div class="battle-intro-focus-desc" id="battle-intro-focus-desc">-</div>
+        <div class="battle-intro-focus-file" id="battle-intro-focus-file">-</div>
+      </div>
+      <div class="battle-intro-sequences" id="battle-intro-sequences"></div>
+      <div class="battle-intro-actions">
+        <button class="btn-outline" type="button" onclick="closeBattleIntro()">BACK</button>
+        <button class="btn-primary" type="button" onclick="confirmBattleIntroAndStart()">BEGIN MATCH</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="game-area">
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hp-section">
+      <span class="hp-label">HP</span>
+      <div id="hp-bar-wrap">
+        <div id="hp-bar"></div>
+      </div>
+      <span id="hp-num">100</span>
+    </div>
+
+    <div class="hud-center">
+      <div id="score-display">0</div>
+      <div id="combo-display"></div>
+    </div>
+
+    <div class="hud-right">
+      <button class="hud-btn" id="pause-btn" onclick="pauseGame()">일시정지</button>
+      <button class="hud-btn" onclick="quitGame()">종료</button>
+    </div>
+  </div>
+
+  <!-- 메인 경기 -->
+  <div class="game-main">
+
+    <!-- AI 공격 영상 -->
+    <div class="game-video-wrap">
+      <div class="video-placeholder" id="video-placeholder">
+        <div style="font-size:4rem;">🥊</div>
+        <div>공격 영상을 준비 중입니다...</div>
+      </div>
+      <video id="attack-video" loop></video>
+      <canvas id="hitbox-canvas"></canvas>
+      <div class="attack-type-badge" id="attack-type-badge" style="display:none;"></div>
+
+      <!-- 데모 모드 카운트다운 오버레이 -->
+      <div id="demo-overlay">
+        <div class="demo-countdown-ring">
+          <svg viewBox="0 0 100 100" width="100" height="100">
+            <circle cx="50" cy="50" r="45"/>
+            <circle cx="50" cy="50" r="45" class="progress" id="demo-ring-progress"/>
+          </svg>
+          <span class="demo-countdown-num" id="demo-countdown-num">3</span>
+        </div>
+        <div class="demo-attack-label" id="demo-attack-label">INCOMING!</div>
+      </div>
+    </div>
+
+    <!-- 웹캠 영역 -->
+    <div class="game-webcam-wrap">
+      <video id="player-video" autoplay playsinline muted></video>
+      <canvas id="player-canvas"></canvas>
+      <div class="webcam-status" id="webcam-status">웹캠 준비 중...</div>
+      <div class="webcam-hitbox-hint" id="hitbox-hint" style="display:none;">
+        바깥으로 빠져나가면 회피 성공
+      </div>
+    </div>
+  </div>
+
+  <!-- 상태 바 -->
+  <div class="status-bar">
+    <div id="dodge-alert">DODGE NOW!</div>
+
+    <div class="status-right">
+      <div class="status-item">
+        <div class="status-num" id="react-ms" style="color:var(--color-accent-blue);">--</div>
+        <div class="status-label">반응속도 (ms)</div>
+      </div>
+      <div class="status-item">
+        <div class="status-num" id="last-earned" style="color:var(--color-accent-gold);">0</div>
+        <div class="status-label">획득 점수</div>
+      </div>
+      <div class="status-item">
+        <div class="status-num" id="last-direction" style="color:var(--color-accent-green);">-</div>
+        <div class="status-label">회피 방향</div>
+      </div>
+      <div class="status-item">
+        <div class="status-num" id="round-stat" style="color:var(--color-accent-green);">0/0</div>
+        <div class="status-label">회피/총 공격</div>
+      </div>
+      <div class="status-item">
+        <div class="status-num" id="round-rate" style="color:var(--color-accent-gold);">--</div>
+        <div class="status-label">라운드 회피율</div>
+      </div>
+      <div class="status-item">
+        <div class="status-num" id="last-outcome" style="color:var(--color-accent-red);">-</div>
+        <div class="status-label">판정 결과</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KO 화면 -->
+<div id="ko-screen">
+  <div class="ko-title">K.O.</div>
+
+  <div class="result-cards">
+    <div class="result-card">
+      <div class="result-card-num" id="final-score" style="color:var(--color-accent-gold);">0</div>
+      <div class="result-card-label">최종 점수</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-num" id="final-combo" style="color:var(--color-accent-red);">0</div>
+      <div class="result-card-label">최고 콤보</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-num" id="final-accuracy" style="color:var(--color-accent-green);">0%</div>
+      <div class="result-card-label">회피율</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-num" id="final-dodges" style="color:var(--color-accent-blue);">0</div>
+      <div class="result-card-label">총 회피</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-num" id="final-hits" style="color:var(--color-text-secondary);">0</div>
+      <div class="result-card-label">총 피격</div>
+    </div>
+  </div>
+
+  <div class="ko-actions">
+    <button class="btn-primary" onclick="restartGame()">다시 시작</button>
+    <a class="btn-outline" href="/frontend/dashboard.html">대시보드</a>
+    <a class="btn-outline" href="/frontend/shop.html" style="color:var(--color-accent-gold);border-color:rgba(255,214,10,0.3);">상점</a>
+  </div>
+</div>
+
+<!-- MediaPipe CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+<script src="js/core/api.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/ui/navbar.js"></script>
+<script src="js/engine/HitboxJudge.js"></script>
+<script src="js/engine/VideoPlayer.js"></script>
+<script src="js/engine/PoseTracker.js"></script>
+<script src="js/engine/GameEngine.js"></script>
+<script>
+  auth.requireAuthAsync().then(user => { if (!user) return; });
+  if (!auth.requireAuth()) throw new Error('redirect');
+
+  // 경기 상태 변수
+  let game         = null;  // BoxingGame 인스턴스
+  let poseTracker  = null;  // PoseTracker 인스턴스
+  let videoPlayer  = null;  // BoxingVideoPlayer 인스턴스
+  let hitboxJudge  = null;  // HitboxJudge 인스턴스
+  let videos       = [];    // 영상 목록
+  let currentVideo = null;  // 현재 선택한 영상
+  let currentSessionId = null;
+  let isPaused     = false;
+  let judgeStartTime = null; // 회피 판정 시작 시각
+  let pendingJudge   = null; // 대기 중인 판정 정보
+  let lastPoseSaveTime = 0;          // 자세 교정 마지막 저장 시각
+  const POSE_SAVE_INTERVAL = 5000;   // 5초에 한 번만 저장
+  let currentDifficultyKey = 'beginner';
+  let currentDifficultyConfig = null;
+  let currentRoundLength = 90;
+  let currentMatchMode = 'training';
+  let currentAssistEnabled = true;
+  let currentAttackFilter = 'jab';
+  let currentBattleClipIndex = 1;
+  let currentBattleClipPath = '';
+
+  const LEGACY_DIFFICULTY_MAP = {
+    easy: 'beginner',
+    medium: 'intermediate',
+    hard: 'advanced'
+  };
+
+  const DIFFICULTY_MAP = {
+    beginner: {
+      label: '초급',
+      hpLoss: 5,
+      hitboxRadius: 0.22,
+      baseScore: 90,
+      comboBonus: 0.08,
+      dodgeWindowScale: 1.15,
+      windowLabel: '넓음',
+      playStyle: '큰 움직임으로 타이밍을 익히는 단계',
+      coachTip: '크게 움직이며 경고 리듬을 먼저 익혀보세요.'
+    },
+    intermediate: {
+      label: '중급',
+      hpLoss: 10,
+      hitboxRadius: 0.16,
+      baseScore: 110,
+      comboBonus: 0.12,
+      dodgeWindowScale: 1.0,
+      windowLabel: '보통',
+      playStyle: '반응과 콤보 흐름을 동시에 다듬는 단계',
+      coachTip: '빠르게 반응하고 다음 회피를 미리 준비하세요.'
+    },
+    advanced: {
+      label: '상급',
+      hpLoss: 16,
+      hitboxRadius: 0.12,
+      baseScore: 135,
+      comboBonus: 0.16,
+      dodgeWindowScale: 0.9,
+      windowLabel: '좁음',
+      playStyle: '짧고 정확한 회피가 중요한 단계',
+      coachTip: '동작은 짧게, 반응은 더 깔끔하게 가져가세요.'
+    },
+    pro: {
+      label: '프로',
+      hpLoss: 24,
+      hitboxRadius: 0.09,
+      baseScore: 160,
+      comboBonus: 0.2,
+      dodgeWindowScale: 0.78,
+      windowLabel: '매우 좁음',
+      playStyle: '실전 압박에 가까운 최고 난이도',
+      coachTip: '동작은 컴팩트하게, 반응은 즉시, 복귀는 빠르게.'
+    }
+  };
+
+  const LEVEL_PRESET_MAP = {
+    beginner: {
+      difficulty: 'beginner',
+      attackType: 'jab',
+      roundLength: 90,
+      mode: 'training',
+      assist: true,
+      badge: '초급 상대',
+      brief: '기초 잽과 큰 리듬으로 시작합니다.',
+      coachLead: '가볍게 들어오고, 넓게 피하고, 자세를 먼저 익히세요.'
+    },
+    intermediate: {
+      difficulty: 'intermediate',
+      attackType: 'straight',
+      roundLength: 90,
+      mode: 'training',
+      assist: true,
+      badge: '중급 상대',
+      brief: '직선 압박과 반응 타이밍을 다듬습니다.',
+      coachLead: '한 박자 빠르게 보고, 미리 움직일 준비를 하세요.'
+    },
+    advanced: {
+      difficulty: 'advanced',
+      attackType: 'hook',
+      roundLength: 90,
+      mode: 'training',
+      assist: true,
+      badge: '상급 상대',
+      brief: '훅과 짧은 리듬으로 정확한 회피를 요구합니다.',
+      coachLead: '움직임은 짧게, 회피 방향은 더 정확하게.'
+    },
+    pro: {
+      difficulty: 'pro',
+      attackType: 'mixed',
+      roundLength: 90,
+      mode: 'training',
+      assist: true,
+      badge: '프로급 상대',
+      brief: '실전 압박에 가까운 혼합 패턴이 등장합니다.',
+      coachLead: '페이크에 흔들리지 말고, 반응 후 복귀까지 빠르게.'
+    }
+  };
+
+  const LEVEL_INTRO_DATA = {
+    beginner: {
+      label: 'Beginner',
+      displayLabel: '초급',
+      title: 'Jab Rhythm Boot Camp',
+      attackLabel: 'JAB',
+      attackDesc: '거리와 리듬을 익히는 기본 잽 스테이지',
+      playerImage: '/frontend/assets/images/player/beginner.png',
+      videoFolder: '/frontend/assets/videos/sparring',
+      description: '초급 스테이지는 가드 유지, 짧은 거리, 빠른 복귀를 익히는 입문형 구성이다. 잽으로 타이밍을 읽고, 맞춘 뒤 다시 중심으로 돌아오는 습관을 만든다.',
+      focus: '기본기 · 거리감 · 타이밍',
+      clips: [
+        { index: '01', title: 'Entry Jab', desc: '앞손을 가볍게 뻗어 타이밍을 확인하는 첫 번째 루틴.', file: 'sparring_beginner_jab_01.mp4' },
+        { index: '02', title: 'Rhythm Jab', desc: '짧은 템포로 잽을 이어가며 리듬과 반응 속도를 익힌다.', file: 'sparring_beginner_jab_02.mp4' },
+        { index: '03', title: 'Reset Jab', desc: '공격 후 바로 가드 복귀와 스텝 재정렬을 연습한다.', file: 'sparring_beginner_jab_03.mp4' }
+      ]
+    },
+    intermediate: {
+      label: 'Intermediate',
+      displayLabel: '중급',
+      title: 'Straight Pressure Drill',
+      attackLabel: 'STRAIGHT',
+      attackDesc: '직선 압박과 정확도를 끌어올리는 스테이지',
+      playerImage: '/frontend/assets/images/player/intermediate.png',
+      videoFolder: '/frontend/assets/videos/sparring',
+      description: '중급 스테이지는 직선 스트레이트를 중심으로 반응 속도와 정확도를 끌어올리는 구성이다. 상대의 움직임을 읽고 바로 전진하거나 빠르게 빠져나오는 감각을 키운다.',
+      focus: '직선 반응 · 압박 · 정확도',
+      clips: [
+        { index: '01', title: 'Line Control', desc: '직선 공격으로 중심선을 장악하는 기본 루틴.', file: 'sparring_intermediate_straight_01.mp4' },
+        { index: '02', title: 'Counter Straight', desc: '상대 리듬에 맞춰 카운터 타이밍을 잡는 변형 루틴.', file: 'sparring_intermediate_straight_02.mp4' },
+        { index: '03', title: 'Pressure Finish', desc: '연속 직선 압박으로 라운드 후반 체력을 몰아붙인다.', file: 'sparring_intermediate_straight_03.mp4' }
+      ]
+    },
+    advanced: {
+      label: 'Advanced',
+      displayLabel: '상급',
+      title: 'Hook Angle Hunt',
+      attackLabel: 'HOOK',
+      attackDesc: '각도와 타이밍을 깊게 파고드는 스테이지',
+      playerImage: '/frontend/assets/images/player/advanced.png',
+      videoFolder: '/frontend/assets/videos/sparring',
+      description: '상급 스테이지는 훅을 중심으로 각도, 거리, 타이밍을 정교하게 다루는 구성이다. 몸통과 머리를 번갈아 노리며 회피와 반격을 동시에 읽어낸다.',
+      focus: '각도 · 회피 · 카운터',
+      clips: [
+        { index: '01', title: 'Inside Hook', desc: '가까운 거리에서 훅을 걸어 안쪽 라인을 파고든다.', file: 'sparring_advanced_hook_01.mp4' },
+        { index: '02', title: 'Duck and Hook', desc: '회피 후 훅으로 바로 연결하는 콤비네이션 루틴.', file: 'sparring_advanced_hook_02.mp4' },
+        { index: '03', title: 'Angle Finish', desc: '측면 각도를 잡고 마무리 훅으로 압박을 완성한다.', file: 'sparring_advanced_hook_03.mp4' }
+      ]
+    },
+    pro: {
+      label: 'Pro',
+      displayLabel: '프로',
+      title: 'Mixed Combo Arena',
+      attackLabel: 'MIXED',
+      attackDesc: '복합 콤보와 상황 대응을 묶는 최상위 스테이지',
+      playerImage: '/frontend/assets/images/player/pro.png',
+      videoFolder: '/frontend/assets/videos/sparring',
+      description: '프로 스테이지는 잽, 스트레이트, 훅을 섞어 읽기 어려운 압박을 만드는 최상위 구성이다. 스텝, 가드, 페인트를 모두 섞어 완성형 대응을 시험한다.',
+      focus: '콤보 · 페인트 · 완성형 대응',
+      clips: [
+        { index: '01', title: 'Pressure Mix', desc: '기본 압박과 페인트를 섞어 반응을 흔드는 루틴.', file: 'sparring_pro_mixed_01.mp4' },
+        { index: '02', title: 'Combo Chain', desc: '잽, 스트레이트, 훅을 연쇄로 연결하는 복합 루틴.', file: 'sparring_pro_mixed_02.mp4' },
+        { index: '03', title: 'Final Burst', desc: '상황별 대응과 마무리 타격을 결합한 최종 루틴.', file: 'sparring_pro_mixed_03.mp4' }
+      ]
+    }
+  };
+
+  function normalizeDifficultyKey(diffKey) {
+    return DIFFICULTY_MAP[diffKey] ? diffKey : (LEGACY_DIFFICULTY_MAP[diffKey] || 'intermediate');
+  }
+
+  function getDifficultyConfig(diffKey) {
+    const normalized = normalizeDifficultyKey(diffKey);
+    return DIFFICULTY_MAP[normalized] || DIFFICULTY_MAP.intermediate;
+  }
+
+  function getLevelPreset(levelKey) {
+    const normalized = normalizeDifficultyKey(levelKey);
+    return LEVEL_PRESET_MAP[normalized] || LEVEL_PRESET_MAP.beginner;
+  }
+
+  function getLevelIntroData(levelKey) {
+    const normalized = normalizeDifficultyKey(levelKey);
+    return LEVEL_INTRO_DATA[normalized] || LEVEL_INTRO_DATA.beginner;
+  }
+
+  function getBattleClipPath(levelKey, index) {
+    const intro = getLevelIntroData(levelKey);
+    const clipIdx = Math.max(1, Math.min(intro.clips.length || 3, parseInt(index, 10) || 1));
+    const clip = intro.clips[clipIdx - 1];
+    return clip ? `${intro.videoFolder || '/frontend/assets/videos/sparring'}/${clip.file}` : '';
+  }
+
+  function updateBattleIntroFocus(levelKey, index) {
+    const intro = getLevelIntroData(levelKey);
+    const clipIdx = Math.max(1, Math.min(intro.clips.length || 3, parseInt(index, 10) || 1));
+    const clip = intro.clips[clipIdx - 1];
+    const filePath = getBattleClipPath(levelKey, clipIdx);
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+    setText('battle-intro-focus-title', clip ? `${clip.index}. ${clip.title}` : '-');
+    setText('battle-intro-focus-desc', clip ? clip.desc : '-');
+    setText('battle-intro-focus-file', filePath || '-');
+  }
+
+  function applyLevelSelection(levelKey) {
+    const normalized = normalizeDifficultyKey(levelKey);
+    const preset = getLevelPreset(normalized);
+
+    currentDifficultyKey = normalized;
+    currentDifficultyConfig = getDifficultyConfig(normalized);
+    currentRoundLength = preset.roundLength;
+    currentMatchMode = preset.mode;
+    currentAssistEnabled = preset.assist;
+    currentAttackFilter = preset.attackType;
+    currentBattleClipIndex = 1;
+    currentBattleClipPath = getBattleClipPath(normalized, 1);
+    updateBattleIntroFocus(normalized, 1);
+
+    const hiddenDifficulty = document.getElementById('difficulty-select');
+    const hiddenAttack = document.getElementById('attack-type-select');
+    const hiddenRound = document.getElementById('round-length-select');
+    const hiddenMode = document.getElementById('mode-select');
+    const hiddenAssist = document.getElementById('assist-toggle');
+    if (hiddenDifficulty) hiddenDifficulty.value = normalized;
+    if (hiddenAttack) hiddenAttack.value = preset.attackType;
+    if (hiddenRound) hiddenRound.value = String(preset.roundLength);
+    if (hiddenMode) hiddenMode.value = preset.mode;
+    if (hiddenAssist) {
+      hiddenAssist.checked = true;
+      hiddenAssist.disabled = true;
+    }
+
+    document.querySelectorAll('[data-level-choice]').forEach(btn => {
+      const active = btn?.dataset?.levelChoice === normalized;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    const badge = document.getElementById('current-level-badge');
+    if (badge) badge.textContent = preset.badge;
+
+    syncDifficultyPreview();
+    loadVideos();
+    renderBattleIntro(normalized);
+    return preset;
+  }
+
+  function renderBattleIntro(levelKey = currentDifficultyKey) {
+    const intro = getLevelIntroData(levelKey);
+    const preset = getLevelPreset(levelKey);
+    const config = getDifficultyConfig(levelKey);
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+
+    const imageEl = document.getElementById('battle-intro-player-image');
+    if (imageEl) {
+      imageEl.onerror = null;
+      imageEl.src = intro.playerImage;
+      imageEl.alt = `${intro.displayLabel} fighter portrait`;
+      imageEl.onerror = () => {
+        imageEl.onerror = null;
+        imageEl.src = '/frontend/assets/images/logo.png';
+      };
+    }
+
+    setText('battle-intro-level-badge', `${intro.displayLabel} / ${intro.attackLabel}`);
+    setText('battle-intro-attack-label', intro.attackLabel);
+    setText('battle-intro-attack-desc', intro.attackDesc);
+    setText('battle-intro-headline', intro.title);
+    setText('battle-intro-description', preset.brief);
+    setText('battle-intro-stat-difficulty', config.label);
+    setText('battle-intro-stat-attack', `${intro.attackLabel} / ${preset.attackType.toUpperCase()}`);
+    setText('battle-intro-stat-round', `${preset.roundLength} sec`);
+    setText('battle-intro-stat-tip', config.coachTip);
+
+    const choices = document.getElementById('battle-intro-choices');
+    if (choices) {
+      choices.innerHTML = intro.clips.map((clip, idx) => {
+        const selected = idx + 1 === currentBattleClipIndex;
+        const filePath = getBattleClipPath(levelKey, idx + 1);
+        return `
+          <button class="battle-intro-choice${selected ? ' active' : ''}" type="button" onclick="selectBattleClip(${idx + 1})" aria-pressed="${selected ? 'true' : 'false'}">
+            <span class="battle-intro-choice-num">${idx + 1}</span>
+            <strong>${clip.title}</strong>
+            <span class="battle-intro-choice-file">${filePath}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    const list = document.getElementById('battle-intro-sequences');
+    if (list) {
+      list.innerHTML = intro.clips.map(clip => `
+        <article class="battle-intro-sequence">
+          <div class="battle-intro-step">${clip.index}</div>
+          <div>
+            <div class="battle-intro-sequence-title">${clip.title}</div>
+            <div class="battle-intro-sequence-desc">${clip.desc}</div>
+            <div class="battle-intro-sequence-code">${getBattleClipPath(levelKey, Number(clip.index || 1))}</div>
+          </div>
+        </article>
+      `).join('');
+    }
+    updateBattleIntroFocus(levelKey, currentBattleClipIndex);
+  }
+
+  function getBattleFilteredVideos(levelKey = currentDifficultyKey) {
+    const normalized = normalizeDifficultyKey(levelKey);
+    const intro = getLevelIntroData(normalized);
+    const attackType = getLevelPreset(normalized).attackType;
+    return videos.filter(video => {
+      const difficulty = normalizeDifficultyKey(video.difficulty || video.level || '');
+      const matchesLevel = difficulty === normalized;
+      const matchesAttack = attackType === 'mixed'
+        ? true
+        : String(video.attack_type || '').toLowerCase() === attackType;
+      return matchesLevel && matchesAttack;
+    }).sort((a, b) => {
+      const aPath = String(a.file_path || a.file || '');
+      const bPath = String(b.file_path || b.file || '');
+      return aPath.localeCompare(bPath);
+    }).slice(0, intro.clips.length || 3);
+  }
+
+  function syncBattleClipSelection(index = 1) {
+    const intro = getLevelIntroData(currentDifficultyKey);
+    const filtered = getBattleFilteredVideos(currentDifficultyKey);
+    const maxIndex = Math.min(intro.clips.length || 3, filtered.length || 3);
+    const nextIndex = Math.max(1, Math.min(maxIndex, parseInt(index, 10) || 1));
+    currentBattleClipIndex = nextIndex;
+    currentBattleClipPath = getBattleClipPath(currentDifficultyKey, nextIndex);
+    updateBattleIntroFocus(currentDifficultyKey, nextIndex);
+
+    const sel = document.getElementById('video-select');
+    const selectedVideo = filtered[nextIndex - 1];
+    if (sel) {
+      sel.value = selectedVideo ? String(selectedVideo.id) : 'demo';
+    }
+
+    document.querySelectorAll('.battle-intro-choice').forEach((btn, idx) => {
+      const active = idx + 1 === nextIndex;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    return selectedVideo || null;
+  }
+
+  function selectBattleClip(index) {
+    syncBattleClipSelection(index);
+  }
+
+  window.addEventListener('keydown', event => {
+    const modal = document.getElementById('battle-intro-modal');
+    if (!modal || !modal.classList.contains('open')) return;
+    const tag = (event.target && event.target.tagName) ? event.target.tagName.toUpperCase() : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (event.key === '1') { event.preventDefault(); selectBattleClip(1); }
+    if (event.key === '2') { event.preventDefault(); selectBattleClip(2); }
+    if (event.key === '3') { event.preventDefault(); selectBattleClip(3); }
+  });
+
+  function openBattleIntro() {
+    renderBattleIntro(currentDifficultyKey);
+    const modal = document.getElementById('battle-intro-modal');
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBattleIntro() {
+    const modal = document.getElementById('battle-intro-modal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  async function confirmBattleIntroAndStart() {
+    closeBattleIntro();
+    await beginSparringGame();
+  }
+
+  function getAttackTypeLabel(attackType) {
+    const labels = {
+      all: '전체 공격',
+      jab: '잽',
+      straight: '스트레이트',
+      hook: '훅',
+      uppercut: '어퍼컷',
+      mixed: '혼합'
+    };
+    return labels[attackType] || labels.all;
+  }
+
+  function normalizeVideoSrc(path) {
+    if (!path) return '';
+    const raw = String(path).trim();
+    if (!raw) return '';
+    // DB에는 /assets/videos/... 형태가 들어오지만, 현재 페이지는 /frontend/ 아래에서 열리므로
+    // 실제 정적 파일 위치인 /frontend/assets/... 로 맞춰 준다.
+    if (raw.startsWith('/assets/video/')) return raw.replace('/assets/video/', '/assets/videos/');
+    if (raw.startsWith('/assets/')) return `/frontend${raw}`;
+    if (raw.startsWith('/frontend/assets/video/')) return raw.replace('/frontend/assets/video/', '/frontend/assets/videos/');
+    if (raw.startsWith('/frontend/assets/videos/')) return raw;
+    return raw;
+  }
+
+  function renderHeroTitle() {
+    const el = document.getElementById('hero-title');
+    if (!el) return;
+    el.innerHTML = '';
+    const marks = [
+      { text: 'soul', cls: 'wordmark-main' },
+      { text: 'in', cls: 'wordmark-in' },
+      { text: 'motion', cls: 'wordmark-motion' },
+      { text: 'TM', cls: 'wordmark-tm' }
+    ];
+    marks.forEach((word, idx) => {
+      const span = document.createElement('span');
+      span.className = `title-word ${word.cls}`;
+      span.style.animationDelay = `${idx * 0.18}s`;
+      span.textContent = word.text;
+      el.appendChild(span);
+    });
+  }
+
+  function typeHeroSubtitle() {
+    const el = document.getElementById('hero-subtitle');
+    if (!el) return;
+    const lines = [
+      { text: '주먹은 마음을 따르고,', cls: 'subtitle-white' },
+      { text: '움직임은 영혼을 완성합니다.', cls: 'subtitle-white' },
+      { text: '이제 당신의 진화를 시작하십시오.', cls: 'subtitle-red' }
+    ];
+    el.innerHTML = '';
+    lines.forEach((line, lineIndex) => {
+      const span = document.createElement('span');
+      span.className = `subtitle-line ${line.cls}`;
+      el.appendChild(span);
+      const chars = Array.from(line.text);
+      let index = 0;
+      const step = () => {
+        span.textContent = chars.slice(0, index).join('');
+        index += 1;
+        if (index <= chars.length) {
+          window.setTimeout(step, 22 + lineIndex * 12);
+        }
+      };
+      window.setTimeout(step, lineIndex * 420);
+    });
+  }
+
+  function setDemoNoticeVisible(visible) {
+    const notice = document.getElementById('demo-notice');
+    if (!notice) return;
+    notice.style.display = visible ? 'flex' : 'none';
+  }
+
+  function getMatchSetupValues() {
+    const preset = getLevelPreset(currentDifficultyKey);
+    return {
+      difficulty: preset.difficulty,
+      attackType: preset.attackType,
+      roundLength: preset.roundLength,
+      mode: preset.mode,
+      assist: preset.assist
+    };
+  }
+
+  function syncDifficultyPreview() {
+    const setup = getMatchSetupValues();
+    const config = getDifficultyConfig(setup.difficulty);
+    const preset = getLevelPreset(setup.difficulty);
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+
+    currentDifficultyKey = setup.difficulty;
+    currentDifficultyConfig = config;
+    currentRoundLength = setup.roundLength;
+    currentMatchMode = setup.mode;
+    currentAssistEnabled = setup.assist;
+    currentAttackFilter = setup.attackType;
+
+    setText('difficulty-preview-title', config.label + ' 세팅');
+    setText('difficulty-preview-hp', String(config.hpLoss));
+    setText('difficulty-preview-score', String(config.baseScore));
+    setText('difficulty-preview-window', config.windowLabel);
+    setText('difficulty-preview-style', config.playStyle);
+    setText('difficulty-preview-attack', getAttackTypeLabel(setup.attackType));
+    setText('difficulty-preview-round', setup.roundLength + ' sec');
+    setText('difficulty-preview-mode', setup.mode === 'ranked' ? '랭크전' : '연습전');
+    setText('difficulty-preview-assist', setup.assist ? 'On' : 'Off');
+    setText('difficulty-preview-coach', config.coachTip);
+    const briefLead = document.querySelector('.battle-brief-copy');
+    if (briefLead) briefLead.textContent = preset.brief;
+    const title = document.querySelector('.battle-brief-title');
+    if (title) title.textContent = '상대 패턴과 리듬만 바뀝니다.';
+
+    return config;
+  }
+
+  function resetRoundSummaryPanel() {
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+    setText('react-ms', '--');
+    setText('last-earned', '0');
+    setText('last-direction', '-');
+    setText('last-outcome', '-');
+    setText('round-stat', '0/0');
+    setText('round-rate', '--');
+  }
+
+  function updateRoundSummaryPanel(outcome, reactionMs, judgeMeta = {}) {
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+    const earned = Number(outcome?.earnedScorePerAttack ?? outcome?.earned ?? 0);
+    const direction = (outcome?.dodgeDirection || judgeMeta?.dodgeDirection || '-').toString().toUpperCase();
+    const resultLabel = (outcome?.outcome || outcome?.judgeLabel || outcome?.result || '-').toString();
+
+    setText('react-ms', `${reactionMs}ms`);
+    setText('last-earned', String(earned));
+    setText('last-direction', direction);
+    setText('last-outcome', resultLabel);
+    setText('round-stat', `${game?.dodgeCount || 0}/${(game?.dodgeCount || 0) + (game?.hitCount || 0)}`);
+    const total = (game?.dodgeCount || 0) + (game?.hitCount || 0);
+    setText('round-rate', total > 0 ? `${Math.round((game?.dodgeCount || 0) / total * 100)}%` : '--');
+  }
+
+
+  function normalizeVideoDifficulty(value) {
+    return normalizeDifficultyKey(String(value || 'beginner').toLowerCase());
+  }
+
+  function getFilteredVideosForSetup(setup) {
+    const targetDifficulty = normalizeDifficultyKey(setup.difficulty);
+    const targetAttack = String(setup.attackType || 'all').toLowerCase();
+
+    return videos.filter(video => {
+      const videoDifficulty = normalizeVideoDifficulty(video.difficulty);
+      const videoType = String(video.attack_type || video.attackType || 'all').toLowerCase();
+      const difficultyMatches = videoDifficulty === targetDifficulty;
+      const attackMatches = targetAttack === 'all' || videoType === 'all' || videoType === targetAttack;
+      return difficultyMatches && attackMatches;
+    });
+  }
+
+  function bindMatchSetupControls() {
+    document.querySelectorAll('[data-level-choice]').forEach(btn => {
+      if (btn.dataset.setupBound === '1') return;
+      btn.dataset.setupBound = '1';
+      btn.addEventListener('click', () => applyLevelSelection(btn.dataset.levelChoice || 'beginner'));
+    });
+  }
+  // 데모 모드 상태
+  let isDemoMode = false;
+  let demoIntervalId = null;
+  let demoCountdownTimer = null;
+
+  // 영상 목록을 불러온다
+  async function loadVideos() {
+    const sel = document.getElementById('video-select');
+    try {
+      const setup = getMatchSetupValues();
+      const data = await api.get(`/api/videos?difficulty=${encodeURIComponent(setup.difficulty)}`);
+      videos = Array.isArray(data) ? data : (data.videos || data.items || []);
+      const filtered = getFilteredVideosForSetup(setup);
+
+      if (filtered.length === 0) {
+        sel.innerHTML = '<option value="demo">Demo mode (no matching level video)</option>';
+        setDemoNoticeVisible(true);
+      } else {
+        sel.innerHTML = filtered.map(v =>
+          `<option value="${v.id}">${v.title} (${v.difficulty || setup.difficulty} · ${v.attack_type || 'attack'})</option>`
+        ).join('');
+        setDemoNoticeVisible(false);
+
+        const selectedVideo = syncBattleClipSelection(currentBattleClipIndex) || filtered[0];
+        if (!filtered.some(v => String(v.id) === String(sel.value || ''))) {
+          sel.value = String(selectedVideo?.id || filtered[0].id);
+        }
+      }
+    } catch {
+      sel.innerHTML = '<option value="demo">Demo mode (loading failed)</option>';
+      setDemoNoticeVisible(true);
+    }
+  }
+  // 게임 시작
+  function startGame() {
+    openBattleIntro();
+  }
+
+  async function beginSparringGame() {
+    const setup = syncDifficultyPreview();
+    const videoId = document.getElementById('video-select').value;
+    const diffConfig = setup;
+
+    document.getElementById('start-screen').style.display = 'none';
+
+    try {
+      const session = await api.post('/api/sessions', { session_type: 'sparring' });
+      currentSessionId = session.id;
+    } catch (err) {
+      showToast('Session creation failed: ' + err.message, 'error');
+    }
+
+    game = new BoxingGame({
+      hpLoss: diffConfig.hpLoss,
+      baseScore: diffConfig.baseScore,
+      comboBonus: diffConfig.comboBonus
+    });
+    game.sessionId = currentSessionId;
+    game.roundLength = currentRoundLength;
+    game.matchMode = currentMatchMode;
+    game.assistEnabled = currentAssistEnabled;
+    game.renderUI();
+    resetRoundSummaryPanel();
+
+    hitboxJudge = new HitboxJudge({ radius: diffConfig.hitboxRadius });
+
+    if (videoId && videoId !== 'demo') {
+      await loadVideoAndStart(parseInt(videoId, 10));
+    } else {
+      const fallbackVideo = currentBattleClipPath ? videos.find(v => normalizeVideoSrc(v.file_path) === normalizeVideoSrc(currentBattleClipPath)) : null;
+      if (fallbackVideo?.id) {
+        await loadVideoAndStart(parseInt(fallbackVideo.id, 10));
+      } else if (currentBattleClipPath) {
+        await loadVideoByPath(currentBattleClipPath);
+      } else {
+        startDemoMode();
+      }
+    }
+
+    await startPoseTracker();
+  }
+  // 영상 로드 후 게임 시작
+  async function loadVideoAndStart(videoId) {
+    try {
+      const data = await api.get(`/api/videos/${videoId}`);
+      currentVideo = data;
+
+      const videoEl = document.getElementById('attack-video');
+      const sourcePath = currentBattleClipPath || data.file_path;
+      if (sourcePath) {
+        videoEl.src = normalizeVideoSrc(sourcePath);
+        document.getElementById('video-placeholder').classList.add('hidden');
+      }
+
+      const timestamps = data.timestamps || [];
+      videoPlayer = new BoxingVideoPlayer(videoEl, timestamps, onImpactTimestamp);
+
+      // 공격 라벨 표시
+      const badge = document.getElementById('attack-type-badge');
+      badge.textContent = (data.attack_type || 'ATTACK').toUpperCase();
+      badge.style.display = 'block';
+
+      await videoPlayer.play();
+    } catch (err) {
+      if (currentBattleClipPath) {
+        await loadVideoByPath(currentBattleClipPath);
+      } else {
+        startDemoMode();
+      }
+    }
+  }
+
+  async function loadVideoByPath(filePath) {
+    const videoEl = document.getElementById('attack-video');
+    if (!videoEl || !filePath) {
+      startDemoMode();
+      return;
+    }
+    currentVideo = null;
+    videoEl.src = normalizeVideoSrc(filePath);
+    document.getElementById('video-placeholder').classList.add('hidden');
+    videoPlayer = new BoxingVideoPlayer(videoEl, [], onImpactTimestamp);
+    const badge = document.getElementById('attack-type-badge');
+    if (badge) {
+      badge.textContent = (currentAttackFilter || 'ATTACK').toUpperCase();
+      badge.style.display = 'block';
+    }
+    try {
+      await videoEl.play();
+    } catch {
+      startDemoMode();
+    }
+  }
+
+  // 데모 모드: 영상이 없을 때 자동 공격 생성
+  const DEMO_INTERVAL = 3000; // 공격 간격 (ms)
+
+  function startDemoMode() {
+    isDemoMode = true;
+
+    const videoEl = document.getElementById('attack-video');
+    if (videoEl) {
+      videoEl.loop = true;
+      videoEl.muted = true;
+      videoEl.playsInline = true;
+      videoEl.src = normalizeVideoSrc('/assets/videos/sparring-demo-vertical.mp4');
+      videoEl.play().catch(() => {});
+    }
+
+    // 플레이스홀더를 데모 안내로 교체
+    const ph = document.getElementById('video-placeholder');
+    ph.style.display = 'flex';
+    ph.classList.remove('hidden');
+    ph.innerHTML = `
+      <div style="font-size:2.5rem; margin-bottom:4px;">🥊</div>
+      <div style="font-size:1.1rem; font-weight:700; letter-spacing:1px;">DEMO MODE</div>
+      <div style="font-size:12px; color:var(--color-text-secondary); margin-top:4px; text-align:center;">
+        데모 영상이 자동 재생됩니다.<br>
+        카운트다운이 끝나면 공격이 시작됩니다.
+      </div>
+    `;
+
+    // 카운트다운 오버레이 활성화
+    document.getElementById('demo-overlay').classList.add('show');
+    runDemoCountdown();
+  }
+
+  // 데모 카운트다운과 자동 공격 루프
+  function runDemoCountdown() {
+    if (game?.isGameOver) {
+      document.getElementById('demo-overlay').classList.remove('show');
+      return;
+    }
+
+    let attackCount = 0;
+    const ATTACK_TYPES = ['JAB', 'HOOK', 'STRAIGHT', 'UPPER'];
+    const ring = document.getElementById('demo-ring-progress');
+    const numEl = document.getElementById('demo-countdown-num');
+    const labelEl = document.getElementById('demo-attack-label');
+    const circumference = 283; // 2? 횞 45
+
+    let elapsed = 0;
+    const TICK = 50; // 50ms ?⑥쐞 ?낅뜲?댄듃
+
+    // 첫 공격 전 1초 대기
+    setTimeout(() => {
+      demoCountdownTimer = setInterval(() => {
+        if (game?.isGameOver || isPaused) return;
+
+        elapsed += TICK;
+        const progress = elapsed / DEMO_INTERVAL;
+        const remaining = Math.ceil((DEMO_INTERVAL - elapsed) / 1000);
+
+        // 진행률 업데이트 (0이 되면 꽉 찬 상태)
+        ring.style.strokeDashoffset = circumference * (1 - progress);
+        numEl.textContent = remaining > 0 ? remaining : '!';
+
+        // 공격 직전 라벨 강조
+        if (remaining <= 0) {
+          labelEl.textContent = ATTACK_TYPES[attackCount % ATTACK_TYPES.length] + '!';
+          labelEl.style.color = 'var(--color-accent-red)';
+        } else {
+          labelEl.textContent = 'INCOMING...';
+          labelEl.style.color = 'rgba(255,45,85,0.5)';
+        }
+
+        if (elapsed >= DEMO_INTERVAL) {
+          // 공격 발생
+          elapsed = 0;
+          ring.style.strokeDashoffset = circumference;
+          const fakeTs = { id: attackCount++, impact_time: 0, dodge_window_ms: 600 };
+          onImpactTimestamp(fakeTs);
+
+          if (game?.isGameOver) {
+            clearInterval(demoCountdownTimer);
+            document.getElementById('demo-overlay').classList.remove('show');
+          }
+        }
+      }, TICK);
+    }, 1000);
+  }
+
+  // 웹캠과 자세 추적 시작
+  async function startPoseTracker() {
+    const videoEl  = document.getElementById('player-video');
+    const canvasEl = document.getElementById('player-canvas');
+    const statusEl = document.getElementById('webcam-status');
+
+    try {
+      poseTracker = new PoseTracker(videoEl, canvasEl, onPoseUpdate);
+      await poseTracker.init();
+      statusEl.textContent = '포즈 추적 활성화';
+      statusEl.style.color = 'var(--color-accent-green)';
+      document.getElementById('hitbox-hint').style.display = 'block';
+    } catch (err) {
+      statusEl.textContent = '웹캠 없음 (수동 데모로 진행)';
+      statusEl.style.color = 'var(--color-accent-gold)';
+      // 웹캠이 없을 때는 수동 데모 좌표를 사용
+      poseTracker = { getSnapshot: () => ({ x: 0.3 + Math.random() * 0.4, y: 0.3 }) };
+    }
+
+    // 캔버스 크기 맞추기
+    canvasEl.width  = videoEl.videoWidth  || 380;
+    canvasEl.height = videoEl.videoHeight || 480;
+  }
+
+  // 자세 업데이트 (메인 판정 진입점)
+  function onPoseUpdate(landmarks) {
+    // 1) 판정 대기 중이면 즉시 판정
+    if (pendingJudge) {
+      executeJudge(landmarks);
+    }
+
+    // 2) 웹캠에 히트박스와 코 마커 그리기
+    drawHitboxOnWebcam(landmarks, !!pendingJudge);
+
+    // 3) 가드 자세 교정 체크 (5초마다)
+    if (landmarks && currentSessionId && !game?.isGameOver) {
+      checkGuardAndSave(landmarks);
+    }
+  }
+
+  // 웹캠 캔버스에 히트박스 그리기
+  function drawHitboxOnWebcam(landmarks, isActive) {
+    if (!hitboxJudge) return;
+    const canvas = document.getElementById('player-canvas');
+    if (!canvas.width) return;
+    const ctx = canvas.getContext('2d');
+
+    if (currentAssistEnabled) {
+      hitboxJudge.drawHitbox(ctx, canvas.width, canvas.height, isActive, pendingJudge || {});
+    }
+
+    if (landmarks && landmarks[0]) {
+      const nose = landmarks[0];
+      const nx = nose.x * canvas.width;
+      const ny = nose.y * canvas.height;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(nx, ny, 8, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? 'rgba(255,214,10,0.9)' : 'rgba(255,214,10,0.6)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      const judgeResult = hitboxJudge.judge(landmarks, pendingJudge || {}, {
+        referenceLandmarks: pendingJudge?.referenceLandmarks || null
+      });
+      if (!currentAssistEnabled) {
+        const hintEl = document.getElementById('hitbox-hint');
+        if (hintEl) hintEl.style.display = 'none';
+      } else {
+        const hintEl = document.getElementById('hitbox-hint');
+        if (hintEl) {
+          hintEl.style.display = 'block';
+          hintEl.style.color = judgeResult === 'DODGE'
+            ? 'rgba(48,209,88,0.8)'
+            : 'rgba(255,45,85,0.9)';
+          hintEl.textContent = judgeResult === 'DODGE'
+            ? 'Perfect dodge path'
+            : 'Move out of the hit zone!';
+        }
+      }
+    }
+  }
+  // 경기 중 가드 자세를 주기적으로 검사한다
+  function checkGuardAndSave(lm) {
+    const now = Date.now();
+    if (now - lastPoseSaveTime < POSE_SAVE_INTERVAL) return;
+
+    // 가드 판정: 손이 코보다 위에 있는지 확인
+    if (!lm[0] || !lm[15] || !lm[16]) return;
+
+    const guardOk = lm[15].y < lm[0].y && lm[16].y < lm[0].y;
+    if (guardOk) return; // 가드가 맞으면 저장하지 않는다
+
+    lastPoseSaveTime = now;
+
+    api.post('/api/sessions/pose-corrections', {
+      session_id:       currentSessionId,
+      pose_type:        'guard',
+      accuracy:         Math.round((1 - Math.abs(lm[15].y - lm[0].y)) * 100),
+      issue_type:       'hands_too_low',
+      feedback_message: '가드를 코 높이까지 올리세요',
+      severity:         'high'
+    }).catch(() => {});
+  }
+
+  // 공격 타임스탬프 도달 시 판정 대기 시작
+  function onImpactTimestamp(ts) {
+    if (game?.isGameOver || isPaused) return;
+
+    judgeStartTime = Date.now();
+    pendingJudge = {
+      ...ts,
+      attack_type: ts?.attack_type || currentVideo?.attack_type || currentAttackFilter || 'jab',
+      judge_shape: ts?.judge_shape,
+      required_move: ts?.required_move,
+      min_displacement: ts?.min_displacement,
+      hitbox_radius: ts?.hitbox_radius ?? currentDifficultyConfig?.hitboxRadius ?? 0.15,
+      referenceLandmarks: poseTracker?.getSnapshot?.() || null
+    };
+
+    const alert = document.getElementById('dodge-alert');
+    alert.classList.add('show');
+    setTimeout(() => alert.classList.remove('show'), ts.dodge_window_ms || 500);
+
+    showHitbox(true);
+    setTimeout(() => showHitbox(false), ts.dodge_window_ms || 500);
+
+    setTimeout(() => {
+      if (pendingJudge && pendingJudge.id === ts?.id) {
+        const snapshot = poseTracker?.getSnapshot?.();
+        executeJudge(snapshot);
+      }
+    }, ts.dodge_window_ms || 500);
+  }
+  function inferRequiredMove(attackType) {
+    switch ((attackType || '').toLowerCase()) {
+      case 'uppercut':
+        return 'duck';
+      case 'straight':
+        return 'lean_back';
+      case 'hook':
+        return 'slip_side';
+      case 'jab':
+      default:
+        return 'slip_side';
+    }
+  }
+
+  function buildJudgeMeta(landmarks, judgeData, result, reactionMs) {
+    const nose = landmarks?.[0] || landmarks;
+    const leftWrist = landmarks?.[15];
+    const rightWrist = landmarks?.[16];
+    const centerX = hitboxJudge?.centerX ?? 0.5;
+    const centerY = hitboxJudge?.centerY ?? 0.5;
+    const radius = Number(judgeData?.hitbox_radius ?? hitboxJudge?.hitboxRadius ?? 0.15);
+    const attackType = judgeData?.attack_type || currentVideo?.attack_type || 'unknown';
+    const requiredMove = judgeData?.required_move || inferRequiredMove(attackType);
+    const minDisplacement = Number(judgeData?.min_displacement ?? radius * 0.7);
+    const dodgeWindowMs = Number(judgeData?.dodge_window_ms || 500);
+    const referenceLandmarks = judgeData?.referenceLandmarks || null;
+    const referenceNose = referenceLandmarks?.[0] || null;
+
+    const dx = (nose?.x ?? centerX) - centerX;
+    const dy = (nose?.y ?? centerY) - centerY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const displacementRatio = radius > 0 ? distance / radius : 0;
+    const displacementSatisfied = distance >= minDisplacement;
+    const horizontalDirection = dx < -minDisplacement * 0.6 ? 'left' : dx > minDisplacement * 0.6 ? 'right' : 'center';
+    const verticalDirection = dy > minDisplacement * 0.45 ? 'down' : dy < -minDisplacement * 0.45 ? 'up' : 'center';
+    const dodgeDirection = (() => {
+      switch (requiredMove) {
+        case 'slip_left':
+          return 'left';
+        case 'slip_right':
+          return 'right';
+        case 'duck':
+          return 'down';
+        case 'lean_back':
+          return 'back';
+        case 'slip_side':
+          return horizontalDirection !== 'center' ? horizontalDirection : verticalDirection !== 'center' ? verticalDirection : 'side';
+        case 'any':
+        default:
+          return horizontalDirection !== 'center' ? horizontalDirection : verticalDirection !== 'center' ? verticalDirection : 'none';
+      }
+    })();
+
+    let directionMatched = false;
+    switch (requiredMove) {
+      case 'slip_left':
+        directionMatched = dx <= -minDisplacement * 0.6;
+        break;
+      case 'slip_right':
+        directionMatched = dx >= minDisplacement * 0.6;
+        break;
+      case 'duck':
+        directionMatched = dy >= minDisplacement * 0.45;
+        break;
+      case 'lean_back':
+        directionMatched = Math.abs(dy) >= minDisplacement * 0.35;
+        break;
+      case 'slip_side':
+      default:
+        directionMatched = Math.abs(dx) >= minDisplacement * 0.6;
+        break;
+    }
+
+    const guardOk = !!(nose && leftWrist && rightWrist && leftWrist.y < nose.y && rightWrist.y < nose.y);
+
+    return {
+      attackType,
+      requiredMove,
+      dodgeWindowMs,
+      directionMatched: result === 'DODGE' ? directionMatched : false,
+      displacementRatio: result === 'DODGE' ? displacementRatio : Math.min(displacementRatio, 0.35),
+      displacementSatisfied: result === 'DODGE' ? displacementSatisfied : false,
+      guardOk,
+      dodgeDirection,
+      centerX,
+      centerY,
+      radius,
+      reactionMs
+    };
+  }
+  // 판정 실행
+  function executeJudge(landmarks) {
+    if (!pendingJudge || !game) return;
+
+    const result = hitboxJudge.judge(landmarks, pendingJudge, {
+      referenceLandmarks: pendingJudge?.referenceLandmarks || null
+    });
+    const reactionMs = judgeStartTime ? Date.now() - judgeStartTime : 999;
+    const judgeMeta = buildJudgeMeta(landmarks, pendingJudge, result, reactionMs);
+
+    pendingJudge = null;
+
+    const outcome = game.onJudge(result, reactionMs, judgeMeta);
+    if (!outcome) return;
+
+    document.getElementById('react-ms').textContent = reactionMs + 'ms';
+    updateRoundSummaryPanel(outcome, reactionMs, judgeMeta);
+    const total = game.dodgeCount + game.hitCount;
+    document.getElementById('round-stat').textContent = game.dodgeCount + '/' + total;
+    document.getElementById('round-rate').textContent =
+      total > 0 ? Math.round(game.dodgeCount / total * 100) + '%' : '0%';
+
+    if (currentSessionId && currentVideo) {
+      api.post('/api/sessions/rounds', {
+        session_id: currentSessionId,
+        video_id: currentVideo.id,
+        result: result.toLowerCase(),
+        reaction_ms: reactionMs,
+        score_earned: outcome.earned,
+        earned_score_per_attack: outcome.earnedScorePerAttack ?? outcome.earned,
+        combo_at_time: outcome.combo,
+        attack_type: outcome.attackType,
+        dodge_direction: outcome.dodgeDirection || judgeMeta.dodgeDirection || null,
+        accuracy_score: outcome.accuracyScore,
+        judge_label: outcome.judgeLabel,
+        outcome: outcome.outcome || (result === 'DODGE' ? 'success' : 'fail'),
+        nose_x: landmarks?.[0]?.x ?? 0,
+        nose_y: landmarks?.[0]?.y ?? 0
+      }).catch(() => {});
+    }
+
+    if (game.isGameOver) {
+      endSession();
+    }
+  }
+  // 히트박스 표시
+  function showHitbox(active) {
+    const canvas = document.getElementById('hitbox-canvas');
+    const ctx    = canvas.getContext('2d');
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (active && hitboxJudge && currentAssistEnabled) {
+      hitboxJudge.drawHitbox(ctx, canvas.width, canvas.height, true, pendingJudge || {});
+    }
+  }
+  // 세션 종료
+  async function endSession() {
+    if (!currentSessionId || !game) return;
+    const total = game.dodgeCount + game.hitCount || 1;
+    try {
+      await api.put(`/api/sessions/${currentSessionId}/end`, {
+        total_score:  game.score,
+        max_combo:    game.maxCombo,
+        total_rounds: total,
+        exp_earned:   Math.floor(game.score / 10)
+      });
+      await api.put('/api/leaderboard/me', {
+        total_score:  game.score,
+        max_combo:    game.maxCombo,
+        total_dodges: game.dodgeCount,
+        win_rate:     game.dodgeCount / total
+      });
+    } catch (err) {
+      // 저장 실패는 경기 결과에 영향 주지 않음
+    }
+  }
+
+  // 일시정지 / 재개
+  function pauseGame() {
+    if (!game || game.isGameOver) return;
+    isPaused = !isPaused;
+    if (isPaused) {
+      videoPlayer?.pause();
+      document.getElementById('pause-btn').textContent = '재개';
+    } else {
+      videoPlayer?.play();
+      document.getElementById('pause-btn').textContent = '일시정지';
+    }
+  }
+
+  // 종료 확인
+  async function quitGame() {
+    if (confirm('스파링을 종료하시겠어요?')) {
+      await endSession();
+      window.location.href = '/frontend/dashboard.html';
+    }
+  }
+
+  // 다시 시작
+  function restartGame() {
+    window.location.reload();
+  }
+
+  // 초기화 실행
+  renderHeroTitle();
+  typeHeroSubtitle();
+  bindMatchSetupControls();
+  const query = new URLSearchParams(window.location.search);
+  const queryLevel = query.get('level');
+  const initialLevel = normalizeDifficultyKey((queryLevel || 'beginner').toLowerCase());
+  applyLevelSelection(initialLevel);
+
+  const shouldAutoStart = query.get('autostart') === '1';
+  const shouldSkipIntro = query.get('skipIntro') === '1';
+  if (shouldAutoStart || shouldSkipIntro) {
+    window.setTimeout(() => {
+      beginSparringGame();
+    }, 0);
+  }
+</script>
+  <script src="js/ui/auto-scale.js"></script>
+</body>
+</html>

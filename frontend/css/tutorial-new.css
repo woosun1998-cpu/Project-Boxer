@@ -1,0 +1,254 @@
+/* ════════════════════════════════════════════════════════
+   트레이닝 페이지 — Figma node 453:24
+   무엇: index.css img { max-width:100% } 보정
+   왜: 히어로·카드 이미지가 원본 비율로 꽉 보이게
+════════════════════════════════════════════════════════ */
+
+body.tut-tutorial-page {
+  background: #1a2320 !important;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+:root {
+  --tut-page-scale: 1;
+}
+
+.tut-page-shell {
+  position: relative;
+  width: 100%;
+  height: calc(1926px * var(--tut-page-scale));
+}
+
+.tut-page {
+  position: absolute;
+  top: 0;
+  width: 1920px;
+  left: 50%;
+  transform: translateX(-50%) scale(var(--tut-page-scale));
+  transform-origin: top center;
+  min-height: 1926px;
+  margin: 0;
+  background: #171717;
+}
+
+.tut-page img {
+  max-width: none;
+}
+
+/* ── 히어로 h:1118 ──
+   트레이닝 배경.png에는 복서가 이미 그려져 있어서,
+   HTML의 트레이닝 복서 이미지.png와 겹쳐 ‘분신’처럼 보임 → 히어로 배경 이미지는 쓰지 않음.
+   배경: 단색 + CSS 평행사변형만, 복서는 <img> 한 장만. */
+.tut-hero {
+  position: relative;
+  width: 100%;
+  height: 900px;
+  overflow: hidden;
+  /* 최소 모드: 외부 MYBOX 배경 제거 */
+  background: #171717;
+}
+
+/* 빨간 평행사변형 — CSS 도형 제거, 사용자 제공 이미지 사용 */
+.tut-hero-shape {
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 36%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tut-hero-shape img {
+  width: 180%;
+  height: auto;
+  position: absolute;
+  left: -400px;
+  object-fit: contain;
+  display: block;
+}
+
+/* 왼쪽·크게: 트레이닝 글자.png (Figma 454:80 inset 근사) */
+.tut-hero-train-title {
+  position: absolute;
+  left: -140px;
+  top: 7.83%;
+  right: 25.16%;
+  bottom: 60.56%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tut-hero-train-title img {
+  position: absolute;
+  transform: translate(200px, 50px);
+  width: 75%;
+  height: auto;
+  object-fit: contain;
+  object-position: left top;
+}
+
+/* 전경 복서: 우측 하단 (Figma 트레이닝 복서 이미지) */
+.tut-hero-boxer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  max-width: 100%;
+  max-height: 100%;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.tut-hero-boxer img {
+  height: auto;
+  width: 84%;
+  transform: translateX(-10px);
+  max-height: 1118px;
+  object-fit: contain;
+  object-position: bottom right;
+}
+
+.tut-hero-copy {
+  position: absolute;
+  left: 50px;
+  top: 740px;
+  font-family: "Paperlogy SemiBold", sans-serif;
+  font-size: 30px;
+  line-height: 40px;
+  color: #fff;
+  white-space: nowrap;
+  z-index: 4;
+}
+
+.tut-hero-copy p {
+  margin: 0;
+}
+
+/* 상·하단 빨간 띠 h:50 — Figma y:1118, y:2094 */
+.tut-strip {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: #ed1d32;
+  z-index: 5;
+}
+
+.tut-strip--top {
+  top: 900px;
+}
+
+.tut-strip--bottom {
+  top: 1876px;
+}
+
+/* 카드 구역 배경 — 다이어트복싱 2번째 배경@3x (Drive id 1_r0vKk…) */
+.tut-lower {
+  position: absolute;
+  left: 0;
+  top: 948px;
+  width: 1920px;
+  height: 928px;
+  background-color: #171717;
+  background-image: url("https://lh3.googleusercontent.com/d/1_r0vKkO6Njt8xS24qmSbI8QQWCw8W7h1=w2000");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+/* 모드 버튼 + 카드 묶음: Figma y:1218 기준으로 섹션 고정, 내부는 Flex 가운데 정렬 */
+.tut-cards-section {
+  position: absolute;
+  left: 0;
+  top: 1000px;
+  width: 100%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 모드 버튼 높이 108px 후 카드 시작 y:1371 → 간격 45px */
+  gap: 45px;
+}
+
+.tut-mode-btn {
+  position: static;
+  transform: none;
+  width: 467px;
+  height: 108px;
+  border: 0;
+  border-radius: 100px;
+  background: #ed1d32;
+  box-shadow: 2px 10px 4px 2px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Paperlogy SemiBold", sans-serif;
+  font-size: 40px;
+  color: #fff;
+}
+
+/* 카드 3개를 한 줄 가운데 정렬 */
+.tut-cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  margin: 0 auto;
+  flex-wrap: nowrap;
+}
+
+/* 카드: 이미지 파일만 표시 — border·배경·패딩 없음 */
+.tut-card {
+  position: static;
+  flex: 0 0 auto;
+  width: 430px;
+  height: 620px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+  z-index: 4;
+}
+
+.tut-card:hover {
+  transform: translateY(-8px);
+}
+
+.tut-card-inner {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tut-card-inner img {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  display: block;
+}
+
+.hero-nav a.active {
+  color: #ed1d32;
+}

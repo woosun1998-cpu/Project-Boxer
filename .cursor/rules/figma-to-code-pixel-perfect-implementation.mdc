@@ -1,0 +1,23 @@
+---
+description: Figma to Code 픽셀퍼펙트 구현 규칙
+alwaysApply: true
+---
+
+# Figma to Code: Pixel-Perfect Implementation Rules
+
+## 1) 레이아웃 단위 및 해상도 관리 (CRITICAL)
+- Figma 절대값(px)을 무분별하게 하드코딩하지 않는다.
+- 브라우저 100% 배율에서 화면이 자연스럽게 차도록 `min-height: 100vh`, `width: 100%`, `object-fit: cover`를 우선 사용한다.
+- 중앙 정렬과 배치는 항상 Flexbox 또는 CSS Grid를 우선 적용해 화면 크기 변화에도 레이아웃 붕괴를 막는다.
+
+## 2) 에셋 우선 순위 (Asset Handling)
+- 사용자가 제공한 `image/` 폴더 에셋이 있으면, Figma 텍스트를 코드로 다시 그리지 말고 해당 이미지를 우선 렌더링한다.
+- 로고/타이틀은 사용자가 제공한 SVG 코드를 직접 삽입한다.
+
+## 3) AI 자의적 판단 금지 (No Hallucinations)
+- 디자인 파일에 없는 UI(예: 하단 바, 추가 텍스트)를 임의로 생성하지 않는다.
+- `get_selection` 결과와 시각 참조 이미지에 존재하는 요소만 구현한다.
+
+## 4) 인터랙션 구현 지침
+- 버튼/네비게이션/화살표 등 클릭 요소에 `cursor: pointer`와 hover 효과를 기본 포함한다.
+- 슬라이더/모달은 사용자가 기존에 작성한 `index.html` JavaScript 로직을 최우선으로 재사용한다.

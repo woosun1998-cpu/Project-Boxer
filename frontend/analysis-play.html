@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOXER — 플레이 분석</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body { padding-top: 64px; min-height: 100vh; background: var(--color-bg-primary); }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+    h1 {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      letter-spacing: 1px;
+      margin: 0 0 0.5rem;
+    }
+    .sub {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: 1.75rem;
+    }
+    .score-hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (min-width: 640px) {
+      .score-hero { grid-template-columns: 1fr 1fr; align-items: stretch; }
+    }
+    .big-score {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+    }
+    .big-score .num {
+      font-family: var(--font-display);
+      font-size: 3.2rem;
+      line-height: 1;
+      color: var(--color-accent-gold);
+    }
+    .big-score .lbl { font-size: 12px; color: var(--color-text-secondary); margin-top: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .metric {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .metric .v { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 700; }
+    .metric .l { font-size: 11px; color: var(--color-text-secondary); margin-top: 4px; }
+    .card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.35rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 {
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-secondary);
+      margin: 0 0 12px;
+    }
+    .fb-item {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--color-text-primary);
+    }
+    .fb-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .next-box {
+      background: linear-gradient(135deg, rgba(112, 223, 255, 0.12), rgba(255,255,255,0.03));
+      border-color: rgba(112, 223, 255, 0.25);
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.5rem; }
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--color-text-secondary);
+      font-size: 15px;
+    }
+    .badge-profile {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255,214,10,0.12);
+      color: var(--color-accent-gold);
+      border: 1px solid rgba(255,214,10,0.25);
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+<script src="js/core/api.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/ui/navbar.js"></script>
+
+<div class="wrap">
+  <div class="badge-profile" id="profile-badge" style="display:none;"></div>
+  <h1>플레이 분석</h1>
+  <p class="sub" id="page-sub">직전 스파링 세션의 지표 요약입니다. 스파링 종료 후 자동으로 이 페이지로 이동합니다.</p>
+
+  <div id="empty-state" class="empty" style="display:none;">
+    저장된 분석 데이터가 없습니다. <a href="sparring.html" style="color:var(--color-accent-blue);">스파링</a>을 진행한 뒤 다시 열어주세요.
+  </div>
+
+  <div id="content-root" style="display:none;">
+    <div class="score-hero">
+      <div class="big-score">
+        <div class="lbl">종합 점수 (MVP)</div>
+        <div class="num" id="overall-num">0</div>
+        <div class="lbl" id="game-meta" style="margin-top:12px;text-transform:none;letter-spacing:0;"></div>
+      </div>
+      <div class="big-score" style="display:flex;flex-direction:column;justify-content:center;">
+        <div class="lbl">지표별 평균</div>
+        <div class="metrics-row" style="margin-top:10px;">
+          <div class="metric">
+            <div class="v" id="m-pose">0</div>
+            <div class="l">자세</div>
+          </div>
+          <div class="metric">
+            <div class="v" id="m-time">0</div>
+            <div class="l">타이밍</div>
+          </div>
+          <div class="metric">
+            <div class="v" id="m-stab">0</div>
+            <div class="l">안정성</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>강점</h2>
+      <div id="strength-list"></div>
+    </div>
+    <div class="card">
+      <h2>개선 포인트</h2>
+      <div id="improve-list"></div>
+    </div>
+    <div class="card next-box">
+      <h2>다음 훈련 추천</h2>
+      <div id="next-training" class="fb-item" style="border:0;padding:0;"></div>
+    </div>
+
+    <div class="actions">
+      <a class="btn-primary" href="sparring.html">다시 스파링</a>
+      <a class="btn-outline" href="dashboard.html">대시보드</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'boxer_play_analysis_mvp';
+
+  function render() {
+    let data = null;
+    try {
+      data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    } catch (_) {
+      data = null;
+    }
+
+    const emptyEl = document.getElementById('empty-state');
+    const rootEl = document.getElementById('content-root');
+
+    if (!data || !data.summary) {
+      emptyEl.style.display = 'block';
+      rootEl.style.display = 'none';
+      return;
+    }
+
+    emptyEl.style.display = 'none';
+    rootEl.style.display = 'block';
+
+    const s = data.summary;
+    document.getElementById('overall-num').textContent = String(s.overall_score ?? 0);
+    document.getElementById('m-pose').textContent = String(s.pose_similarity ?? 0);
+    document.getElementById('m-time').textContent = String(s.timing_similarity ?? 0);
+    document.getElementById('m-stab').textContent = String(s.stability_score ?? 0);
+
+    const meta = [];
+    if (s.round_count != null) meta.push(`분석 라운드 ${s.round_count}회`);
+    if (s.total_score_game != null) meta.push(`세션 점수 ${s.total_score_game}`);
+    if (data.profile_level) meta.push(`프로필 ${data.profile_level}`);
+    document.getElementById('game-meta').textContent = meta.join(' · ');
+
+    const pb = document.getElementById('profile-badge');
+    if (data.profile_level) {
+      pb.style.display = 'inline-block';
+      pb.textContent = '프로필 기준: ' + data.profile_level;
+    }
+
+    const fb = data.feedback || {};
+    const strWrap = document.getElementById('strength-list');
+    strWrap.innerHTML = (fb.strengths || []).map(t =>
+      `<div class="fb-item">${t.text || ''}</div>`
+    ).join('') || '<div class="fb-item">—</div>';
+
+    const impWrap = document.getElementById('improve-list');
+    impWrap.innerHTML = (fb.improvements || []).map(t =>
+      `<div class="fb-item">${t.text || ''}</div>`
+    ).join('') || '<div class="fb-item">—</div>';
+
+    document.getElementById('next-training').textContent = fb.next_training || '다음 훈련을 선택해 보세요.';
+
+    const sub = document.getElementById('page-sub');
+    if (data.saved_at) {
+      const d = new Date(data.saved_at);
+      sub.textContent = '마지막 저장: ' + d.toLocaleString('ko-KR');
+    }
+  }
+
+  auth.requireAuthAsync().then(u => { if (!u) return; });
+  if (!auth.requireAuth()) throw new Error('redirect');
+  render();
+</script>
+</body>
+</html>

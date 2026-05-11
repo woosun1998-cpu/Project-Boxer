@@ -1,0 +1,18 @@
+/**
+ * diet-boxing 히어로 — 평행사변형@2x 위치 전용
+ * 무엇: 여기만 수정하면 됨 / 왜: diet-boxing.html 안의 긴 <style>과 분리해 두면 다른 수정 때 덮어쓰기 어렵다
+ * (협업·AI 작업 시 이 파일은 사용자 전용으로 두는 것을 권장)
+ */
+.diet-hero-parallelogram {
+  position: absolute;
+  z-index: 2;
+  left: -250px;
+  top: 0;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: left top;
+  display: block;
+  max-width: none !important;
+  pointer-events: none;
+}

@@ -1,0 +1,1537 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - Sparring</title>
+    <!-- 최소 모드: Google Fonts CDN 비활성 → 로컬 @font-face 및 시스템 폰트만 사용 -->
+    <!-- <link rel="preconnect" href="https://fonts.googleapis.com" /> -->
+    <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> -->
+    <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?..." /> -->
+    <link rel="stylesheet" href="css/global.css" />
+    <style>
+      :root {
+        --font-ui: "Paperlogy SemiBold", sans-serif;
+      }
+
+      @font-face {
+        font-family: "KBL Jump EB";
+        src: url("./font/KBLJump_EB_Extended.otf") format("opentype");
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "UrbanShadow";
+        src: url("./font/Urban Shadow Sans Serif.otf") format("opentype");
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Paperlogy SemiBold";
+        src: url("./font/Paperlogy-6SemiBold.ttf") format("truetype");
+        font-display: swap;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: #000;
+      }
+
+      body {
+        font-family: var(--font-ui);
+        color: #fff;
+      }
+
+      .stage-viewport {
+        background: #171717;
+      }
+
+      .page {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 8.2vh 0 3.6vh 2.6vw;
+      }
+
+      .hero-nav {
+        position: fixed;
+        top: 20px;
+        right: 46px;
+        width: auto;
+        min-width: max-content;
+        height: 70px;
+        border-radius: 100px;
+        background: #fff;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 34px;
+        padding: 0 32px;
+        color: #1c1c1c;
+        z-index: 999;
+        font-size: 20px;
+        line-height: 1;
+        white-space: nowrap;
+        font-family: "Paperlogy SemiBold", sans-serif;
+      }
+
+      .hero-nav a {
+        color: #1c1c1c;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .hero-nav a.active {
+        color: #ed1d32;
+      }
+
+      .hero-nav a:hover,
+      .hero-nav a:focus-visible {
+        color: #b42318;
+      }
+
+      .hero-nav .drawer-auth-link {
+        color: #1c1c1c;
+        transition: color 0.2s ease;
+      }
+
+      .hero-nav .drawer-auth-link:hover,
+      .hero-nav .drawer-auth-link:focus-visible {
+        color: #b42318;
+      }
+
+      .hero-nav .menu-btn {
+        margin-left: 2px;
+        margin-right: 0;
+        transition: transform 0.2s ease;
+      }
+
+      .hero-nav .menu-btn i {
+        transition: background 0.2s ease;
+      }
+
+      .hero-nav .menu-btn:hover,
+      .hero-nav .menu-btn:focus-visible {
+        transform: scale(1.08);
+      }
+
+      .hero-nav .menu-btn:hover i,
+      .hero-nav .menu-btn:focus-visible i {
+        background: #b42318;
+      }
+
+      .menu-btn {
+        width: 26px;
+        height: 20px;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+      }
+
+      .menu-btn i {
+        height: 3px;
+        width: 100%;
+        border-radius: 999px;
+        background: #1c1c1c;
+      }
+
+      .content-stack {
+        margin-top: -1.4vh;
+        width: min(716px, 40vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(20px, 3.2vh, 34px);
+        z-index: 4;
+      }
+
+      .left-copy {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(10px, 2vh, 24px);
+      }
+
+      .sparring-svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .left-sub {
+        margin: 0;
+        margin-left: min(154px, 8vw);
+        font-size: clamp(18px, 1.56vw, 30px);
+        line-height: 1;
+        letter-spacing: clamp(2px, 0.39vw, 7.5px);
+        color: #fff;
+      }
+
+      .card-wrap {
+        /* Group controls: move/scale arrows + card together */
+        --group-x: 0px;
+        --group-y: 40px;
+        --group-scale: 1;
+        --card-size: 550px;
+        --arrow-gap: 12px;
+        --arrow-width: 50px;
+        --arrow-height: 30px;
+
+        width: var(--card-size);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transform: translate(var(--group-x), var(--group-y))
+          scale(var(--group-scale));
+        transform-origin: top center;
+      }
+
+      .arrow-btn {
+        width: var(--arrow-width);
+        height: var(--arrow-height);
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+        flex: 0 0 auto;
+      }
+
+      .difficulty-card {
+        position: relative;
+        margin-top: var(--arrow-gap);
+        width: var(--card-size);
+        height: var(--card-size);
+        border: none !important;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+        background: transparent;
+        cursor: pointer;
+        z-index: 10;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-font-smoothing: subpixel-antialiased;
+      }
+
+      .difficulty-card.is-active {
+        border: none !important;
+        box-shadow: none;
+        z-index: 50;
+      }
+
+      /* This page keeps one visible card element, so treat it as active baseline. */
+      .card-wrap > .difficulty-card {
+        border: none !important;
+        z-index: 50;
+      }
+
+      .difficulty-card.is-prev,
+      .difficulty-card.is-next,
+      .difficulty-card.is-hidden {
+        border: none !important;
+        z-index: 10 !important;
+      }
+
+      .slide-viewport {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .difficulty-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        transform: translateY(0);
+        transition:
+          transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.42s ease,
+          filter 0.42s ease;
+        opacity: 1;
+        filter: blur(0);
+        backface-visibility: hidden;
+        -webkit-font-smoothing: subpixel-antialiased;
+        z-index: 10;
+      }
+
+      .difficulty-image.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        border-color: transparent !important;
+        z-index: 10 !important;
+      }
+
+      .slide-viewport.is-animating .difficulty-image.is-hidden {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .arrow-btn.bottom {
+        margin-top: var(--arrow-gap);
+      }
+
+      .arrow-svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        pointer-events: none;
+      }
+
+      .arrow-btn.bottom .arrow-svg {
+        transform: rotate(180deg);
+      }
+
+      /* ===== Figma 454:111 section overrides ===== */
+      .stage-viewport {
+        background: none !important;
+      }
+      .page {
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+        padding: 0 !important;
+      }
+      .content-stack {
+        display: none !important;
+      }
+
+      .spar-hero {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1920 / 1118;
+        overflow: hidden;
+        background: #171717;
+      }
+      /* 평행사변형(.spar-hero-shape)만 따로 움직이려면 css/sparring-user-hero-shape.css 만 수정 */
+      .spar-hero-boxer,
+      .spar-mode-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        max-width: none !important;
+        pointer-events: none;
+      }
+      .spar-hero-title {
+        position: absolute;
+        left: -10px;
+        top: 60px;
+        width: 2550px;
+        height: auto;
+        z-index: 4;
+        pointer-events: none;
+      }
+      .spar-hero-boxer {
+        z-index: 3;
+      }
+      .spar-hero-copy {
+        position: absolute;
+        left: 50px;
+        top: 959px;
+        z-index: 5;
+        margin: 0;
+        color: #fff;
+        font-family: "Paperlogy SemiBold", sans-serif;
+        font-size: clamp(12px, 1.56vw, 30px);
+        line-height: 35px;
+        white-space: nowrap;
+      }
+      .spar-hero-copy p {
+        margin: 0;
+      }
+      .spar-divider {
+        width: 100%;
+        height: 50px;
+        background: #ed1d32;
+      }
+      .spar-mode {
+        position: relative;
+        width: 100%;
+        min-height: 860px;
+        aspect-ratio: auto !important;
+        overflow: hidden;
+        background: #2b1c12;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 20px 32px;
+        box-sizing: border-box;
+      }
+      .spar-mode-bg {
+        z-index: 0;
+      }
+      .spar-mode-btn {
+        position: relative;
+        flex-shrink: 0;
+        left: auto;
+        top: auto;
+        transform: none;
+        margin: 0 0 20px 0;
+        width: 467px;
+        height: 108px;
+        border: 0;
+        border-radius: 100px;
+        background: #ed1d32;
+        box-shadow: 2px 10px 4px 2px rgba(0, 0, 0, 0.25);
+        color: #fff;
+        font-family: "Paperlogy SemiBold", sans-serif;
+        font-size: 40px;
+        z-index: 2;
+        cursor: pointer;
+      }
+      .spar-cards {
+        position: relative;
+        z-index: 2;
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        width: 100%;
+        max-width: 1460px;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        left: auto;
+        top: auto;
+        transform: none;
+      }
+      .spar-card {
+        width: 340px;
+        height: 670px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        overflow: visible;
+        transition: transform 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        box-sizing: border-box;
+      }
+      .spar-card:hover {
+        transform: translateY(-8px);
+      }
+      .spar-card img {
+        width: 100%;
+        height: 100%;
+        min-height: auto;
+        max-height: none;
+        display: block;
+        object-fit: contain;
+        object-position: center;
+      }
+
+      .dim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 2000 !important;
+      }
+
+      .drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(745px, calc(100% - 32px));
+        max-width: 100%;
+        background: #ffffff !important;
+        transform: translateX(102%);
+        transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+        z-index: 2001 !important;
+        overflow: hidden;
+        color: #111;
+      }
+
+      body.drawer-open .dim {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      body.drawer-open .drawer {
+        transform: translateX(0);
+      }
+
+      .drawer-inner {
+        position: relative;
+        height: 100%;
+        padding: 12px 30px;
+      }
+
+      .drawer-close {
+        position: absolute;
+        right: 30px !important;
+        top: 20px !important;
+        border: 0;
+        background: transparent;
+        font-size: 46px;
+        cursor: pointer;
+        line-height: 1;
+        z-index: 2002 !important;
+        color: #111 !important;
+      }
+
+      .drawer-profile {
+        display: grid;
+        grid-template-columns: 130px 1fr;
+        gap: 18px;
+        align-items: center;
+        margin-top: 18px;
+      }
+
+      .drawer-profile img {
+        width: 130px;
+        height: 130px;
+        border-radius: 999px;
+        object-fit: cover;
+      }
+
+      .drawer-note {
+        margin: 0;
+        color: #8c909a;
+        font-size: 25px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .drawer-links {
+        margin-top: 10px;
+        display: flex;
+        gap: 40px;
+        font-size: 25px;
+      }
+
+      .drawer-action-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        color: #9d9b9b;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .drawer-auth-link {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        font-size: inherit;
+        font-weight: 600;
+      }
+
+      .drawer-title {
+        margin: 100px 0 0;
+        font-family: "KBL Jump EB", sans-serif;
+        font-size: 55px;
+        line-height: 65px;
+        word-break: keep-all;
+      }
+
+      .drawer-before-figure {
+        position: absolute;
+        right: 0;
+        bottom: -250px;
+        width: 530px;
+      }
+
+      .stat-cell {
+        border-right: 2px solid rgba(255, 255, 255, 0.92);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.92);
+        min-height: 190px; /* 기존 220px에서 조금 줄여 여유 공간 확보 */
+        padding: 10px; /* 내부 여백 축소 */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .stat-label {
+        margin: 0;
+        font-size: 18px !important; /* 기존 20px -> 18px로 축소 */
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        font-weight: normal;
+      }
+
+      .stat-number-row {
+        margin-top: auto;
+        display: flex;
+        align-items: flex-end;
+        gap: 4px; /* 간격 축소 */
+        white-space: nowrap;
+        line-height: 0.9; /* 줄 간격을 좁혀 숫자와 단위를 밀착 */
+      }
+
+      .stat-value {
+        margin: 0;
+        color: #ccff00;
+        font-family: var(--font-display);
+        font-size: 88px !important; /* 거대했던 104px -> 88px로 축소 */
+        line-height: 0.88;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        font-weight: normal;
+      }
+
+      .stat-unit {
+        margin: 0;
+        font-size: 44px !important; /* 거대했던 56px -> 44px로 축소 */
+        line-height: 1;
+        font-family: var(--font-display);
+        font-weight: normal;
+        white-space: nowrap;
+        padding-bottom: 8px; /* 숫자와 밑변을 맞추기 위한 패딩 */
+      }
+
+      .auth-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2100;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .auth-modal-overlay.open {
+        display: flex;
+      }
+
+      .auth-modal {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 20px;
+        padding: 14px 12px 18px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+        color: #111;
+      }
+
+      .auth-brand {
+        margin: 8px 0 12px;
+        text-align: center;
+        line-height: 0;
+      }
+      .auth-brand__img {
+        display: block;
+        width: 100%;
+        max-height: 140px;
+        object-fit: contain;
+        margin: 0 auto;
+      }
+      .auth-mode {
+        display: flex;
+        margin: 0 0 12px;
+        border-bottom: 1px solid #e8e8e8;
+      }
+      .auth-mode__btn {
+        flex: 1;
+        height: 46px;
+        border: 0;
+        background: none;
+        font-size: 15px;
+        font-weight: 700;
+        color: #8a8a8a;
+        cursor: pointer;
+        position: relative;
+      }
+      .auth-mode__btn[aria-selected="true"] {
+        color: #ed1d32;
+      }
+      .auth-mode__btn[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 0;
+        height: 3px;
+        border-radius: 2px 2px 0 0;
+        background: #ed1d32;
+      }
+      .auth-inset-title {
+        margin: 0 0 12px;
+        padding-left: 16px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ed1d32;
+      }
+      .auth-inset {
+        border: 1px solid #d4d4d4;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .auth-inset__row {
+        position: relative;
+        border-top: 1px solid #ebebeb;
+      }
+      .auth-inset__row:first-of-type {
+        border-top: 0;
+      }
+      .naver-inp {
+        width: 100%;
+        height: 56px;
+        border: 0;
+        margin: 0;
+        padding: 18px 16px 0;
+        font-size: 16px;
+        background: #fff;
+      }
+      .naver-inp::placeholder {
+        color: transparent;
+      }
+      .auth-float {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #b0b0b0;
+        pointer-events: none;
+        transition: all 0.16s ease;
+        background: #fff;
+        padding: 0 4px;
+      }
+      .naver-inp:focus + .auth-float,
+      .naver-inp:not(:placeholder-shown) + .auth-float {
+        top: 10px;
+        transform: translateY(0);
+        font-size: 11px;
+        color: #8c8c8c;
+      }
+      .auth-extras {
+        margin: 12px 0;
+        font-size: 12px;
+        color: #555;
+      }
+      .auth-keep {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+      .auth-btn-main {
+        width: 100%;
+        height: 50px;
+        border: 0;
+        border-radius: 10px;
+        background: #ed1d32;
+        color: #fff;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .auth-btn-main:hover,
+      .auth-btn-main:focus-visible {
+        background: #c81326;
+      }
+      .naver-inp:focus {
+        outline: 2px solid #ed1d32;
+        outline-offset: -2px;
+      }
+      .auth-keep input {
+        accent-color: #ed1d32;
+      }
+      .auth-foot {
+        margin-top: 12px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .auth-foot a,
+      .auth-foot__btn {
+        color: #888;
+        text-decoration: none;
+        background: none;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+      .auth-foot-sep {
+        margin: 0 4px;
+        color: #ccc;
+      }
+      .auth-pane {
+        display: none;
+      }
+      .auth-pane.active {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .auth-pane form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .auth-error {
+        min-height: 22px;
+        margin: 0;
+        font-size: 13px;
+        color: #d61f35;
+        display: none;
+      }
+
+      .profile-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2110;
+        padding: 20px;
+      }
+      .profile-modal-overlay.open {
+        display: flex;
+      }
+      .profile-modal {
+        width: 100%;
+        max-width: 620px;
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px;
+        color: #111;
+      }
+      .profile-title {
+        margin: 0 0 12px;
+        font-size: 24px;
+        font-weight: 800;
+      }
+      .profile-preview {
+        width: 96px;
+        height: 96px;
+        border-radius: 999px;
+        object-fit: cover;
+        border: 1px solid #d4d4d4;
+        margin-bottom: 10px;
+      }
+      .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .profile-grid .auth-field:last-child {
+        grid-column: 1 / -1;
+      }
+      .auth-field {
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .auth-input {
+        width: 100%;
+        height: 48px;
+        border-radius: 8px;
+        border: 1px solid #d4d4d4;
+        padding: 0 14px;
+        font-size: 15px;
+      }
+      .auth-label {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8e8e8e;
+        font-size: 14px;
+        background: #fff;
+        padding: 0 4px;
+        transition: all 0.18s ease;
+      }
+      .auth-input:focus + .auth-label,
+      .auth-input:not(:placeholder-shown) + .auth-label {
+        top: 0;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #111;
+      }
+      .profile-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .btn-secondary {
+        width: 100%;
+        height: 46px;
+        border: 1px solid #cfcfcf;
+        border-radius: 8px;
+        background: #f7f7f7;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .auth-submit {
+        width: 100%;
+        height: 48px;
+        border: 0;
+        border-radius: 8px;
+        background: #111;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      html,
+      body,
+      .stage-viewport,
+      .page {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        display: block !important;
+      }
+    </style>
+    <link rel="stylesheet" href="css/sparring-user-hero-shape.css?v=1" />
+  </head>
+  <body>
+    <!-- window.location 미사용 마이페이지 이동용 (숨김 링크 programmatic click) -->
+    <a id="silentMypageNav" href="mypage.html" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden" tabindex="-1" aria-hidden="true">mypage</a>
+    <div class="stage-viewport">
+      <nav class="hero-nav" aria-label="메인 내비게이션">
+        <a href="index.html">홈</a>
+        <a href="tutorial-new.html">트레이닝</a>
+        <a href="diet-boxing.html">다이어트 복싱</a>
+        <a href="sparring.html" class="active">스파링</a>
+        <a href="stretch.html">스트레칭</a>
+        <button id="navLoginBtn" type="button" class="drawer-auth-link">
+          <span id="userLabel">로그인</span>
+        </button>
+      </nav>
+      <main class="page">
+        <section class="spar-hero">
+          <!-- 평행사변형@2x — 위치·크기는 아래 <style>의 .spar-hero-shape -->
+          <img crossorigin="anonymous" class="spar-hero-shape" src="https://lh3.googleusercontent.com/d/1QH3XaFWgPDjkpXbD2qo9Arbo70sLR3Y6=w2000" alt="" />
+          <img crossorigin="anonymous" class="spar-hero-title"
+            src="https://lh3.googleusercontent.com/d/14jguV6ikFruZiU8Ets_j0scPc2m2bVDc=w2000"
+            alt="SPARRING"
+          />
+
+          <div class="spar-hero-copy">
+            <p>영상 속 트레이너의 움직임에 맞춰 신나게 펀치를 뻗어보세요.</p>
+            <p>
+              AI가 당신의 자세를 실시간으로 분석해 완벽한 폼으로 교정해 줍니다.
+            </p>
+          </div>
+        </section>
+        <div class="spar-divider"></div>
+        <section class="spar-mode">
+          <!-- 섹션2 배경: 다이어트복싱 2번째 배경@3x (기존 스파링 전용 배경 이미지 제거) -->
+          <img crossorigin="anonymous" class="spar-mode-bg"
+            src="https://lh3.googleusercontent.com/d/1_r0vKkO6Njt8xS24qmSbI8QQWCw8W7h1=w2000"
+            alt=""
+          />
+          <button type="button" class="spar-mode-btn" aria-label="모드 선택">
+            모드 선택하기
+          </button>
+          <div class="spar-cards">
+            <a
+              class="spar-card"
+              href="./ready.html?target=sparring-game.html&amp;level=beginner"
+              onclick="try{localStorage.setItem('boxer_sparring_level','beginner');}catch(e){}"
+              aria-label="초보 난이도"
+            >
+              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1rDPcR8JCroL_sbC8LSdaqhYvCUYQghTd=w2000" alt="초보 난이도" />
+            </a>
+            <a
+              class="spar-card"
+              href="./ready.html?target=sparring-game.html&amp;level=intermediate"
+              onclick="try{localStorage.setItem('boxer_sparring_level','intermediate');}catch(e){}"
+              aria-label="보통 난이도"
+            >
+              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1XinhVhUMte7JYBK8zQkxAfiTRSuTOIG3=w2000" alt="보통 난이도" />
+            </a>
+            <a
+              class="spar-card"
+              href="./ready.html?target=sparring-game.html&amp;level=advanced"
+              onclick="try{localStorage.setItem('boxer_sparring_level','advanced');}catch(e){}"
+              aria-label="어려움 난이도"
+            >
+              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1BKKOaB5I2BxykyAYIU9qeJX5wLN_tdSb=w2000" alt="어려움 난이도" />
+            </a>
+            <a
+              class="spar-card"
+              href="./ready.html?target=sparring-game.html&amp;level=pro"
+              onclick="try{localStorage.setItem('boxer_sparring_level','pro');}catch(e){}"
+              aria-label="프로 난이도"
+            >
+              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1w6F6GsrkVeyetyaxYKc3-RIR3mVKCUHC=w2000" alt="프로 난이도" />
+            </a>
+          </div>
+        </section>
+        <div class="spar-divider"></div>
+      </main>
+    </div>
+    <div id="dimLayer" class="dim" aria-hidden="true"></div>
+    <aside id="drawer" class="drawer" aria-hidden="true">
+      <button id="closeDrawerBtn" class="drawer-close" aria-label="메뉴 닫기">
+        &times;
+      </button>
+      <div id="drawerInner" class="drawer-inner"></div>
+    </aside>
+    <div
+      id="authModal"
+      class="auth-modal-overlay"
+      onclick="closeAuthModalOnOverlay(event)"
+    >
+      <div
+        class="auth-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="로그인 및 회원가입"
+      >
+        <div class="auth-brand">
+          <img crossorigin="anonymous" class="auth-brand__img" src="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000" alt="BOXER" />
+        </div>
+        <div class="auth-mode" role="tablist" aria-label="로그인 또는 회원가입">
+          <button
+            class="auth-mode__btn"
+            type="button"
+            role="tab"
+            id="tabLogin"
+            aria-selected="true"
+            onclick="switchAuthTab('login')"
+          >
+            로그인
+          </button>
+          <button
+            class="auth-mode__btn"
+            type="button"
+            role="tab"
+            id="tabSignup"
+            aria-selected="false"
+            onclick="switchAuthTab('signup')"
+          >
+            회원가입
+          </button>
+        </div>
+        <div class="auth-pane active" id="paneLogin">
+          <p class="auth-inset-title">아이디(이메일) 로그인</p>
+          <form onsubmit="handleLogin(event)">
+            <div class="auth-inset">
+              <div class="auth-inset__row">
+                <input
+                  id="loginEmail"
+                  class="naver-inp"
+                  type="email"
+                  autocomplete="username"
+                  placeholder=" "
+                  required
+                /><label class="auth-float" for="loginEmail"
+                  >아이디(이메일)</label
+                >
+              </div>
+              <div class="auth-inset__row">
+                <input
+                  id="loginPassword"
+                  class="naver-inp"
+                  type="password"
+                  autocomplete="current-password"
+                  minlength="8"
+                  placeholder=" "
+                  required
+                /><label class="auth-float" for="loginPassword">비밀번호</label>
+              </div>
+            </div>
+            <div class="auth-extras">
+              <label class="auth-keep"
+                ><input type="checkbox" id="authKeepLogin" /> 로그인 상태
+                유지</label
+              >
+            </div>
+            <p id="loginError" class="auth-error"></p>
+            <button class="auth-btn-main" type="submit">로그인</button>
+          </form>
+        </div>
+        <div class="auth-pane" id="paneSignup">
+          <p class="auth-inset-title">새 계정으로 회원가입</p>
+          <form onsubmit="handleSignup(event)">
+            <div class="auth-inset">
+              <div class="auth-inset__row">
+                <input
+                  id="signupUsername"
+                  class="naver-inp"
+                  type="text"
+                  minlength="3"
+                  maxlength="20"
+                  placeholder=" "
+                  required
+                /><label class="auth-float" for="signupUsername"
+                  >닉네임 (3~20자)</label
+                >
+              </div>
+              <div class="auth-inset__row">
+                <input
+                  id="signupEmail"
+                  class="naver-inp"
+                  type="email"
+                  placeholder=" "
+                  required
+                /><label class="auth-float" for="signupEmail"
+                  >아이디(이메일)</label
+                >
+              </div>
+              <div class="auth-inset__row">
+                <input
+                  id="signupPassword"
+                  class="naver-inp"
+                  type="password"
+                  minlength="8"
+                  placeholder=" "
+                  required
+                /><label class="auth-float" for="signupPassword"
+                  >비밀번호 (8자 이상)</label
+                >
+              </div>
+            </div>
+            <p id="signupError" class="auth-error"></p>
+            <button class="auth-btn-main" type="submit">회원가입</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div
+      id="profileModal"
+      class="profile-modal-overlay"
+      onclick="closeProfileModalOnOverlay(event)"
+    >
+      <div
+        class="profile-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="프로필 수정"
+      >
+        <h3 class="profile-title">프로필 수정</h3>
+        <img crossorigin="anonymous" id="profilePreview"
+          class="profile-preview"
+          src="https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000"
+          alt="프로필 미리보기"
+        />
+        <form onsubmit="handleProfileSave(event)">
+          <div class="profile-grid">
+            <div class="auth-field">
+              <input
+                id="profileName"
+                class="auth-input"
+                type="text"
+                placeholder=" "
+              /><label class="auth-label" for="profileName">이름</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profilePhone"
+                class="auth-input"
+                type="tel"
+                placeholder=" "
+              /><label class="auth-label" for="profilePhone">전화번호</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profileNickname"
+                class="auth-input"
+                type="text"
+                placeholder=" "
+              /><label class="auth-label" for="profileNickname">닉네임</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profilePassword"
+                class="auth-input"
+                type="password"
+                placeholder=" "
+              /><label class="auth-label" for="profilePassword">비밀번호</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profilePhoto"
+                class="auth-input"
+                type="file"
+                accept="image/*"
+              />
+            </div>
+          </div>
+          <p id="profileError" class="auth-error"></p>
+          <div class="profile-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="closeProfileModal()"
+            >
+              취소</button
+            ><button class="auth-submit" type="submit">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script src="js/core/api.js?v=8000"></script>
+    <script src="js/core/auth.js?v=8000"></script>
+    <script>
+      function goMypageViaLink() {
+        var a = document.getElementById("silentMypageNav");
+        if (a) a.click();
+      }
+      let isLoggedIn =
+        typeof auth !== "undefined" && typeof auth.isLoggedIn === "function"
+          ? auth.isLoggedIn()
+          : false;
+      let isDrawerOpen = false;
+      const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+      const dimLayer = document.getElementById("dimLayer");
+      const drawer = document.getElementById("drawer");
+      const drawerInner = document.getElementById("drawerInner");
+      const userLabel = document.getElementById("userLabel");
+      const navLoginBtn = document.getElementById("navLoginBtn");
+      const profilePhotoInput = document.getElementById("profilePhoto");
+      const profilePreview = document.getElementById("profilePreview");
+
+      function beforeOverlay() {
+        return `
+    <div style="position: relative; width: 100%; height: 100%; background: #fff; overflow: hidden; display: flex; flex-direction: column; font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 30px; position: relative; z-index: 10;">
+        <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000" alt="BOXER" style="width: 80px; height: 80px; object-fit: contain;" />
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 15px;">
+          <div style="background: #F2F2F2; padding: 10px 20px; border-radius: 5px; font-size: 16px; color: #666; font-weight: 500;">
+            로그인 후 이용 하실 수 있습니다.
+          </div>
+          <div style="display: flex; gap: 20px;">
+            <button type="button" onclick="openAuthModal('login')" style="border:none; background:transparent; font-size: 20px; font-weight: 800; color: #000; cursor:pointer; padding:0;">로그인</button>
+            <button type="button" onclick="openAuthModal('signup')" style="border:none; background:transparent; font-size: 20px; font-weight: 800; color: #000; cursor:pointer; padding:0;">회원가입</button>
+          </div>
+        </div>
+      </div>
+      <div style="padding: 0 40px; margin-top: 50px; position: relative; z-index: 5;">
+        <h2 style="margin: 0; font-size: 72px; font-weight: 900; line-height: 1.1; letter-spacing: -3px; color: #000;">
+          <span style="display: block;">집에서 쉽게</span>
+          <span style="display: block;">복싱을 즐기세요</span>
+        </h2>
+      </div>
+      <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; z-index: 1; pointer-events: none;">
+        <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/19ZNW9ic3jcD0cefm9UWToxY_kyxJG8N0=w2000" alt="Boxer Illustration" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;" />
+      </div>
+      <button id="closeDrawerBtnOverlay" onclick="closeDrawer()" style="position: absolute; top: 20px; right: 20px; border: none; background: transparent; font-size: 40px; font-weight: 300; color: #000; cursor: pointer; z-index: 100;">&times;</button>
+    </div>
+  `;
+      }
+      function afterOverlay() {
+        const profileImg =
+          auth.normalizeDriveProfileImageUrl(localStorage.getItem("boxer_profile_image")) ||
+          "https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000";
+        const cachedUser =
+          typeof auth !== "undefined" && auth.getCachedUser
+            ? auth.getCachedUser()
+            : null;
+        const nickname = cachedUser?.username || "User NickName님";
+        return `<section class="drawer-profile"><img crossorigin="anonymous" src="${profileImg}" alt="BOXER 로고" /><div><p style="margin:0;font-size:25px;line-height:1.2;">${nickname}</p><p style="margin:18px 0 0;font-size:25px;line-height:1.2;">오늘도 트레이닝 해요!</p><div class="drawer-links" style="margin-top:16px;"><button type="button" class="drawer-action-btn" onclick="openProfileModal()">프로필 수정</button><button type="button" class="drawer-action-btn" onclick="performLogout()">로그아웃</button></div></div></section>`;
+      }
+      function getDisplayNickname() {
+        const cachedUser =
+          typeof auth !== "undefined" && auth.getCachedUser
+            ? auth.getCachedUser()
+            : null;
+        const rawName = (cachedUser?.username || "").trim();
+        if (!rawName) return null;
+        return rawName.endsWith("님") ? rawName : `${rawName}님`;
+      }
+      function syncLoginState() {
+        const tokenBased =
+          typeof auth !== "undefined" && typeof auth.isLoggedIn === "function"
+            ? auth.isLoggedIn()
+            : false;
+        isLoggedIn = isLoggedIn || tokenBased;
+        return isLoggedIn;
+      }
+      function render() {
+        const loggedIn = syncLoginState();
+        const nickname = getDisplayNickname();
+        // 로그인 상태에 따른 텍스트 및 컬러 동적 변경
+        if (loggedIn) {
+          userLabel.textContent = nickname || "내 계정";
+          userLabel.style.color = "#ED1D32"; // 로그인 시 닉네임 레드 컬러 적용
+        } else {
+          userLabel.textContent = "로그인";
+          userLabel.style.color = ""; // 로그아웃 시 원래 색상 복구
+        }
+        drawerInner.innerHTML = loggedIn ? afterOverlay() : beforeOverlay();
+      }
+      async function initAuthState() {
+        if (typeof auth === "undefined") {
+          isLoggedIn = false;
+          render();
+          return;
+        }
+        if (
+          typeof auth.handlePageLoadSessionCheck === "function" &&
+          !auth.handlePageLoadSessionCheck()
+        ) {
+          isLoggedIn = false;
+          render();
+          return;
+        }
+        if (typeof auth.validateSession === "function") {
+          try {
+            isLoggedIn = await auth.validateSession();
+          } catch {
+            isLoggedIn = false;
+          }
+        } else if (typeof auth.isLoggedIn === "function") {
+          isLoggedIn = auth.isLoggedIn();
+        } else {
+          isLoggedIn = false;
+        }
+        render();
+      }
+      function openDrawer() {
+        if (isLoggedIn) {
+          goMypageViaLink();
+          return;
+        }
+        isDrawerOpen = true;
+        document.body.classList.add("drawer-open");
+        drawer.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        isDrawerOpen = false;
+        document.body.classList.remove("drawer-open");
+        drawer.setAttribute("aria-hidden", "true");
+      }
+      function openAuthModal(tab = "login") {
+        const modal = document.getElementById("authModal");
+        modal.classList.add("open");
+        switchAuthTab(tab);
+      }
+      function closeAuthModal() {
+        document.getElementById("authModal").classList.remove("open");
+      }
+      function closeAuthModalOnOverlay(event) {
+        if (event.target.id === "authModal") closeAuthModal();
+      }
+      function openProfileModal() {
+        const user =
+          typeof auth !== "undefined" && auth.getCachedUser
+            ? auth.getCachedUser()
+            : null;
+        const profileImage =
+          auth.normalizeDriveProfileImageUrl(localStorage.getItem("boxer_profile_image")) ||
+          "https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000";
+        document.getElementById("profileName").value = user?.name || "";
+        document.getElementById("profilePhone").value = user?.phone || "";
+        document.getElementById("profileNickname").value = user?.username || "";
+        document.getElementById("profilePassword").value = "";
+        document.getElementById("profileError").style.display = "none";
+        profilePreview.src = profileImage;
+        document.getElementById("profileModal").classList.add("open");
+      }
+      function closeProfileModal() {
+        document.getElementById("profileModal").classList.remove("open");
+      }
+      function closeProfileModalOnOverlay(event) {
+        if (event.target.id === "profileModal") closeProfileModal();
+      }
+      async function handleProfileSave(event) {
+        event.preventDefault();
+        const errorEl = document.getElementById("profileError");
+        errorEl.style.display = "none";
+        try {
+          const currentUser =
+            typeof auth !== "undefined" && auth.getCachedUser
+              ? auth.getCachedUser() || {}
+              : {};
+          const mergedUser = {
+            ...currentUser,
+            name: document.getElementById("profileName").value.trim(),
+            phone: document.getElementById("profilePhone").value.trim(),
+            username:
+              document.getElementById("profileNickname").value.trim() ||
+              currentUser.username,
+          };
+          localStorage.setItem("boxer_user", JSON.stringify(mergedUser));
+          closeProfileModal();
+          render();
+        } catch (error) {
+          errorEl.textContent = error.message || "프로필 저장에 실패했습니다.";
+          errorEl.style.display = "block";
+        }
+      }
+      function performLogout() {
+        if (typeof auth !== "undefined" && typeof auth.logout === "function") {
+          auth.logout({ redirect: false });
+          isLoggedIn = false;
+          closeDrawer();
+          render();
+          return;
+        }
+        localStorage.removeItem("boxer_token");
+        localStorage.removeItem("boxer_user");
+        localStorage.removeItem("boxer_logged_in");
+        localStorage.removeItem("boxer_last_activity");
+        isLoggedIn = false;
+        closeDrawer();
+        render();
+      }
+      function switchAuthTab(tab) {
+        const tLogin = document.getElementById("tabLogin");
+        const tSignup = document.getElementById("tabSignup");
+        tLogin.setAttribute(
+          "aria-selected",
+          tab === "login" ? "true" : "false",
+        );
+        tSignup.setAttribute(
+          "aria-selected",
+          tab === "signup" ? "true" : "false",
+        );
+        document
+          .getElementById("paneLogin")
+          .classList.toggle("active", tab === "login");
+        document
+          .getElementById("paneSignup")
+          .classList.toggle("active", tab === "signup");
+        const le = document.getElementById("loginError");
+        const se = document.getElementById("signupError");
+        if (le) le.style.display = "none";
+        if (se) se.style.display = "none";
+      }
+      async function handleLogin(event) {
+        event.preventDefault();
+        const errEl = document.getElementById("loginError");
+        errEl.style.display = "none";
+        if (typeof auth === "undefined") {
+          errEl.textContent = "인증 모듈을 불러오지 못했습니다.";
+          errEl.style.display = "block";
+          return;
+        }
+        try {
+          let user = await auth.login(
+            document.getElementById("loginEmail").value.trim(),
+            document.getElementById("loginPassword").value,
+          );
+          if (!user && typeof auth.fetchCurrentUser === "function")
+            user = await auth.fetchCurrentUser();
+          isLoggedIn = !!(
+            (typeof auth.isLoggedIn === "function" && auth.isLoggedIn()) ||
+            user
+          );
+          closeAuthModal();
+          closeDrawer();
+          render();
+        } catch (error) {
+          errEl.textContent = error.message || "로그인에 실패했습니다.";
+          errEl.style.display = "block";
+        }
+      }
+      async function handleSignup(event) {
+        event.preventDefault();
+        const errEl = document.getElementById("signupError");
+        errEl.style.display = "none";
+        if (typeof auth === "undefined") {
+          errEl.textContent = "인증 모듈을 불러오지 못했습니다.";
+          errEl.style.display = "block";
+          return;
+        }
+        try {
+          const signupResult = await auth.signup(
+            document.getElementById("signupUsername").value.trim(),
+            document.getElementById("signupEmail").value.trim(),
+            document.getElementById("signupPassword").value,
+          );
+          isLoggedIn = !!(
+            (typeof auth.isLoggedIn === "function" && auth.isLoggedIn()) ||
+            signupResult?.token ||
+            signupResult?.access_token
+          );
+          closeAuthModal();
+          closeDrawer();
+          render();
+        } catch (error) {
+          errEl.textContent = error.message || "회원가입에 실패했습니다.";
+          errEl.style.display = "block";
+        }
+      }
+
+      navLoginBtn.addEventListener("click", () => {
+        if (isLoggedIn) {
+          goMypageViaLink();
+          return;
+        }
+        openAuthModal("login");
+      });
+      profilePhotoInput.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || "");
+          localStorage.setItem("boxer_profile_image", result);
+          profilePreview.src = result;
+        };
+        reader.readAsDataURL(file);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && isDrawerOpen) closeDrawer();
+      });
+      window.addEventListener("storage", (event) => {
+        if (
+          event.key === "boxer_logged_in" ||
+          event.key === "boxer_user" ||
+          event.key === "boxer_auth_event"
+        ) {
+          initAuthState();
+        }
+      });
+
+      initAuthState();
+    </script>
+  </body>
+</html>

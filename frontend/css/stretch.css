@@ -1,0 +1,176 @@
+/* ════════════════════════════════════════════════════════
+   스트레칭(재활) 페이지 — Figma node 583:192 "재활운동페이지"
+   무엇: index.css의 다크 body·게임용 레이아웃을 이 페이지만 흰 배경으로 덮음
+   왜: 홈/트레이닝과 동일한 내비·모달은 index.css를 쓰면서 시안 배경은 #fff
+════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: "Paperlogy ExtraBold";
+  src: url("../font/Paperlogy-8ExtraBold.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Paperlogy Medium";
+  src: url("../font/Paperlogy-5Medium.ttf") format("truetype");
+  font-display: swap;
+}
+
+body.stretch-page {
+  display: block !important;
+  width: 100% !important;
+  min-height: 100% !important;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  align-items: unset !important;
+  justify-content: unset !important;
+  background: #ffffff !important;
+  color: #0b0b0b !important;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body.stretch-page input,
+body.stretch-page textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ── 섹션 1 히어로: Figma h 1118 + 하단 빨간 띠 h 50 (노드 583:222) ── */
+.stretch-hero {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  border-bottom: 50px solid #ed1d32;
+}
+
+.stretch-hero img {
+  width: 100%;
+  display: block;
+  height: auto;
+}
+
+/* 1. 섹션의 억지 높이 제거 및 바닥 밀착 준비 */
+.stretch-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 0; /* 억지로 늘어났던 높이 제거 */
+  background: #ffffff;
+  border-bottom: 50px solid #ed1d32;
+}
+
+.stretch-info-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end; /* 이미지 등 자식 요소를 바닥(빨간선)으로 강제 밀착 */
+  justify-content: center;
+  width: 100%;
+  max-width: 1500px;
+  min-height: 0; /* 억지로 늘어났던 높이 제거 */
+  padding: 0 20px;
+  margin: 0 auto;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+/* 2. 전체 섹션 높이 압축을 위해 이미지 높이 조절 */
+.stretch-info-left {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin: 0;
+  padding: 0;
+}
+
+.stretch-info-left img {
+  width: auto;
+  height: 800px; /* 950px에서 800px로 줄여서 전체 섹션 높이를 컴팩트하게 압축 */
+  max-width: none;
+  object-fit: contain;
+  object-position: bottom right;
+  display: block;
+}
+
+/* 3. 텍스트 영역이 바닥 공간을 파먹지 않도록 여백 제거 */
+.stretch-info-right {
+  flex: 1;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: center; /* 텍스트는 바닥으로 안 떨어지고 섹션 정중앙에 예쁘게 오도록 설정 */
+  padding: 0; /* 바닥을 밑으로 밀어내던 padding-bottom 삭제 */
+  box-sizing: border-box;
+}
+
+/* 타이틀: 극대 폰트 + 쫀쫀한 자간·타이트 줄간격 */
+.stretch-info-right h1 {
+  margin: 0;
+  padding: 0;
+  font-family: "Paperlogy ExtraBold", sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.stretch-info-right h1 > span {
+  margin: 0;
+  padding: 0;
+  font-size: clamp(80px, 7vw, 120px);
+  line-height: 1.05;
+  letter-spacing: -4px;
+  color: #0b0b0b;
+}
+
+/* 본문: 고정 <br> + 단어 보존 */
+.stretch-desc {
+  margin: 30px 0 0;
+  max-width: 100%;
+  font-family: "Paperlogy Medium", sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.5;
+  word-break: keep-all;
+  letter-spacing: -0.03em;
+  color: #000000;
+}
+
+/* 버튼: 크고 시원하게 */
+.stretch-cta {
+  margin-top: 40px;
+  width: auto;
+  max-width: 100%;
+  min-height: 0;
+  padding: 20px 50px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50px;
+  background: #ed1d32;
+  box-shadow:
+    2px 8px 4px rgba(0, 0, 0, 0.25),
+    inset 0 4px 4px rgba(0, 0, 0, 0.25);
+  font-family: "Paperlogy SemiBold", sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.25;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.stretch-cta:hover,
+.stretch-cta:focus-visible {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}

@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - 가상 스파링</title>
+    <style>
+      :root {
+        --bg-dark: #050505;
+        --feedback-red: #ed1d32;
+        --text-white: #f5f5f5;
+
+        /*
+         * === HP 바 (유저·CPU 동일 박스 크기 + 게이지 clip-path) ===
+         * 막대 가로·세로를 같이 바꿀 때 → --hp-bar-width, --hp-bar-height 만 수정
+         * CPU만 가로로 옮길 때 → --cpu-hp-left / 유저만 → --user-hp-left
+         * 색이 프레임 밖으로 보이면 → --hp-layers-*·--hp-clip-* 조정 / 빈틈·노란 비침이 있으면 --hp-gauge-overscale
+         * (주의) var(600px) 같은 문법은 무효 — 픽셀은 600px, 변수는 var(--이름)만
+         */
+        --hp-bar-width: 336px;
+        --hp-bar-height: 40px;
+        --user-hp-width: var(--hp-bar-width);
+        --user-hp-bar-height: var(--hp-bar-height);
+        --cpu-hp-width: var(--hp-bar-width);
+        --cpu-hp-bar-height: var(--hp-bar-height);
+        --user-hp-left: 22px;
+        --cpu-hp-top: 7px;
+        --cpu-hp-left: clamp(660px, 48vw, 900px);
+        --hp-layers-v: 8px;
+        --hp-layers-user-l: 14px;
+        --hp-layers-user-r: 16px;
+        --hp-layers-cpu-l: 16px;
+        --hp-layers-cpu-r: 14px;
+        --hp-clip-user-r: 98%;
+        --hp-clip-cpu-l: 2%;
+        /* 무엇: 구간 100%일 때 scaleX 살짝 초과 / 왜: 서브픽셀·클립 경계에서 밑층(노랑)이 비치는 현상 완화 */
+        --hp-gauge-overscale: 1.008;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg-dark);
+        color: var(--text-white);
+        font-family: "Paperlogy SemiBold", sans-serif;
+      }
+      .arena {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 72% 28%;
+      }
+      /* 무엇: 영상 스택은 HUD 아래 / 왜: 캔버스·비디오가 포인터 없어도 시각적으로 HP 위로 올라오지 않게 */
+      .left-stage {
+        position: relative;
+        z-index: 0;
+        background: #000;
+        overflow: hidden;
+      }
+      #coachVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      #trajectoryCanvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      @keyframes shake {
+        0% {
+          transform: translate(1px, 1px) rotate(0deg);
+        }
+        10% {
+          transform: translate(-1px, -2px) rotate(-1deg);
+        }
+        20% {
+          transform: translate(-3px, 0px) rotate(1deg);
+        }
+        30% {
+          transform: translate(3px, 2px) rotate(0deg);
+        }
+        40% {
+          transform: translate(1px, -1px) rotate(1deg);
+        }
+        50% {
+          transform: translate(-1px, 2px) rotate(-1deg);
+        }
+        100% {
+          transform: translate(1px, -2px) rotate(0deg);
+        }
+      }
+      .camera-shake {
+        animation: shake 0.3s;
+        animation-iteration-count: 1;
+      }
+      /* 무엇: 유저 피격 시 전체 아레나 흔들림 / 왜: 메인 컨테이너 피드백 — realtimeAnalysis.triggerScreenShake와 짝 */
+      @keyframes bx-screen-shake-keyframes {
+        0%,
+        100% {
+          transform: translate3d(0, 0, 0);
+        }
+        15% {
+          transform: translate3d(-8px, 5px, 0) rotate(-0.4deg);
+        }
+        30% {
+          transform: translate3d(7px, -4px, 0) rotate(0.35deg);
+        }
+        45% {
+          transform: translate3d(-5px, -3px, 0) rotate(-0.25deg);
+        }
+        60% {
+          transform: translate3d(6px, 3px, 0) rotate(0.2deg);
+        }
+        75% {
+          transform: translate3d(-3px, 2px, 0);
+        }
+      }
+      #arena.bx-screen-shake {
+        animation: bx-screen-shake-keyframes 0.42s ease-out;
+        will-change: transform;
+      }
+      .countdown {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(48px, 7.5vw, 118px);
+        font-weight: 900;
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 12;
+        transition: opacity 0.25s ease;
+      }
+      .countdown.fade {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .right-panel {
+        display: grid;
+        grid-template-rows: 62% 38%;
+        border-left: 1px solid #222;
+      }
+      .webcam-wrap {
+        position: relative;
+        background: #fff;
+        overflow: hidden;
+      }
+      #webcamVideo,
+      #webcamCanvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #webcamCanvas {
+        pointer-events: none;
+      }
+      .feedback-wrap {
+        background: var(--feedback-red);
+        padding: 9px 7px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .feedback-title {
+        margin: 0;
+        font-size: 13px;
+      }
+      #feedbackText {
+        margin: 0;
+        line-height: 1.4;
+        font-size: 11.5px;
+        min-height: 40px;
+        color: var(--text-white);
+      }
+
+      .hud {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        pointer-events: none;
+      }
+      .hud-left,
+      .hud-right {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .hud-left {
+        top: 5px;
+        left: var(--user-hp-left);
+      }
+      .hud-right {
+        top: var(--cpu-hp-top);
+        left: var(--cpu-hp-left);
+        right: auto;
+      }
+      .name {
+        margin: 0;
+        font-size: 13px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        font-family: "Paperlogy SemiBold", sans-serif;
+      }
+      #user-hp-container {
+        width: var(--user-hp-width);
+        flex-shrink: 0;
+      }
+      #cpu-hp-container {
+        width: var(--cpu-hp-width);
+        flex-shrink: 0;
+      }
+      /* 무엇: hp-wrapper = 프레임+게이지 공통 상자 / 왜: relative로 자식 absolute·슬롯 기준 */
+      .hp-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+      }
+      #user-hp-container .hp-wrapper {
+        width: var(--user-hp-width);
+        height: var(--user-hp-bar-height);
+      }
+      #cpu-hp-container .hp-wrapper {
+        width: var(--cpu-hp-width);
+        height: var(--cpu-hp-bar-height);
+      }
+      /* 무엇: 체력 fill 전용 슬롯 / 왜: 셸(img)과 색(.layers) 부모-자식 분리, inset은 슬롯에만 */
+      .hp-gauge-stack {
+        position: absolute;
+        z-index: 2;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      #user-hp-container .hp-gauge-stack {
+        top: var(--hp-layers-v);
+        bottom: var(--hp-layers-v);
+        left: var(--hp-layers-user-l);
+        right: var(--hp-layers-user-r);
+      }
+      #cpu-hp-container .hp-gauge-stack {
+        top: var(--hp-layers-v);
+        bottom: var(--hp-layers-v);
+        left: var(--hp-layers-cpu-l);
+        right: var(--hp-layers-cpu-r);
+      }
+      /* 무엇: 외곽 프레임 PNG / 왜: 하트·흰 테두리가 게이지보다 위(z-index) */
+      .shell-image-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 20;
+        pointer-events: none;
+        object-fit: contain;
+        object-position: center;
+      }
+      /* 무엇: 색 레이어 묶음 / 왜: 슬롯 안을 꽉 채우고 clip-path로 사선 창에 맞춤 */
+      .layers {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        overflow: hidden;
+      }
+      #user-hp-container .layers {
+        clip-path: polygon(0 0, 100% 0, var(--hp-clip-user-r) 100%, 0 100%);
+      }
+      #cpu-hp-container .layers {
+        clip-path: polygon(var(--hp-clip-cpu-l) 0, 100% 0, 100% 100%, 0 100%);
+      }
+      .layer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        transform-origin: left center;
+        transition: transform 0.22s linear;
+      }
+      #user-hp-container .layer,
+      #cpu-hp-container .layer {
+        width: 102%;
+        max-width: none;
+        backface-visibility: hidden;
+        will-change: transform;
+      }
+      .user-red {
+        z-index: 1;
+        background: #df2d2d;
+      }
+      .user-yellow {
+        z-index: 2;
+        background: #f4db3f;
+      }
+      .user-green {
+        z-index: 3;
+        background: #37d24a;
+      }
+      .cpu-red {
+        z-index: 1;
+        background: #df2d2d;
+      }
+      .cpu-yellow {
+        z-index: 2;
+        background: #f4db3f;
+      }
+      .cpu-green {
+        z-index: 3;
+        background: #38c95f;
+      }
+      .cpu-light-blue {
+        z-index: 4;
+        background: #6ad7ff;
+      }
+      .cpu-blue {
+        z-index: 5;
+        background: #2966ff;
+      }
+
+      .survival-box {
+        display: none;
+        text-align: left;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+        padding: 4px 6px;
+        width: var(--cpu-hp-width);
+      }
+      .survival-box .mode {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.3px;
+      }
+      .survival-box .combo {
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: #ffe27a;
+      }
+
+      .damage-flash {
+        position: absolute;
+        inset: 0;
+        border: 0 solid rgba(255, 0, 0, 0);
+        pointer-events: none;
+        z-index: 14;
+        transition: border 0.15s ease;
+      }
+      .damage-flash.show {
+        border: 7px solid rgba(255, 0, 0, 0.72);
+      }
+
+      .result {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.75);
+        text-align: center;
+      }
+      .result h2 {
+        margin: 0 0 4px;
+        font-size: clamp(17px, 2.8vw, 40px);
+      }
+      .result p {
+        margin: 0;
+        font-size: 12px;
+      }
+      .debug-help {
+        font-size: 10px;
+        opacity: 0.85;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="arena" id="arena">
+      <div
+        id="syncHelper"
+        style="
+          display: none;
+          position: absolute;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: #00ffa3;
+          font-size: 32px;
+          font-family: monospace;
+          font-weight: bold;
+          z-index: 9999;
+          background: rgba(0, 0, 0, 0.7);
+          padding: 5px 15px;
+          border-radius: 8px;
+        "
+      >
+        0.00s
+      </div>
+      <div class="left-stage" id="leftStage">
+        <!-- 로컬 파일 전용: 외부 원본 URL 없음 · 캔버스는 동일 출처에서만 drawImage (crossorigin 생략) -->
+        <video id="coachVideo" playsinline preload="metadata"></video>
+        <canvas id="trajectoryCanvas"></canvas>
+        <div class="countdown" id="countdown">3</div>
+        <div class="damage-flash" id="damageFlash"></div>
+        <div class="result" id="resultLayer">
+          <div>
+            <h2 id="resultTitle">K.O.</h2>
+            <p id="resultDesc"></p>
+          </div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="webcam-wrap">
+          <video id="webcamVideo" autoplay muted playsinline></video>
+          <canvas id="webcamCanvas"></canvas>
+        </div>
+        <div class="feedback-wrap">
+          <h2 class="feedback-title">실시간 피드백</h2>
+          <p id="feedbackText">카운트다운이 끝나면 시작됩니다.</p>
+          <p class="debug-help">테스트: `A`(상대 타격), `L`(내 피격)</p>
+        </div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-left" id="user-hp-container">
+          <p class="name"><span id="user-nickname-display">로딩 중...</span></p>
+          <div class="hp-wrapper">
+            <div class="hp-gauge-stack" aria-hidden="true">
+              <div class="layers" id="myLayers">
+                <div class="layer user-red" id="user-layer-red"></div>
+                <div class="layer user-yellow" id="user-layer-yellow"></div>
+                <div class="layer user-green" id="user-layer-green"></div>
+              </div>
+            </div>
+            <!-- MYHPBAR.png: https://drive.google.com/file/d/1oZRuK0m5U4XlcIYBVtyrsUc1_wjdj-yt/view — img는 lh3 임베드가 안정적 -->
+            <img
+              crossorigin="anonymous"
+              referrerpolicy="no-referrer"
+              src="https://lh3.googleusercontent.com/d/1oZRuK0m5U4XlcIYBVtyrsUc1_wjdj-yt=w2000"
+              class="shell-image-img"
+              alt="유저 HP 바"
+            />
+          </div>
+        </div>
+        <div class="hud-right" id="cpu-hp-container">
+          <p class="name" id="cpuName">CPU</p>
+          <div class="hp-wrapper" id="cpuHpShell">
+            <div class="hp-gauge-stack" aria-hidden="true">
+              <div class="layers" id="cpuLayers">
+                <div class="layer cpu-red" id="cpu-layer-red"></div>
+                <div class="layer cpu-yellow" id="cpu-layer-yellow"></div>
+                <div class="layer cpu-green" id="cpu-layer-green"></div>
+                <div class="layer cpu-light-blue" id="cpu-layer-light-blue"></div>
+                <div class="layer cpu-blue" id="cpu-layer-blue"></div>
+              </div>
+            </div>
+            <!-- CPU HP BAR3.png: https://drive.google.com/file/d/1q07oGsEEJQUwlli15pov7ZHFj9A4xWA9/view — lh3 임베드 -->
+            <img
+              crossorigin="anonymous"
+              referrerpolicy="no-referrer"
+              src="https://lh3.googleusercontent.com/d/1q07oGsEEJQUwlli15pov7ZHFj9A4xWA9=w2000"
+              class="shell-image-img"
+              alt="CPU HP 바"
+            />
+          </div>
+          <div class="survival-box" id="survivalBox">
+            <p class="mode">SURVIVAL MODE</p>
+            <p class="combo" id="survivalCombo">COMBO: 0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 최소 기능 모드: MediaPipe CDN 비활성 (로컬 번들 없이 Pose/Camera 미정의 → 포즈 추적 스킵) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script> -->
+    <script src="js/config/boxer-video-local.js"></script>
+    <script src="js/sparring/realtimeAnalysis.js"></script>
+    <script>
+      // 무엇: documentURI만 사용 / 왜: window.location 할당·치환 제거 요청
+      const params = new URLSearchParams(
+        String(document.documentURI.split("?")[1] || ""),
+      );
+      const rawLevel = (params.get("level") || "beginner").toLowerCase();
+      const levelMap = {
+        1: "beginner",
+        2: "intermediate",
+        3: "advanced",
+        4: "pro",
+        beginner: "beginner",
+        intermediate: "intermediate",
+        advanced: "advanced",
+        pro: "pro",
+        초보: "beginner",
+        보통: "intermediate",
+        어려움: "advanced",
+        프로: "pro",
+      };
+      const level = levelMap[rawLevel] || "beginner";
+      const isSurvival = level === "advanced" || level === "pro";
+      /** 무엇: 로컬 ./video/ 고정 + 한글·공백 인코딩 / 왜: Drive·외부 스트림 제거 — BOXER_VIDEO._fileUrl이 있으면 동일 규칙 재사용 */
+      function mp4_local(fileName) {
+        if (
+          window.BOXER_VIDEO &&
+          typeof window.BOXER_VIDEO._fileUrl === "function"
+        ) {
+          return window.BOXER_VIDEO._fileUrl(fileName);
+        }
+        return "./video/" + encodeURIComponent(fileName);
+      }
+      const levelConfig = {
+        beginner: { rate: 1.0, src: mp4_local("스파링초보.mp4") },
+        intermediate: { rate: 1.0, src: mp4_local("스파링보통.mp4") },
+        advanced: { rate: 1.25, src: mp4_local("스파링어려움.mp4") },
+        pro: { rate: 1.5, src: mp4_local("복싱프로.mp4") },
+      };
+
+      const coachVideo = document.getElementById("coachVideo");
+
+      function bindCoachVideoFallbackOnce() {
+        if (coachVideo.dataset.fallbackBound === "1") return;
+        coachVideo.dataset.fallbackBound = "1";
+        coachVideo.addEventListener("error", () => {
+          feedbackText.textContent =
+            "코치 영상을 불러오지 못했습니다. ./video/ 폴더에 난이도별 mp4가 있는지 확인하세요.";
+          try {
+            coachVideo.removeAttribute("src");
+          } catch (e) {
+            /* 무시 */
+          }
+        });
+      }
+      bindCoachVideoFallbackOnce();
+
+      const webcamVideo = document.getElementById("webcamVideo");
+      const webcamCanvas = document.getElementById("webcamCanvas");
+      const feedbackText = document.getElementById("feedbackText");
+      const countdown = document.getElementById("countdown");
+      const leftStage = document.getElementById("leftStage");
+      const arena = document.getElementById("arena");
+      const damageFlash = document.getElementById("damageFlash");
+      const resultLayer = document.getElementById("resultLayer");
+      const resultTitle = document.getElementById("resultTitle");
+      const resultDesc = document.getElementById("resultDesc");
+      const survivalBox = document.getElementById("survivalBox");
+      const cpuHpShell = document.getElementById("cpuHpShell");
+      const survivalCombo = document.getElementById("survivalCombo");
+      const trajectoryCanvas = document.getElementById("trajectoryCanvas");
+      const tctx = trajectoryCanvas.getContext("2d");
+
+      const myLayers = document.getElementById("myLayers");
+      const cpuLayers = document.getElementById("cpuLayers");
+      const nicknameDisplay = document.getElementById("user-nickname-display");
+
+      let gameStarted = false;
+      let comboCount = 0;
+      let trajectorySegments = [];
+      let prevFrame = null;
+      let pose = null;
+      let lastWrist = null;
+      let lastPoseTime = 0;
+      let lastVideoTime = 0;
+      let isUserDodging = false;
+      let isUserGuarding = false;
+      let isUserAttackingJAB = false;
+      let isUserAttackingCROSS = false;
+      let lastEnemyHitAt = 0;
+      let lastUserHitAt = 0;
+      let ended = false;
+
+      let jabScript = [
+        { time: 11.5, action: "video_jab", damage: 10, handled: false },
+        { time: 13.0, action: "video_hook", damage: 20, handled: false },
+        { time: 15.5, action: "video_open", handled: false },
+        { time: 18.5, action: "video_jab", damage: 10, handled: false },
+        { time: 21.0, action: "video_hook", damage: 20, handled: false },
+        { time: 24.0, action: "video_open", handled: false },
+        { time: 28.0, action: "video_jab", damage: 10, handled: false },
+        { time: 30.0, action: "video_jab", damage: 10, handled: false },
+        { time: 34.0, action: "video_hook", damage: 20, handled: false },
+        { time: 38.0, action: "video_open", handled: false },
+      ];
+
+      function resetJabScript() {
+        jabScript = jabScript.map((step) => ({ ...step, handled: false }));
+      }
+
+      function evaluateScriptStep(step) {
+        if (step.action === "video_jab" || step.action === "video_hook") {
+          const attackType = step.action === "video_jab" ? "잽" : "훅";
+          const damage = step.damage;
+          if (!isUserDodging && !isUserGuarding) {
+            hitUser(damage);
+            feedbackText.textContent = `코치 ${attackType} 공격! 방어 실패 (-${damage} HP)`;
+          } else {
+            feedbackText.textContent = `코치 ${attackType} 공격! 방어 성공!`;
+          }
+          return;
+        }
+        if (step.action === "video_open") {
+          if (isUserAttackingJAB || isUserAttackingCROSS) {
+            hitEnemy(10);
+            feedbackText.textContent = "빈틈 포착! 카운터 적중!";
+          } else {
+            feedbackText.textContent = "빈틈이 있었지만 반격이 늦었습니다.";
+          }
+        }
+      }
+
+      function handleVideoTimeline() {
+        if (!gameStarted || ended) return;
+        const now = coachVideo.currentTime || 0;
+        const syncHelper = document.getElementById("syncHelper");
+        if (syncHelper) syncHelper.textContent = now.toFixed(2) + "s";
+        if (now < lastVideoTime) resetJabScript();
+        for (const step of jabScript) {
+          if (!step.handled && now >= step.time) {
+            step.handled = true;
+            evaluateScriptStep(step);
+          }
+        }
+        lastVideoTime = now;
+      }
+
+      // 무엇: 인덱스 0 구간은 0~100(빨강 바닥) … 마지막은 최상위 구간(유저 초록·CPU 파랑) / 왜: 데미지 시 위쪽부터 깎이게 updateHpUI에서 계산함
+      const myHp = [
+        { el: document.getElementById("user-layer-red") }, // 0 ~ 100
+        { el: document.getElementById("user-layer-yellow") }, // 101 ~ 200
+        { el: document.getElementById("user-layer-green") }, // 201 ~ 300
+      ];
+      const cpuHp = [
+        { el: document.getElementById("cpu-layer-red") },
+        { el: document.getElementById("cpu-layer-yellow") },
+        { el: document.getElementById("cpu-layer-green") },
+        { el: document.getElementById("cpu-layer-light-blue") },
+        { el: document.getElementById("cpu-layer-blue") },
+      ];
+      const MAX_HP = { user: 300, cpu: 500 };
+      let currentHp = { user: 300, cpu: 500 };
+
+      // 무엇: 현재 HP(예: 250/300)를 레이어별 scaleX로 변환 / 왜: 다층 HP를 실시간으로 갱신
+      function updateHpUI(target) {
+        const isUser = target === "user";
+        const hpValue = Math.max(0, isUser ? currentHp.user : currentHp.cpu);
+        const stack = isUser ? myHp : cpuHp;
+        const resolveScale =
+          window.BoxerRealtimeAnalysis &&
+          typeof window.BoxerRealtimeAnalysis.resolveHpGaugeScaleX === "function"
+            ? window.BoxerRealtimeAnalysis.resolveHpGaugeScaleX
+            : function (r) {
+                const x = Math.max(0, Math.min(1, r));
+                return x >= 0.999 ? 1.008 : x;
+              };
+        for (let j = 0; j < stack.length; j += 1) {
+          const layerValue = Math.max(0, Math.min(100, hpValue - j * 100));
+          const sx = resolveScale(layerValue / 100);
+          // 무엇: translateZ(0) + scaleX / 왜: 레이어 사이 서브픽셀 빈틈·밑색 비침 완화
+          stack[j].el.style.transform = `translateZ(0) scaleX(${sx})`;
+        }
+      }
+      function loadUserNickname() {
+        // 프로젝트 인증 모듈(auth.js)의 USER_KEY는 'boxer_user'
+        const storedUserRaw = localStorage.getItem("boxer_user");
+        let nickname = "";
+        try {
+          const parsed = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+          nickname = (parsed?.username || "").trim();
+        } catch (e) {
+          nickname = "";
+        }
+        nicknameDisplay.textContent = nickname || "User";
+      }
+      function applyDamage(target, damage) {
+        if (target === "user") {
+          currentHp.user = Math.max(0, currentHp.user - damage);
+          updateHpUI("user");
+          return currentHp.user;
+        }
+        currentHp.cpu = Math.max(0, currentHp.cpu - damage);
+        updateHpUI("cpu");
+        return currentHp.cpu;
+      }
+
+      // 무엇: 상대를 맞췄을 때 처리 / 왜: 모드별 점수·콤보 규칙을 분기하기 위해
+      function hitEnemy(damage) {
+        if (!gameStarted || ended) return;
+        leftStage.classList.remove("camera-shake");
+        void leftStage.offsetWidth;
+        leftStage.classList.add("camera-shake");
+
+        if (isSurvival) {
+          comboCount += 1;
+          survivalCombo.textContent = `COMBO: ${comboCount}`;
+          feedbackText.textContent = `좋아요! 콤보 ${comboCount} 유지 중`;
+        } else {
+          const next = applyDamage("cpu", damage);
+          feedbackText.textContent = `CPU에게 ${damage} 데미지! (${next}/500)`;
+          if (next <= 0) endGame(true);
+        }
+      }
+
+      // 무엇: 내가 맞았을 때 처리 / 왜: 공통 HP 소모와 서바이벌 콤보 초기화를 위해
+      function hitUser(damage) {
+        if (!gameStarted || ended) return;
+        if (
+          arena &&
+          window.BoxerRealtimeAnalysis &&
+          typeof window.BoxerRealtimeAnalysis.triggerScreenShake === "function"
+        ) {
+          window.BoxerRealtimeAnalysis.triggerScreenShake(arena, {
+            durationMs: 440,
+          });
+        }
+        damageFlash.classList.add("show");
+        setTimeout(() => damageFlash.classList.remove("show"), 140);
+        const next = applyDamage("user", damage);
+
+        if (isSurvival && comboCount > 0) {
+          comboCount = 0;
+          survivalCombo.textContent = "COMBO: 0";
+          feedbackText.textContent = "피격! 콤보가 초기화되었습니다.";
+        } else {
+          feedbackText.textContent = `피격! 내 HP -${damage} (${next}/300)`;
+        }
+        if (next <= 0) endGame(false);
+      }
+
+      function endGame(isWin) {
+        ended = true;
+        resultLayer.style.display = "flex";
+        resultTitle.textContent = isWin ? "K.O. WIN" : "T.K.O LOSE";
+        resultDesc.textContent = isWin
+          ? "훌륭한 라운드입니다!"
+          : "다시 도전해 보세요!";
+      }
+
+      async function startWebcam() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+          webcamVideo.srcObject = stream;
+          feedbackText.textContent = "웹캠 연결 완료. 준비!";
+        } catch (e) {
+          feedbackText.textContent =
+            "웹캠 연결 실패. 키보드 테스트(A/L)로 확인 가능합니다.";
+        }
+      }
+
+      async function initPose() {
+        if (typeof Pose === "undefined" || typeof Camera === "undefined")
+          return;
+        // CDN 끈 상태에서는 이 블록 전체가 실행되지 않음. 켤 때는 로컬 호스트 pose 폴더로 바꾸세요.
+        pose = new Pose({
+          locateFile: (f) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`,
+        });
+        pose.setOptions({
+          modelComplexity: 0,
+          smoothLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+        pose.onResults((res) => {
+          if (!gameStarted || !res.poseLandmarks) return;
+          const lm = res.poseLandmarks;
+          const nose = lm[0];
+          const ls = lm[11],
+            rs = lm[12];
+          const lw = lm[15],
+            rw = lm[16];
+          if (!nose || !lw || !rw || !ls || !rs) return;
+
+          const now = performance.now();
+          const dt = Math.max(16, now - (lastPoseTime || now));
+          lastPoseTime = now;
+
+          // 🛡️ 1) 관대한 가드 판정: 좌우 좌표(X) 따지지 않고, 두 손목이 무조건 '어깨(y)보다 높이' 있으면 가드로 인정!
+          const isLeftHandUp = lw.y < ls.y - 0.05; // 손목이 어깨선 위로 올라옴
+          const isRightHandUp = rw.y < rs.y - 0.05;
+          isUserGuarding = isLeftHandUp && isRightHandUp; // 두 손을 다 올리면 가드 성공
+
+          // 💨 2) 회피(더킹/슬립) 완화: 움직임 폭(거리 임계값)을 낮춰서 살짝만 피해도 인정해 줌
+          const shoulderMidX = (ls.x + rs.x) / 2;
+          const isSlipping = Math.abs(nose.x - shoulderMidX) > 0.06; // 0.08 -> 0.06
+          const isDucking = Math.abs(nose.y - ls.y) < 0.16; // 0.12 -> 0.16
+          isUserDodging = isSlipping || isDucking;
+
+          // 🥊 3) 펀치 판정 단순화: 프레임 드랍을 고려해 확장 중 여부를 보지 않고 속도+팔 길이만으로 판정
+          if (lastWrist) {
+            const leftArmExt = Math.hypot(lw.x - ls.x, lw.y - ls.y);
+            const rightArmExt = Math.hypot(rw.x - rs.x, rw.y - rs.y);
+
+            const leftSpeed =
+              Math.hypot(lw.x - lastWrist.lx, lw.y - lastWrist.ly) / dt;
+            const rightSpeed =
+              Math.hypot(rw.x - lastWrist.rx, rw.y - lastWrist.ry) / dt;
+
+            // 🔥 확장 중인지(isExtending) 체크 삭제. 팔이 뻗어져 있고(>0.15) 움직임이 빠르면 무조건 타격!
+            isUserAttackingJAB =
+              leftSpeed > 0.002 &&
+              leftArmExt > 0.15 &&
+              !isUserDodging &&
+              !isUserGuarding;
+            isUserAttackingCROSS =
+              rightSpeed > 0.002 &&
+              rightArmExt > 0.15 &&
+              !isUserDodging &&
+              !isUserGuarding;
+
+            if (isUserAttackingJAB || isUserAttackingCROSS) {
+              if (Date.now() - lastEnemyHitAt > 600) {
+                // 연타 방지 쿨다운 0.6초
+                lastEnemyHitAt = Date.now();
+                hitEnemy(10);
+                feedbackText.textContent = "나이스 펀치! 적중했습니다.";
+              }
+            }
+            lastWrist = { lx: lw.x, ly: lw.y, rx: rw.x, ry: rw.y };
+          } else {
+            lastWrist = { lx: lw.x, ly: lw.y, rx: rw.x, ry: rw.y };
+          }
+        });
+        const cam = new Camera(webcamVideo, {
+          onFrame: async () => {
+            await pose.send({ image: webcamVideo });
+          },
+          width: 480,
+          height: 640,
+        });
+        cam.start();
+      }
+
+      function resizeCanvases() {
+        trajectoryCanvas.width = leftStage.clientWidth;
+        trajectoryCanvas.height = leftStage.clientHeight;
+        webcamCanvas.width =
+          webcamVideo.videoWidth || webcamVideo.clientWidth || 320;
+        webcamCanvas.height =
+          webcamVideo.videoHeight || webcamVideo.clientHeight || 240;
+      }
+      window.addEventListener("resize", resizeCanvases);
+
+      // 무엇: 영상에서 픽셀 변화량으로 주먹 잔상을 생성 / 왜: 외부 모델 없이도 궤적 효과를 경량으로 구현하기 위해
+      function motionTrajectoryLoop() {
+        if (!gameStarted || ended || coachVideo.readyState < 2) {
+          requestAnimationFrame(motionTrajectoryLoop);
+          return;
+        }
+        const w = trajectoryCanvas.width,
+          h = trajectoryCanvas.height;
+        const temp = document.createElement("canvas");
+        temp.width = 160;
+        temp.height = 90;
+        const ctx = temp.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(coachVideo, 0, 0, temp.width, temp.height);
+        const frame = ctx.getImageData(0, 0, temp.width, temp.height).data;
+        let mx = 0,
+          my = 0,
+          cnt = 0,
+          diffSum = 0;
+        if (prevFrame) {
+          for (let i = 0; i < frame.length; i += 16) {
+            const d =
+              Math.abs(frame[i] - prevFrame[i]) +
+              Math.abs(frame[i + 1] - prevFrame[i + 1]) +
+              Math.abs(frame[i + 2] - prevFrame[i + 2]);
+            if (d > 110) {
+              const p = i / 4,
+                x = p % temp.width,
+                y = Math.floor(p / temp.width);
+              mx += x;
+              my += y;
+              cnt += 1;
+              diffSum += d;
+            }
+          }
+          if (cnt > 24) {
+            const cx = (mx / cnt) * (w / temp.width);
+            const cy = (my / cnt) * (h / temp.height);
+            trajectorySegments.push({ x: cx, y: cy, life: 1.0 });
+          }
+        }
+        prevFrame = frame;
+
+        tctx.clearRect(0, 0, w, h);
+        for (let i = trajectorySegments.length - 1; i >= 0; i -= 1) {
+          const p = trajectorySegments[i];
+          p.life -= 0.04;
+          if (p.life <= 0) {
+            trajectorySegments.splice(i, 1);
+            continue;
+          }
+          const alpha = p.life * 0.85;
+          tctx.beginPath();
+          tctx.arc(p.x, p.y, 8 + (1 - p.life) * 18, 0, Math.PI * 2);
+          tctx.fillStyle = `rgba(255,90,40,${alpha})`;
+          tctx.fill();
+        }
+        requestAnimationFrame(motionTrajectoryLoop);
+      }
+
+      async function startCountdown() {
+        const seq = ["3", "2", "1", "FIGHT!"];
+        for (const step of seq) {
+          countdown.textContent = step;
+          await new Promise((r) => setTimeout(r, 820));
+        }
+        countdown.classList.add("fade");
+      }
+
+      async function bootGame() {
+        updateHpUI("user");
+        updateHpUI("cpu");
+        if (isSurvival) {
+          cpuHpShell.style.display = "none";
+          document.getElementById("cpuName").style.display = "none";
+          survivalBox.style.display = "block";
+        }
+        coachVideo.dataset.usedFallback = "0";
+        coachVideo.src = levelConfig[level].src;
+        coachVideo.playbackRate = levelConfig[level].rate;
+        coachVideo.loop = true;
+        coachVideo.muted = true;
+        await startCountdown();
+        gameStarted = true;
+        await startWebcam();
+        await initPose();
+        resizeCanvases();
+        try {
+          await coachVideo.play();
+        } catch (e) {
+          feedbackText.textContent =
+            "영상 재생 실패: 파일 경로를 확인해 주세요.";
+        }
+        lastVideoTime = 0;
+        resetJabScript();
+        coachVideo.addEventListener("timeupdate", handleVideoTimeline);
+        motionTrajectoryLoop();
+      }
+
+      // 무엇: 디버그 타격 키 바인딩 / 왜: 웹캠 환경이 없어도 로직을 바로 검증하기 위해
+      window.addEventListener("keydown", (e) => {
+        if (e.key.toLowerCase() === "a") hitEnemy(10);
+        if (e.key.toLowerCase() === "l") hitUser(12);
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadUserNickname();
+      });
+      bootGame();
+    </script>
+  </body>
+</html>
