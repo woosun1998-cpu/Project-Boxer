@@ -112,6 +112,40 @@
         margin-top: 5px; /* 이 숫자가 “행간처럼” 보이는 간격 */
       }
 
+      .ready-lesson-picker {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        width: min(430px, 90vw);
+        margin: -1.5vh 0 3vh;
+      }
+
+      .ready-lesson-picker.is-visible {
+        display: grid;
+      }
+
+      .ready-lesson-btn {
+        min-height: 58px;
+        border: 2px solid rgba(255, 255, 255, 0.88);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.12);
+        color: #fff;
+        font-size: clamp(18px, 1.45vw, 24px);
+        font-weight: 900;
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .ready-lesson-btn:hover,
+      .ready-lesson-btn.is-active {
+        transform: translateY(-2px);
+        background: #fff;
+        color: #ed1d32;
+      }
+
       /* 5. 시작 버튼 */
       .ready-start-btn {
         align-self: flex-start;
@@ -128,6 +162,10 @@
       }
       .ready-start-btn:hover {
         transform: scale(1.05);
+      }
+
+      .ready-start-btn.is-hidden {
+        display: none;
       }
 
       /* 6. 카운트다운 오버레이 연출 */
@@ -192,6 +230,7 @@
             <span class="ready-subline">물건을 정리 해주세요!</span>
           </li>
         </ol>
+        <div class="ready-lesson-picker" id="readyLessonPicker" aria-label="튜토리얼 동작 선택"></div>
         <button type="button" class="ready-start-btn" id="readyStartBtn">
           운동 시작하기
         </button>
@@ -214,41 +253,89 @@
         else targetPage = "index.html";
       }
 
+      var tutorialLessonsByLevel = {
+        beginner: [
+          { key: "basic-guard", label: "기본 가드" },
+          { key: "jab", label: "잽" },
+        ],
+        intermediate: [
+          { key: "cross", label: "크로스" },
+          { key: "left-hook", label: "왼훅" },
+        ],
+        advanced: [
+          { key: "slip", label: "슬립" },
+          { key: "uppercut", label: "어퍼컷" },
+        ],
+      };
+
+      function submitReady(selectedLesson) {
+        var out = new URLSearchParams();
+        params.forEach(function (value, key) {
+          if (key !== "target") out.set(key, value);
+        });
+        if (selectedLesson) {
+          out.set("lesson", selectedLesson);
+        }
+        out.set("autostart", "1");
+        out.set("skipIntro", "1");
+        if (!out.has("level")) {
+          try {
+            out.set(
+              "level",
+              localStorage.getItem("boxer_sparring_level") || "beginner",
+            );
+          } catch (e) {
+            out.set("level", "beginner");
+          }
+        }
+        if (targetPage === "diet-boxing-play.html" && !out.has("mode")) {
+          out.set("mode", params.get("mode") || "light");
+        }
+
+        var form = document.createElement("form");
+        form.method = "GET";
+        form.action = "./" + targetPage;
+        out.forEach(function (v, k) {
+          var inp = document.createElement("input");
+          inp.type = "hidden";
+          inp.name = k;
+          inp.value = v;
+          form.appendChild(inp);
+        });
+        document.body.appendChild(form);
+        form.submit();
+      }
+
+      function renderTutorialLessonPicker() {
+        if (targetPage !== "imboxer/tutorial-lesson.html") return;
+        var picker = document.getElementById("readyLessonPicker");
+        var startButton = document.getElementById("readyStartBtn");
+        if (!picker) return;
+        if (startButton) startButton.classList.add("is-hidden");
+        var level = params.get("level") || "beginner";
+        var lessons = tutorialLessonsByLevel[level] || tutorialLessonsByLevel.beginner;
+        var currentLesson = params.get("lesson") || lessons[0].key;
+        picker.classList.add("is-visible");
+        picker.innerHTML = "";
+        lessons.forEach(function (lesson) {
+          var lessonBtn = document.createElement("button");
+          lessonBtn.type = "button";
+          lessonBtn.className = "ready-lesson-btn";
+          if (lesson.key === currentLesson) lessonBtn.classList.add("is-active");
+          lessonBtn.textContent = lesson.label;
+          lessonBtn.addEventListener("click", function () {
+            submitReady(lesson.key);
+          });
+          picker.appendChild(lessonBtn);
+        });
+      }
+
+      renderTutorialLessonPicker();
+
       var btn = document.getElementById("readyStartBtn");
       if (btn) {
         btn.addEventListener("click", function () {
-          var out = new URLSearchParams();
-          params.forEach(function (value, key) {
-            if (key !== "target") out.set(key, value);
-          });
-          out.set("autostart", "1");
-          out.set("skipIntro", "1");
-          if (!out.has("level")) {
-            try {
-              out.set(
-                "level",
-                localStorage.getItem("boxer_sparring_level") || "beginner",
-              );
-            } catch (e) {
-              out.set("level", "beginner");
-            }
-          }
-          if (targetPage === "diet-boxing-play.html" && !out.has("mode")) {
-            out.set("mode", params.get("mode") || "light");
-          }
-
-          var form = document.createElement("form");
-          form.method = "GET";
-          form.action = "./" + targetPage;
-          out.forEach(function (v, k) {
-            var inp = document.createElement("input");
-            inp.type = "hidden";
-            inp.name = k;
-            inp.value = v;
-            form.appendChild(inp);
-          });
-          document.body.appendChild(form);
-          form.submit();
+          submitReady(params.get("lesson"));
         });
       }
     </script>

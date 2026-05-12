@@ -1,9 +1,16 @@
-from app.routers import admin, admin_videos, auth, coaching, detect, health, leaderboard, sessions, shop, stats, tutorials, users, videos
+﻿from app.routers import admin, admin_analytics, admin_audio, admin_datasets, admin_media, admin_platform, admin_sparring, admin_timestamps, admin_videos, auth, coaching, detect, health, leaderboard, sessions, shop, stats, tutorials, users, videos
 
 __all__ = [
     "admin",
-    "auth",
+    "admin_analytics",
+    "admin_audio",
+    "admin_datasets",
+    "admin_media",
+    "admin_platform",
+    "admin_sparring",
+    "admin_timestamps",
     "admin_videos",
+    "auth",
     "users",
     "tutorials",
     "videos",

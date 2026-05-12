@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 400 500" height="500" width="400">
+  <defs><filter height="300%" width="300%" y="-100%" x="-100%" id="neon"><feGaussianBlur result="blur1" stdDeviation="6" in="SourceGraphic"></feGaussianBlur><feGaussianBlur result="blur2" stdDeviation="12" in="SourceGraphic"></feGaussianBlur><feGaussianBlur result="blur3" stdDeviation="18" in="SourceGraphic"></feGaussianBlur><feMerge><feMergeNode in="blur3"></feMergeNode><feMergeNode in="blur2"></feMergeNode><feMergeNode in="blur1"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs>
+  <g filter="url(#neon)">
+    <path stroke-width="20" stroke="#FF1E1E" fill="none" d="M220 95 Q175 65 145 95 Q155 170 180 205 Q150 245 165 315 Q170 405 205 445 Q250 455 275 410 Q290 300 320 270"></path>
+    <ellipse stroke-width="19" stroke="#FF1E1E" fill="none" ry="45" rx="37" cy="95" cx="205"></ellipse>
+    
+    <path stroke-linecap="round" stroke-width="24" stroke="#FF1E1E" fill="none" d="M180 205 Q235 185 340 175"></path>
+    <path stroke-linecap="round" stroke-width="22" stroke="#FF1E1E" fill="none" d="M255 175 Q285 165 295 205"></path>
+    <path stroke-width="9" stroke="#FFFFFF" fill="none" d="M220 95 Q175 65 145 95 Q155 170 180 205 Q150 245 165 315 Q170 405 205 445 Q250 455 275 410 Q290 300 320 270"></path>
+  </g>
+</svg>

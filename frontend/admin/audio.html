@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Audio Manager</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+
+    .aud-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border-2);
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .aud-tab {
+      padding: 10px 18px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: rgba(255,255,255,0.72);
+      font-family: var(--fp);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: color .13s, border-color .13s, background .13s;
+      margin-bottom: -1px;
+      white-space: nowrap;
+    }
+    .aud-tab:hover:not(.active) { color: var(--t1); background: rgba(255,255,255,0.03); }
+    .aud-tab.active { color: var(--ice); border-bottom-color: var(--ice); }
+
+    .aud-upload-zone {
+      border: 1px dashed var(--border-2);
+      background: var(--s2);
+      padding: 22px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .aud-drop-area {
+      border: 1px dashed rgba(255,255,255,0.18);
+      background: var(--s3);
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .14s, background .14s;
+    }
+    .aud-drop-area.dragover { border-color: var(--ice); background: rgba(0,194,255,0.06); }
+    .aud-drop-area p { margin: 0; font-size: 0.78rem; color: rgba(255,255,255,0.62); }
+    .aud-drop-area strong { display: block; font-size: 0.86rem; color: var(--t1); margin-bottom: 5px; }
+    .aud-drop-area input[type=file] { display: none; }
+
+    .aud-upload-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) 132px;
+      gap: 10px;
+      align-items: end;
+    }
+    .aud-upload-row .adm-field { margin-bottom: 0; }
+    .aud-upload-row .adm-btn-primary {
+      width: 100%;
+      min-height: 38px;
+      justify-content: center;
+      align-self: end;
+    }
+    .aud-upload-filename {
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.56);
+      padding: 2px 0;
+    }
+    .aud-upload-filename.has-file { color: var(--ice); font-weight: 700; }
+
+    .aud-progress-bar { width: 100%; height: 3px; background: var(--s4); overflow: hidden; }
+    .aud-progress-fill { height: 100%; background: var(--ice); width: 0%; transition: width .1s; }
+
+    .aud-loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 40px 0;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.62);
+    }
+    .aud-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.08);
+      border-top-color: var(--ice);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .aud-empty { padding: 48px 24px; text-align: center; font-size: 0.84rem; color: rgba(255,255,255,0.5); }
+    .api-err-banner {
+      padding: 10px 16px;
+      background: rgba(232,0,13,0.06);
+      border: 1px solid rgba(232,0,13,0.28);
+      font-size: 0.78rem;
+      color: #ff6b72;
+      margin-bottom: 16px;
+    }
+
+    .aud-row { cursor: pointer; }
+    .aud-row:hover td { background: rgba(255,255,255,0.025); }
+    .aud-id-cell,
+    .aud-meta-cell {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+    .aud-date-cell { color: rgba(255,255,255,0.58); font-size: 0.74rem; }
+    .aud-file-cell {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--t1);
+      font-weight: 800;
+    }
+
+    .aud-table .adm-table th {
+      color: rgba(255,255,255,0.72);
+      background: #191919;
+      letter-spacing: 0.08em;
+    }
+
+    .cat-badge {
+      display: inline-flex;
+      padding: 3px 8px;
+      font-size: 0.56rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid;
+      background: rgba(255,255,255,0.03);
+    }
+    .cat-badge.bgm { color: var(--amber); border-color: rgba(245,166,35,0.44); }
+    .cat-badge.sfx { color: #ff6b72; border-color: rgba(232,0,13,0.44); }
+    .cat-badge.crowd { color: var(--green); border-color: rgba(57,211,83,0.44); }
+    .cat-badge.voice_guide { color: var(--ice); border-color: rgba(0,194,255,0.44); }
+    .cat-badge.ui_sound { color: rgba(255,255,255,0.82); border-color: rgba(255,255,255,0.28); }
+
+    .aud-player {
+      width: 220px;
+      max-width: 28vw;
+      height: 30px;
+      accent-color: var(--ice);
+    }
+    .aud-action-cell {
+      display: flex;
+      gap: 6px;
+      padding: 7px 10px;
+    }
+    .aud-action-cell .adm-btn-ghost {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+    }
+    .aud-danger {
+      border-color: rgba(232,0,13,0.34) !important;
+      color: #ff6b72 !important;
+    }
+
+    .aud-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .aud-modal {
+      background: var(--s2);
+      border: 1px solid var(--border-2);
+      padding: 28px 32px;
+      width: min(440px, 100%);
+    }
+    .aud-modal h3 {
+      font-family: var(--fm);
+      font-size: 1.16rem;
+      letter-spacing: 0.1em;
+      color: var(--t1);
+      margin: 0 0 10px;
+    }
+    .aud-modal p { font-size: 0.8rem; color: rgba(255,255,255,0.68); margin: 0 0 20px; line-height: 1.7; }
+    .aud-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .adm-field-label {
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.1em;
+    }
+    .adm-section-label { color: rgba(255,255,255,0.66); }
+
+    @media (max-width: 860px) {
+      .aud-upload-row { grid-template-columns: 1fr; }
+      .aud-player { max-width: none; width: 180px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">-</span>
+      <a class="adm-topbar-link" href="../admin.html">Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item" href="./media-library.html">Media Library</a>
+    <a class="adm-mobile-nav-item active" href="./audio.html">Audio</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item active" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Content /</span> <span>Audio Manager</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Audio Manager</h1>
+          <p class="adm-page-sub">BGM, SFX, Crowd, Voice Guide, UI Sound 업로드와 메타데이터 편집</p>
+        </div>
+      </div>
+
+      <div class="api-err-banner" id="apiBanner" hidden></div>
+
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">오디오 업로드</span>
+          <div class="adm-section-line"></div>
+        </div>
+
+        <div class="aud-upload-zone">
+          <div class="aud-drop-area" id="dropArea">
+            <strong>파일을 여기에 드래그하거나 클릭해서 선택</strong>
+            <p>지원 형식: mp3, ogg, wav, m4a, aac</p>
+            <input type="file" id="uploadFile" accept=".mp3,.ogg,.wav,.m4a,.aac,audio/*">
+          </div>
+          <p class="aud-upload-filename" id="uploadFilename">선택된 파일 없음</p>
+
+          <div class="aud-upload-row">
+            <div class="adm-field">
+              <label class="adm-field-label" for="uploadCategory">카테고리</label>
+              <select class="adm-select" id="uploadCategory">
+                <option value="bgm">BGM</option>
+                <option value="sfx">SFX</option>
+                <option value="crowd">Crowd</option>
+                <option value="voice_guide">Voice Guide</option>
+                <option value="ui_sound">UI Sound</option>
+              </select>
+            </div>
+            <div class="adm-field">
+              <label class="adm-field-label" for="uploadDuration">재생 시간(초, 선택)</label>
+              <input class="adm-input" id="uploadDuration" type="number" min="0" step="0.1" placeholder="자동 감지" style="width:100%">
+            </div>
+            <button class="adm-btn-primary" id="btnUpload" type="button">업로드</button>
+          </div>
+
+          <div class="aud-progress-bar" id="uploadProgressBar" hidden>
+            <div class="aud-progress-fill" id="uploadProgressFill"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">오디오 목록</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot live">LIVE</span>
+        </div>
+
+        <div class="aud-tabs" id="audTabs">
+          <button class="aud-tab active" data-cat="all">전체</button>
+          <button class="aud-tab" data-cat="bgm">BGM</button>
+          <button class="aud-tab" data-cat="sfx">SFX</button>
+          <button class="aud-tab" data-cat="crowd">Crowd</button>
+          <button class="aud-tab" data-cat="voice_guide">Voice Guide</button>
+          <button class="aud-tab" data-cat="ui_sound">UI Sound</button>
+        </div>
+
+        <div class="aud-loading" id="audLoading">
+          <div class="aud-spinner"></div>
+          <span>오디오 목록을 불러오는 중...</span>
+        </div>
+
+        <div id="audTableWrap" hidden>
+          <div class="adm-table-wrap aud-table">
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>파일명</th>
+                  <th>카테고리</th>
+                  <th>재생 시간</th>
+                  <th>크기</th>
+                  <th>등록일</th>
+                  <th>미리듣기</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="audTbody"></tbody>
+            </table>
+          </div>
+          <p class="aud-empty" id="audEmpty" hidden>선택한 카테고리에 등록된 오디오 파일이 없습니다.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="adm-drawer-overlay" id="drawerOverlay"></div>
+
+  <div class="adm-drawer" id="audDrawer" role="dialog" aria-modal="true" aria-labelledby="audDrawerTitle">
+    <div class="adm-drawer-header">
+      <h2 class="adm-drawer-title" id="audDrawerTitle">오디오 편집</h2>
+      <button class="adm-drawer-close" id="drawerClose" type="button" aria-label="닫기">×</button>
+    </div>
+    <div class="adm-drawer-body">
+      <input type="hidden" id="dAudioId">
+
+      <div class="adm-field">
+        <label class="adm-field-label" for="dFilename">파일명</label>
+        <input class="adm-input" id="dFilename" type="text" style="width:100%">
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dCategory">카테고리</label>
+        <select class="adm-select" id="dCategory">
+          <option value="bgm">BGM</option>
+          <option value="sfx">SFX</option>
+          <option value="crowd">Crowd</option>
+          <option value="voice_guide">Voice Guide</option>
+          <option value="ui_sound">UI Sound</option>
+        </select>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dDuration">재생 시간(초)</label>
+        <input class="adm-input" id="dDuration" type="number" min="0" step="0.1" style="width:100%">
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="adm-field-label" style="margin-bottom:8px">미리듣기</div>
+        <audio id="dAudioPreview" controls style="width:100%;accent-color:var(--ice)"></audio>
+      </div>
+    </div>
+    <div class="adm-drawer-footer">
+      <button class="adm-btn-primary" id="drawerSave" type="button">저장</button>
+      <div style="flex:1"></div>
+      <button class="adm-btn-ghost aud-danger" id="drawerDelete" type="button">삭제</button>
+    </div>
+  </div>
+
+  <div class="aud-modal-overlay" id="deleteModal" hidden>
+    <div class="aud-modal">
+      <h3>삭제 확인</h3>
+      <p id="deleteModalMsg">이 오디오 파일을 삭제하시겠습니까?<br>삭제 후에는 복구할 수 없습니다.</p>
+      <div class="aud-modal-actions">
+        <button class="adm-btn-ghost" id="deleteCancel" type="button">취소</button>
+        <button class="adm-btn-primary" id="deleteConfirm" type="button" style="background:rgba(232,0,13,0.86)">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    let items = [];
+    let currentCat = 'all';
+    let pendingDeleteId = null;
+    let uploadFileObj = null;
+
+    const apiBanner = document.getElementById('apiBanner');
+    const audLoading = document.getElementById('audLoading');
+    const audTableWrap = document.getElementById('audTableWrap');
+    const audTbody = document.getElementById('audTbody');
+    const audEmpty = document.getElementById('audEmpty');
+
+    const dropArea = document.getElementById('dropArea');
+    const uploadFileInput = document.getElementById('uploadFile');
+    const uploadFilename = document.getElementById('uploadFilename');
+    const uploadCategory = document.getElementById('uploadCategory');
+    const uploadDuration = document.getElementById('uploadDuration');
+    const btnUpload = document.getElementById('btnUpload');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const progressFill = document.getElementById('uploadProgressFill');
+
+    const drawer = document.getElementById('audDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const dAudioId = document.getElementById('dAudioId');
+    const dFilename = document.getElementById('dFilename');
+    const dCategory = document.getElementById('dCategory');
+    const dDuration = document.getElementById('dDuration');
+    const dAudioPreview = document.getElementById('dAudioPreview');
+    const drawerSave = document.getElementById('drawerSave');
+    const drawerDelete = document.getElementById('drawerDelete');
+
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteModalMsg = document.getElementById('deleteModalMsg');
+    const deleteCancel = document.getElementById('deleteCancel');
+    const deleteConfirm = document.getElementById('deleteConfirm');
+
+    function showBanner(msg) {
+      apiBanner.textContent = msg;
+      apiBanner.hidden = false;
+    }
+    function hideBanner() {
+      apiBanner.hidden = true;
+    }
+    function fmtDate(value) {
+      return value ? String(value).slice(0, 10) : '-';
+    }
+    function fmtSize(bytes) {
+      if (!bytes) return '-';
+      if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+      if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return bytes + ' B';
+    }
+    function fmtDuration(sec) {
+      if (!sec && sec !== 0) return '-';
+      const total = Math.floor(Number(sec));
+      const min = Math.floor(total / 60);
+      const remain = total % 60;
+      return min + ':' + String(remain).padStart(2, '0');
+    }
+    function catLabel(category) {
+      return {
+        bgm: 'BGM',
+        sfx: 'SFX',
+        crowd: 'Crowd',
+        voice_guide: 'Voice Guide',
+        ui_sound: 'UI Sound',
+      }[category] ?? category ?? '-';
+    }
+    function assetUrl(url) {
+      const value = String(url || '').trim();
+      if (!value) return '';
+      if (/^(https?:|blob:|data:)/i.test(value)) return value;
+      if (value.startsWith('/uploads/')) return `${API_BASE_URL}${value}`;
+      if (value.startsWith('/assets/')) return `..${value}`;
+      if (value.startsWith('./assets/')) return `.${value}`;
+      if (value.startsWith('assets/')) return `../${value}`;
+      if (value.startsWith('../assets/')) return value;
+      if (value.startsWith('/')) return `..${value}`;
+      return value;
+    }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      }[ch]));
+    }
+
+    async function loadAudio() {
+      audLoading.hidden = false;
+      audTableWrap.hidden = true;
+      try {
+        const qs = currentCat === 'all' ? '' : `?category=${encodeURIComponent(currentCat)}`;
+        const res = await fetch(`${API_BASE_URL}/api/admin/audio${qs}`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        items = Array.isArray(data) ? data : (data.items ?? data.audio ?? []);
+        hideBanner();
+        renderTable();
+      } catch (err) {
+        showBanner(`오디오 목록 로드 실패 (${err.message}). 백엔드 API 상태를 확인하세요.`);
+        items = [];
+        renderTable();
+      } finally {
+        audLoading.hidden = true;
+      }
+    }
+
+    function renderTable() {
+      audTbody.innerHTML = '';
+      audEmpty.hidden = items.length > 0;
+
+      items.forEach((audio, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'aud-row';
+        tr.innerHTML = `
+          <td class="aud-id-cell">${index + 1}</td>
+          <td class="aud-file-cell" title="${escapeHtml(audio.filename)}">${escapeHtml(audio.filename || '-')}</td>
+          <td><span class="cat-badge ${escapeHtml(audio.category)}">${escapeHtml(catLabel(audio.category))}</span></td>
+          <td class="aud-meta-cell">${fmtDuration(audio.duration)}</td>
+          <td class="aud-meta-cell">${fmtSize(audio.size_bytes)}</td>
+          <td class="aud-date-cell">${fmtDate(audio.created_at)}</td>
+          <td><audio class="aud-player" controls preload="none" src="${escapeHtml(assetUrl(audio.file_url || ''))}"></audio></td>
+          <td class="aud-action-cell">
+            <button class="adm-btn-ghost" data-edit="${escapeHtml(audio.id)}">편집</button>
+            <button class="adm-btn-ghost aud-danger" data-delete="${escapeHtml(audio.id)}" data-name="${escapeHtml(audio.filename)}">삭제</button>
+          </td>
+        `;
+        tr.addEventListener('click', event => {
+          if (event.target.closest('button, audio')) return;
+          openDrawer(audio);
+        });
+        tr.querySelector('[data-edit]').addEventListener('click', event => {
+          event.stopPropagation();
+          openDrawer(audio);
+        });
+        tr.querySelector('[data-delete]').addEventListener('click', event => {
+          event.stopPropagation();
+          openDeleteModal(audio.id, audio.filename);
+        });
+        audTbody.appendChild(tr);
+      });
+
+      audTableWrap.hidden = false;
+    }
+
+    dropArea.addEventListener('click', () => uploadFileInput.click());
+    dropArea.addEventListener('dragover', event => {
+      event.preventDefault();
+      dropArea.classList.add('dragover');
+    });
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+    dropArea.addEventListener('drop', event => {
+      event.preventDefault();
+      dropArea.classList.remove('dragover');
+      const file = event.dataTransfer.files[0];
+      if (file) setUploadFile(file);
+    });
+    uploadFileInput.addEventListener('change', () => {
+      if (uploadFileInput.files[0]) setUploadFile(uploadFileInput.files[0]);
+    });
+
+    function setUploadFile(file) {
+      uploadFileObj = file;
+      uploadFilename.textContent = `선택됨: ${file.name} (${fmtSize(file.size)})`;
+      uploadFilename.classList.add('has-file');
+
+      const tmpAudio = new Audio();
+      tmpAudio.src = URL.createObjectURL(file);
+      tmpAudio.addEventListener('loadedmetadata', () => {
+        if (Number.isFinite(tmpAudio.duration)) uploadDuration.value = tmpAudio.duration.toFixed(1);
+        URL.revokeObjectURL(tmpAudio.src);
+      }, { once: true });
+    }
+
+    btnUpload.addEventListener('click', async () => {
+      if (!uploadFileObj) {
+        alert('파일을 먼저 선택하세요.');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('file', uploadFileObj);
+      fd.append('category', uploadCategory.value);
+      if (uploadDuration.value) fd.append('duration', uploadDuration.value);
+
+      btnUpload.disabled = true;
+      progressBar.hidden = false;
+      progressFill.style.width = '0%';
+
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${API_BASE_URL}/api/admin/audio/upload`);
+          Object.entries(authHeaders()).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+          xhr.upload.addEventListener('progress', event => {
+            if (event.lengthComputable) {
+              progressFill.style.width = ((event.loaded / event.total) * 100).toFixed(0) + '%';
+            }
+          });
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) resolve();
+            else reject(new Error(`HTTP ${xhr.status}`));
+          });
+          xhr.addEventListener('error', () => reject(new Error('네트워크 오류')));
+          xhr.send(fd);
+        });
+
+        progressFill.style.width = '100%';
+        uploadFileObj = null;
+        uploadFileInput.value = '';
+        uploadFilename.textContent = '선택된 파일 없음';
+        uploadFilename.classList.remove('has-file');
+        uploadDuration.value = '';
+        await loadAudio();
+      } catch (err) {
+        showBanner(`업로드 실패: ${err.message}`);
+      } finally {
+        btnUpload.disabled = false;
+        setTimeout(() => {
+          progressBar.hidden = true;
+          progressFill.style.width = '0%';
+        }, 800);
+      }
+    });
+
+    function openDrawer(audio) {
+      dAudioId.value = audio.id;
+      dFilename.value = audio.filename ?? '';
+      dCategory.value = audio.category ?? 'bgm';
+      dDuration.value = audio.duration != null ? audio.duration : '';
+      dAudioPreview.src = assetUrl(audio.file_url ?? '');
+      dAudioPreview.load();
+      drawer.classList.add('open');
+      drawerOverlay.classList.add('open');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+      dAudioPreview.pause();
+      dAudioPreview.src = '';
+    }
+
+    drawerSave.addEventListener('click', async () => {
+      const id = Number(dAudioId.value);
+      if (!id) return;
+
+      drawerSave.disabled = true;
+      const body = {
+        filename: dFilename.value.trim(),
+        category: dCategory.value,
+        duration: dDuration.value ? parseFloat(dDuration.value) : null,
+      };
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/audio/${id}`, {
+          method: 'PUT',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        await loadAudio();
+      } catch (err) {
+        showBanner(`저장 실패: ${err.message}`);
+      } finally {
+        drawerSave.disabled = false;
+      }
+    });
+
+    drawerDelete.addEventListener('click', () => {
+      const id = Number(dAudioId.value);
+      if (id) {
+        closeDrawer();
+        openDeleteModal(id, dFilename.value);
+      }
+    });
+
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closeDrawer();
+        closeDeleteModal();
+      }
+    });
+
+    function openDeleteModal(id, name) {
+      pendingDeleteId = id;
+      deleteModalMsg.innerHTML = `<strong style="color:var(--t1)">${escapeHtml(name || '오디오 파일')}</strong>을 삭제하시겠습니까?<br>삭제 후에는 복구할 수 없습니다.`;
+      deleteModal.hidden = false;
+    }
+    function closeDeleteModal() {
+      deleteModal.hidden = true;
+      pendingDeleteId = null;
+    }
+
+    deleteCancel.addEventListener('click', closeDeleteModal);
+    deleteConfirm.addEventListener('click', async () => {
+      if (!pendingDeleteId) return;
+      const id = pendingDeleteId;
+      closeDeleteModal();
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/audio/${id}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        await loadAudio();
+      } catch (err) {
+        showBanner(`삭제 실패: ${err.message}`);
+      }
+    });
+
+    document.getElementById('audTabs').addEventListener('click', event => {
+      const btn = event.target.closest('.aud-tab');
+      if (!btn) return;
+
+      document.querySelectorAll('.aud-tab').forEach(tab => tab.classList.remove('active'));
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      if (currentCat !== 'all') uploadCategory.value = currentCat;
+      loadAudio();
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      loadAudio();
+    });
+  </script>
+</body>
+</html>

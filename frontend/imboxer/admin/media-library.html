@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Media Library</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+    .adm-section-label,
+    .adm-field-label,
+    .media-panel-title {
+      color: rgba(255,255,255,0.72);
+    }
+    .tab-strip {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border-2);
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .tab-item {
+      padding: 10px 18px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.68);
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      transition: color .13s, border-color .13s, background .13s;
+      white-space: nowrap;
+    }
+    .tab-item.active { color: var(--ice); border-bottom-color: var(--ice); }
+    .tab-item:hover:not(.active) { color: var(--t1); background: rgba(255,255,255,0.03); }
+
+    .upload-zone {
+      border: 1px dashed var(--border-2);
+      background: var(--s2);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .upload-zone.drag-over { border-color: var(--ice); background: rgba(0,194,255,0.05); }
+    .upload-zone-label { font-size: 0.84rem; color: rgba(255,255,255,0.72); margin: 0 0 14px; }
+    .upload-zone-label span { color: var(--ice); font-weight: 800; }
+    .upload-controls {
+      display: grid;
+      grid-template-columns: minmax(140px, 1fr) minmax(130px, 160px) minmax(130px, 160px) auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .upload-controls .adm-field { margin-bottom: 0; }
+    .upload-controls .adm-btn-primary,
+    .upload-controls .adm-btn-ghost {
+      min-height: 38px;
+      justify-content: center;
+    }
+    .upload-progress {
+      margin-top: 12px;
+      height: 3px;
+      background: var(--border-2);
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--ice);
+      width: 0%;
+      transition: width .2s;
+    }
+    .upload-status { font-size: 0.76rem; color: rgba(255,255,255,0.62); margin: 8px 0 0; min-height: 20px; }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .media-card {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .media-preview {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: var(--s3);
+      border: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.52);
+      font-family: var(--fm);
+      font-size: 1.45rem;
+      letter-spacing: 0.08em;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .media-preview img,
+    .media-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .media-preview audio {
+      width: calc(100% - 20px);
+      accent-color: var(--ice);
+    }
+    .media-card-body { padding: 11px 12px 12px; }
+    .media-filename {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--t1);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 5px;
+    }
+    .media-meta {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.58);
+      margin-bottom: 10px;
+    }
+    .media-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .media-btn {
+      padding: 5px 9px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      border: 1px solid var(--border-2);
+      background: transparent;
+      color: rgba(255,255,255,0.72);
+      cursor: pointer;
+      transition: all .12s;
+      font-family: var(--fp);
+    }
+    .media-btn:hover { color: var(--t1); border-color: rgba(255,255,255,0.28); background: rgba(255,255,255,0.04); }
+    .media-btn.del { border-color: rgba(232,0,13,0.34); color: #ff6b72; }
+
+    .adm-loading { display: flex; align-items: center; gap: 10px; padding: 40px 0; font-size: 0.8rem; color: rgba(255,255,255,0.62); }
+    .adm-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--ice); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .media-empty { padding: 48px 24px; text-align: center; font-size: 0.84rem; color: rgba(255,255,255,0.52); }
+    .api-err-banner { padding: 10px 16px; background: rgba(232,0,13,0.06); border: 1px solid rgba(232,0,13,0.28); font-size: 0.78rem; color: #ff6b72; margin-bottom: 16px; }
+    .success-banner { padding: 10px 16px; background: rgba(57,211,83,0.06); border: 1px solid rgba(57,211,83,0.24); font-size: 0.78rem; color: var(--green); margin-bottom: 16px; }
+    .copy-ok { color: var(--ice) !important; }
+
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(0,0,0,0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .preview-modal-inner {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+    .preview-modal-inner img,
+    .preview-modal-inner video {
+      max-width: 100%;
+      max-height: 80vh;
+      display: block;
+      background: #000;
+    }
+    .preview-modal-inner audio { width: min(720px, 86vw); accent-color: var(--ice); }
+    .preview-modal-close {
+      position: absolute;
+      top: -38px;
+      right: 0;
+      background: transparent;
+      border: 1px solid var(--border-2);
+      color: rgba(255,255,255,0.72);
+      font-size: 1rem;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 860px) {
+      .upload-controls { grid-template-columns: 1fr; }
+      .media-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">-</span>
+      <a class="adm-topbar-link" href="../admin.html">Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item active" href="./media-library.html">Media Library</a>
+    <a class="adm-mobile-nav-item" href="../admin-dataset.html">AI Dataset</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item active" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Media /</span> <span>Media Library</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Media Library</h1>
+          <p class="adm-page-sub">Videos, Images, Audios, Thumbnails, Silhouette, Dataset 통합 관리</p>
+        </div>
+        <a class="adm-btn-ghost" href="../admin-dataset.html">AI Dataset</a>
+      </div>
+
+      <div class="api-err-banner" id="apiBanner" hidden></div>
+      <div class="success-banner" id="successBanner" hidden></div>
+
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">파일 업로드</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="upload-zone" id="uploadZone">
+          <p class="upload-zone-label">파일을 드래그하거나 <span>파일 선택</span>으로 추가하세요.</p>
+          <input type="file" id="fileInput" multiple style="display:none" accept="*/*">
+          <div class="upload-controls">
+            <button class="adm-btn-ghost" id="btnPickFile" type="button">파일 선택</button>
+            <div class="adm-field">
+              <label class="adm-field-label" for="uploadType">Type</label>
+              <select class="adm-select" id="uploadType">
+                <option value="video">video</option>
+                <option value="image">image</option>
+                <option value="audio">audio</option>
+                <option value="thumbnail">thumbnail</option>
+                <option value="silhouette">silhouette</option>
+                <option value="dataset">dataset</option>
+              </select>
+            </div>
+            <div class="adm-field">
+              <label class="adm-field-label" for="uploadCategory">Category</label>
+              <select class="adm-select" id="uploadCategory">
+                <option value="general">general</option>
+                <option value="tutorial">tutorial</option>
+                <option value="sparring">sparring</option>
+                <option value="training">training</option>
+                <option value="bgm">bgm</option>
+                <option value="sfx">sfx</option>
+                <option value="crowd">crowd</option>
+                <option value="voice_guide">voice_guide</option>
+                <option value="ui">ui</option>
+                <option value="dataset">dataset</option>
+              </select>
+            </div>
+            <button class="adm-btn-primary" id="btnUpload" type="button" disabled>업로드</button>
+          </div>
+          <div class="upload-progress" id="uploadProgress" hidden>
+            <div class="upload-progress-bar" id="uploadBar"></div>
+          </div>
+          <p class="upload-status" id="uploadStatus"></p>
+        </div>
+      </section>
+
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">미디어 목록</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot live">LIVE</span>
+        </div>
+
+        <div class="tab-strip" id="tabStrip">
+          <button class="tab-item active" data-type="video">Videos</button>
+          <button class="tab-item" data-type="image">Images</button>
+          <button class="tab-item" data-type="audio">Audios</button>
+          <button class="tab-item" data-type="thumbnail">Thumbnails</button>
+          <button class="tab-item" data-type="silhouette">Silhouette</button>
+          <button class="tab-item" data-type="dataset">Dataset</button>
+        </div>
+
+        <div class="adm-loading" id="mediaLoading">
+          <div class="adm-spinner"></div>
+          <span>목록을 불러오는 중...</span>
+        </div>
+
+        <div id="mediaGrid" class="media-grid" hidden></div>
+        <p class="media-empty" id="mediaEmpty" hidden>선택한 타입에 등록된 파일이 없습니다.</p>
+      </section>
+    </main>
+  </div>
+
+  <div class="adm-drawer-overlay" id="drawerOverlay"></div>
+  <div class="adm-drawer" id="mediaDrawer" role="dialog" aria-modal="true" aria-labelledby="mediaDrawerTitle">
+    <div class="adm-drawer-header">
+      <h2 class="adm-drawer-title" id="mediaDrawerTitle">미디어 수정</h2>
+      <button class="adm-drawer-close" id="drawerClose" type="button" aria-label="닫기">×</button>
+    </div>
+    <div class="adm-drawer-body">
+      <input type="hidden" id="dMediaId">
+      <div class="adm-field">
+        <label class="adm-field-label" for="dFilename">파일명</label>
+        <input class="adm-input" id="dFilename" type="text" style="width:100%">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="adm-field">
+          <label class="adm-field-label" for="dType">Type</label>
+          <select class="adm-select" id="dType">
+            <option value="video">video</option>
+            <option value="image">image</option>
+            <option value="audio">audio</option>
+            <option value="thumbnail">thumbnail</option>
+            <option value="silhouette">silhouette</option>
+            <option value="dataset">dataset</option>
+          </select>
+        </div>
+        <div class="adm-field">
+          <label class="adm-field-label" for="dCategory">Category</label>
+          <select class="adm-select" id="dCategory">
+            <option value="general">general</option>
+            <option value="tutorial">tutorial</option>
+            <option value="sparring">sparring</option>
+            <option value="training">training</option>
+            <option value="bgm">bgm</option>
+            <option value="sfx">sfx</option>
+            <option value="crowd">crowd</option>
+            <option value="voice_guide">voice_guide</option>
+            <option value="ui">ui</option>
+            <option value="dataset">dataset</option>
+          </select>
+        </div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dThumbnail">Thumbnail URL</label>
+        <input class="adm-input" id="dThumbnail" type="text" style="width:100%">
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dDuration">Duration</label>
+        <input class="adm-input" id="dDuration" type="number" min="0" step="0.1" style="width:100%">
+      </div>
+    </div>
+    <div class="adm-drawer-footer">
+      <button class="adm-btn-primary" id="drawerSave" type="button">저장</button>
+      <div style="flex:1"></div>
+      <button class="adm-btn-ghost" id="drawerDelete" type="button" style="border-color:rgba(232,0,13,0.34);color:#ff6b72">삭제</button>
+    </div>
+  </div>
+
+  <div class="preview-modal" id="previewModal" hidden>
+    <div class="preview-modal-inner" id="previewInner">
+      <button class="preview-modal-close" id="previewClose" type="button" aria-label="닫기">×</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    const mediaTypes = new Set(['video', 'image', 'audio', 'thumbnail', 'silhouette', 'dataset']);
+    const mediaCategories = new Set(['general', 'tutorial', 'sparring', 'training', 'bgm', 'sfx', 'crowd', 'voice_guide', 'ui', 'dataset']);
+    let currentType = 'video';
+    let currentCategory = '';
+    let selectedFiles = [];
+    let currentItems = [];
+    let activeApiBase = API_BASE_URL;
+    let lastApiAttempts = [];
+
+    const apiBanner = document.getElementById('apiBanner');
+    const successBanner = document.getElementById('successBanner');
+    const mediaLoading = document.getElementById('mediaLoading');
+    const mediaGrid = document.getElementById('mediaGrid');
+    const mediaEmpty = document.getElementById('mediaEmpty');
+    const fileInput = document.getElementById('fileInput');
+    const btnUpload = document.getElementById('btnUpload');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadBar = document.getElementById('uploadBar');
+    const uploadType = document.getElementById('uploadType');
+    const uploadCategory = document.getElementById('uploadCategory');
+    const drawer = document.getElementById('mediaDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const dMediaId = document.getElementById('dMediaId');
+    const dFilename = document.getElementById('dFilename');
+    const dType = document.getElementById('dType');
+    const dCategory = document.getElementById('dCategory');
+    const dThumbnail = document.getElementById('dThumbnail');
+    const dDuration = document.getElementById('dDuration');
+
+    function showErr(msg) {
+      apiBanner.textContent = msg;
+      apiBanner.hidden = false;
+      successBanner.hidden = true;
+    }
+    function showSuccess(msg) {
+      successBanner.textContent = msg;
+      successBanner.hidden = false;
+      apiBanner.hidden = true;
+      setTimeout(() => { successBanner.hidden = true; }, 2500);
+    }
+    function apiBaseCandidates() {
+      const host = window.location.hostname;
+      const candidates = [];
+      if (API_BASE_URL) candidates.push(API_BASE_URL);
+      const altFrontendPorts = new Set(['5001', '5501']);
+      const defaultApiPort = altFrontendPorts.has(window.location.port) ? '8001' : '8000';
+      const fallbackApiPort = defaultApiPort === '8001' ? '8000' : '8001';
+      if (host) {
+        candidates.push(`${window.location.protocol}//${host}:${defaultApiPort}`);
+        candidates.push(`${window.location.protocol}//${host}:${fallbackApiPort}`);
+      }
+      candidates.push('http://127.0.0.1:8001', 'http://localhost:8001', 'http://localhost:8000', 'http://127.0.0.1:8000');
+      return [...new Set(candidates.map(base => base.replace(/\/$/, '')))];
+    }
+    function withCacheBust(path) {
+      const joiner = path.includes('?') ? '&' : '?';
+      return `${path}${joiner}_=${Date.now()}`;
+    }
+    async function apiFetch(path, options = {}) {
+      let networkError = null;
+      lastApiAttempts = [];
+      for (const base of apiBaseCandidates()) {
+        lastApiAttempts.push(`${base}${path}`);
+        try {
+          const requestOptions = typeof options === 'function' ? options() : options;
+          const res = await fetch(`${base}${path}`, requestOptions);
+          activeApiBase = base;
+          return res;
+        } catch (err) {
+          networkError = err;
+        }
+      }
+      throw networkError || new Error('API server is unreachable');
+    }
+    function describeFetchError(err) {
+      if (err?.message === 'Failed to fetch' || err instanceof TypeError) {
+        const pageUrl = window.location.href;
+        const isHttpsPage = window.location.protocol === 'https:';
+        const isFilePage = window.location.protocol === 'file:';
+        const hints = [];
+        if (isHttpsPage) hints.push('현재 페이지가 HTTPS라서 HTTP API 호출이 브라우저에서 차단될 수 있습니다. http://127.0.0.1:5500 또는 로컬 정적 서버로 admin 페이지를 여세요.');
+        if (isFilePage) hints.push('HTML 파일을 직접 열면 브라우저 보안 정책에 막힐 수 있습니다. 로컬 정적 서버로 frontend를 띄워서 접속하세요.');
+        hints.push('같은 브라우저 새 탭에서 http://127.0.0.1:8000/health 또는 http://127.0.0.1:8001/health 가 열리는지 확인하세요.');
+        return `API 서버에 연결하지 못했습니다. 현재 페이지: ${pageUrl}. 시도한 주소: ${lastApiAttempts.join(', ')}. ${hints.join(' ')}`;
+      }
+      return err?.message || String(err);
+    }
+    async function responseError(res) {
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json().catch(() => null);
+        const detail = data?.detail || data?.message || data?.error;
+        if (detail) return `HTTP ${res.status}: ${detail}`;
+      }
+      const text = await res.text().catch(() => '');
+      return text ? `HTTP ${res.status}: ${text.slice(0, 240)}` : `HTTP ${res.status}`;
+    }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[ch]));
+    }
+    function fmtSize(bytes) {
+      if (!bytes) return '-';
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    }
+    function fmtDate(value) {
+      return value ? String(value).slice(0, 10) : '-';
+    }
+    function typeLabel(type) {
+      return { video: 'VIDEO', image: 'IMG', audio: 'AUDIO', thumbnail: 'THUMB', silhouette: 'SIL', dataset: 'DATA' }[type] ?? String(type || '').toUpperCase();
+    }
+    function assetUrl(url) {
+      const value = String(url || '').trim();
+      if (!value) return '';
+      if (/^(https?:|blob:|data:)/i.test(value)) return value;
+      if (value.startsWith('/uploads/') || value.startsWith('/dataset/')) return `${activeApiBase}${value}`;
+      if (value.startsWith('/assets/')) return `..${value}`;
+      if (value.startsWith('./assets/')) return `.${value}`;
+      if (value.startsWith('assets/')) return `../${value}`;
+      if (value.startsWith('../assets/')) return value;
+      if (value.startsWith('/')) return `..${value}`;
+      return `${API_BASE_URL}/${value.replace(/^\.?\//, '')}`;
+    }
+    function previewUrl(item) {
+      return assetUrl(item.file_url || item.thumbnail_url || '');
+    }
+    function renderPreview(item) {
+      const url = previewUrl(item);
+      if (!url) return `<div class="media-preview">${typeLabel(item.type)}</div>`;
+      if (['image', 'thumbnail', 'silhouette'].includes(item.type)) {
+        return `<div class="media-preview" data-preview="${escapeHtml(url)}" data-ptype="image" role="button" tabindex="0"><img src="${escapeHtml(url)}" alt="${escapeHtml(item.filename)}" loading="lazy" onerror="this.parentElement.textContent='${typeLabel(item.type)}'"></div>`;
+      }
+      if (item.type === 'video') {
+        const thumbnailUrl = assetUrl(item.thumbnail_url || '');
+        const thumb = item.thumbnail_url
+          ? `<img src="${escapeHtml(thumbnailUrl)}" alt="${escapeHtml(item.filename)}" loading="lazy" onerror="this.parentElement.textContent='VIDEO'">`
+          : `<video src="${escapeHtml(url)}#t=0.1" muted playsinline preload="metadata"></video>`;
+        return `<div class="media-preview" data-preview="${escapeHtml(url)}" data-ptype="video" role="button" tabindex="0">${thumb}</div>`;
+      }
+      if (item.type === 'audio') {
+        return `<div class="media-preview"><audio controls preload="none" src="${escapeHtml(url)}"></audio></div>`;
+      }
+      return `<div class="media-preview" data-preview="${escapeHtml(url)}" data-ptype="file" role="button" tabindex="0">${typeLabel(item.type)}</div>`;
+    }
+
+    async function loadMedia(type) {
+      mediaLoading.hidden = false;
+      mediaGrid.hidden = true;
+      mediaEmpty.hidden = true;
+      try {
+        const qs = new URLSearchParams({ type });
+        if (currentCategory) qs.set('category', currentCategory);
+        const res = await apiFetch(`/api/admin/media?${qs.toString()}`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(await responseError(res));
+        const data = await res.json();
+        currentItems = Array.isArray(data) ? data : (data.items ?? data.media ?? []);
+        apiBanner.hidden = true;
+        renderGrid();
+      } catch (err) {
+        currentItems = [];
+        renderGrid();
+        showErr(`Media API 로드 실패 (${err.message})`);
+      } finally {
+        mediaLoading.hidden = true;
+      }
+    }
+
+    function renderGrid() {
+      mediaGrid.innerHTML = '';
+      mediaEmpty.hidden = currentItems.length > 0;
+
+      currentItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.innerHTML = `
+          ${renderPreview(item)}
+          <div class="media-card-body">
+            <div class="media-filename" title="${escapeHtml(item.filename)}">${escapeHtml(item.filename || '-')}</div>
+            <div class="media-meta">${escapeHtml(item.category || 'general')} · ${fmtSize(item.size_bytes)} · ${fmtDate(item.created_at)}</div>
+            <div class="media-actions">
+              <button class="media-btn" data-copy="${escapeHtml(assetUrl(item.file_url || ''))}">URL 복사</button>
+              <button class="media-btn" data-edit="${escapeHtml(item.id)}">수정</button>
+              <button class="media-btn del" data-delete="${escapeHtml(item.id)}">삭제</button>
+            </div>
+          </div>
+        `;
+        mediaGrid.appendChild(card);
+      });
+
+      mediaGrid.querySelectorAll('[data-preview]').forEach(btn => {
+        btn.addEventListener('click', () => openPreview(btn.dataset.preview, btn.dataset.ptype));
+        btn.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openPreview(btn.dataset.preview, btn.dataset.ptype);
+          }
+        });
+      });
+      mediaGrid.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', () => copyUrl(btn));
+      });
+      mediaGrid.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = currentItems.find(media => String(media.id) === btn.dataset.edit);
+          if (item) openDrawer(item);
+        });
+      });
+      mediaGrid.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', () => deleteMedia(Number(btn.dataset.delete)));
+      });
+
+      mediaGrid.hidden = false;
+    }
+
+    function copyUrl(btn) {
+      const url = btn.dataset.copy || '';
+      if (!url) return;
+      navigator.clipboard?.writeText(url).then(() => {
+        btn.textContent = '복사됨';
+        btn.classList.add('copy-ok');
+        setTimeout(() => {
+          btn.textContent = 'URL 복사';
+          btn.classList.remove('copy-ok');
+        }, 1200);
+      }).catch(() => prompt('URL을 복사하세요.', url));
+    }
+
+    function updateFileSelection(files) {
+      selectedFiles = Array.from(files || []);
+      btnUpload.disabled = selectedFiles.length === 0;
+      uploadStatus.textContent = selectedFiles.length
+        ? `${selectedFiles.length}개 파일 선택됨: ${selectedFiles.map(file => file.name).join(', ')}`
+        : '';
+    }
+
+    fileInput.addEventListener('change', () => updateFileSelection(fileInput.files));
+    document.getElementById('btnPickFile').addEventListener('click', () => fileInput.click());
+    uploadType.addEventListener('change', () => {
+      currentType = uploadType.value;
+      currentCategory = '';
+      document.querySelectorAll('.tab-item').forEach(tab => tab.classList.toggle('active', tab.dataset.type === currentType));
+      loadMedia(currentType);
+    });
+
+    const uploadZone = document.getElementById('uploadZone');
+    uploadZone.addEventListener('dragover', event => {
+      event.preventDefault();
+      uploadZone.classList.add('drag-over');
+    });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', event => {
+      event.preventDefault();
+      uploadZone.classList.remove('drag-over');
+      updateFileSelection(event.dataTransfer.files);
+    });
+
+    btnUpload.addEventListener('click', async () => {
+      if (!selectedFiles.length) return;
+      btnUpload.disabled = true;
+      uploadProgress.hidden = false;
+      uploadBar.style.width = '0%';
+      uploadStatus.textContent = '업로드 중...';
+
+      function createFormData(file) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('type', uploadType.value);
+        fd.append('category', uploadCategory.value);
+        return fd;
+      }
+
+      let done = 0;
+      for (const file of selectedFiles) {
+        try {
+          const res = await apiFetch(withCacheBust('/api/admin/media/upload'), () => ({
+            method: 'POST',
+            headers: authHeaders(),
+            body: createFormData(file),
+          }));
+          if (!res.ok) throw new Error(await responseError(res));
+          done += 1;
+          uploadBar.style.width = `${Math.round((done / selectedFiles.length) * 100)}%`;
+        } catch (err) {
+          showErr(`업로드 실패 (${file.name}): ${describeFetchError(err)}`);
+          uploadStatus.textContent = '업로드 실패';
+          btnUpload.disabled = false;
+          return;
+        }
+      }
+
+      showSuccess(`${done}개 파일 업로드 완료`);
+      uploadStatus.textContent = `${done}개 파일 업로드 완료`;
+      selectedFiles = [];
+      fileInput.value = '';
+      btnUpload.disabled = true;
+      setTimeout(() => {
+        uploadProgress.hidden = true;
+        uploadBar.style.width = '0%';
+      }, 900);
+      currentType = uploadType.value;
+      await loadMedia(currentType);
+    });
+
+    function openDrawer(item) {
+      dMediaId.value = item.id;
+      dFilename.value = item.filename ?? '';
+      dType.value = mediaTypes.has(item.type) ? item.type : 'video';
+      dCategory.value = item.category ?? 'general';
+      dThumbnail.value = item.thumbnail_url ?? '';
+      dDuration.value = item.duration != null ? item.duration : '';
+      drawer.classList.add('open');
+      drawerOverlay.classList.add('open');
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+    }
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+
+    document.getElementById('drawerSave').addEventListener('click', async () => {
+      const id = Number(dMediaId.value);
+      if (!id) return;
+      try {
+        const res = await apiFetch(`/api/admin/media/${id}`, {
+          method: 'PUT',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: dFilename.value.trim(),
+            type: dType.value,
+            category: dCategory.value,
+            thumbnail_url: dThumbnail.value.trim(),
+            duration: dDuration.value ? Number(dDuration.value) : null,
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        showSuccess('미디어 정보가 저장되었습니다.');
+        currentType = dType.value;
+        uploadType.value = currentType;
+        document.querySelectorAll('.tab-item').forEach(tab => tab.classList.toggle('active', tab.dataset.type === currentType));
+        await loadMedia(currentType);
+      } catch (err) {
+        showErr(`수정 실패: ${err.message}`);
+      }
+    });
+    document.getElementById('drawerDelete').addEventListener('click', () => deleteMedia(Number(dMediaId.value)));
+
+    async function deleteMedia(id) {
+      if (!id || !confirm('이 미디어 파일을 삭제하시겠습니까?')) return;
+      try {
+        const res = await apiFetch(`/api/admin/media/${id}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        showSuccess('삭제되었습니다.');
+        await loadMedia(currentType);
+      } catch (err) {
+        showErr(`삭제 실패: ${err.message}`);
+      }
+    }
+
+    const previewModal = document.getElementById('previewModal');
+    const previewInner = document.getElementById('previewInner');
+    function openPreview(url, type) {
+      if (!url) return;
+      previewInner.innerHTML = '<button class="preview-modal-close" id="previewClose" type="button" aria-label="닫기">×</button>';
+      const node = type === 'video'
+        ? document.createElement('video')
+        : type === 'audio'
+          ? document.createElement('audio')
+          : document.createElement('img');
+      if (node.tagName === 'VIDEO' || node.tagName === 'AUDIO') node.controls = true;
+      if (node.tagName === 'VIDEO') {
+        node.autoplay = true;
+        node.playsInline = true;
+        node.preload = 'metadata';
+      }
+      node.src = url;
+      previewInner.appendChild(node);
+      if (node.tagName === 'VIDEO') node.play().catch(() => {});
+      document.getElementById('previewClose').addEventListener('click', closePreview);
+      previewModal.hidden = false;
+    }
+    function closePreview() {
+      previewModal.hidden = true;
+      previewInner.innerHTML = '<button class="preview-modal-close" id="previewClose" type="button" aria-label="닫기">×</button>';
+    }
+    previewModal.addEventListener('click', event => {
+      if (event.target === previewModal) closePreview();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closePreview();
+        closeDrawer();
+      }
+    });
+
+    document.getElementById('tabStrip').addEventListener('click', event => {
+      const tab = event.target.closest('.tab-item');
+      if (!tab) return;
+      document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+      tab.classList.add('active');
+      currentType = tab.dataset.type;
+      currentCategory = '';
+      uploadType.value = currentType;
+      loadMedia(currentType);
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      const params = new URLSearchParams(window.location.search);
+      const requestedType = params.get('type');
+      const requestedCategory = params.get('category');
+      if (mediaTypes.has(requestedType)) {
+        currentType = requestedType;
+        uploadType.value = currentType;
+        document.querySelectorAll('.tab-item').forEach(tab => tab.classList.toggle('active', tab.dataset.type === currentType));
+      }
+      if (mediaCategories.has(requestedCategory)) {
+        currentCategory = requestedCategory;
+        uploadCategory.value = currentCategory;
+      }
+      loadMedia(currentType);
+    });
+  </script>
+</body>
+</html>

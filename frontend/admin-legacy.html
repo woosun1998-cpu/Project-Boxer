@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>BOXER - Admin</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+  <style>
+    :root{
+      --panel:#0d1118;
+      --panel-strong:#090d14;
+      --panel-soft:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.08);
+      --text-dim:rgba(255,255,255,.68);
+      --red:#ff2d55;
+      --gold:#ffd60a;
+      --green:#30d158;
+      --font-display:'Bebas Neue', 'Pretendard', var(--font-body);
+    }
+
+    body{
+      padding-top:64px;
+      min-height:100vh;
+      font-family:'Pretendard', var(--font-body);
+      color:#fff;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(255,45,85,.10), transparent 22%),
+        radial-gradient(circle at 82% 4%, rgba(255,255,255,.04), transparent 16%),
+        linear-gradient(180deg, #05070b 0%, #0b1018 58%, #05070b 100%);
+    }
+
+    .shell{
+      width:min(1380px, calc(100vw - 1.5rem));
+      margin:0 auto;
+      padding:1rem 0 1.5rem;
+      display:grid;
+      gap:1rem;
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns: minmax(0,1.25fr) minmax(300px,.9fr);
+      gap:1rem;
+      align-items:stretch;
+    }
+
+    .hero-card,
+    .info-card,
+    .table-card,
+    .form-card,
+    .seed-card,
+    .tab-card{
+      position:relative;
+      border:1px solid var(--border);
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(15,18,26,.96), rgba(8,11,18,.98));
+      box-shadow:0 18px 42px rgba(0,0,0,.22);
+      overflow:hidden;
+    }
+
+    .hero-card{
+      min-height:180px;
+      padding:1.15rem 1.2rem 1rem;
+      display:grid;
+      gap:.75rem;
+    }
+
+    .eyebrow{
+      font-family:var(--font-display);
+      color:var(--red);
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      font-size:.92rem;
+    }
+
+    .hero-title{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:clamp(2rem, 3.4vw, 3.4rem);
+      line-height:.92;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .hero-desc{
+      margin:0;
+      max-width:60ch;
+      color:var(--text-dim);
+      line-height:1.6;
+      font-size:.92rem;
+    }
+
+    .hero-actions{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:.62rem;
+      align-items:stretch;
+    }
+    .hero-actions .btn-primary,
+    .hero-actions .btn-outline{
+      min-height:42px;
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:.45rem;
+      text-align:center;
+      padding:0 .95rem;
+      border-radius:12px;
+      font-size:.86rem;
+      letter-spacing:.01em;
+      box-shadow:none;
+    }
+    .hero-actions .btn-primary{
+      background:linear-gradient(180deg, #ff2d55 0%, #ff1744 100%);
+      border:1px solid rgba(255,45,85,.55);
+      box-shadow:0 10px 20px rgba(255,45,85,.2);
+    }
+    .hero-actions .btn-outline{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.14);
+      color:rgba(255,255,255,.92);
+    }
+    .hero-actions .btn-outline:hover,
+    .hero-actions .btn-primary:hover{
+      transform:translateY(-1px);
+      transition:transform .12s ease;
+    }
+    .hero-action-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:1.25rem;
+      height:1.25rem;
+      opacity:.95;
+    }
+    .hero-action-icon svg{
+      width:1.12rem;
+      height:1.12rem;
+      stroke:currentColor;
+      fill:none;
+      stroke-width:2.1;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .btn-primary,
+    .btn-outline,
+    .btn-sm,
+    .icon-btn{
+      border:0;
+      border-radius:14px;
+      min-height:44px;
+      padding:0 1rem;
+      font-family:'Pretendard', var(--font-body);
+      font-weight:800;
+      font-size:.9rem;
+      color:#fff;
+      background:rgba(255,255,255,.06);
+    }
+
+    .btn-primary{
+      background:var(--red);
+      box-shadow:0 12px 26px rgba(255,45,85,.24);
+    }
+
+    .btn-outline,
+    .btn-sm,
+    .icon-btn{ border:1px solid rgba(255,255,255,.10); }
+
+    .btn-sm{ min-height:34px; padding:0 .8rem; font-size:.82rem; }
+    .btn-sm.success{ border-color:rgba(48,209,88,.36); color:var(--green); }
+    .btn-sm.danger{ border-color:rgba(255,45,85,.36); color:var(--red); }
+    .btn-sm.active-filter{
+      border-color: rgba(255, 214, 10, .6);
+      color: var(--gold);
+      background: rgba(255, 214, 10, .12);
+      box-shadow: 0 0 0 1px rgba(255,214,10,.2) inset;
+    }
+    .icon-btn{ min-height:30px; padding:0 .75rem; font-size:.8rem; }
+
+    .hero-side{
+      padding:1rem;
+      display:grid;
+      gap:.75rem;
+    }
+    .workflow-card{
+      padding:1rem;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      display:grid;
+      gap:.7rem;
+    }
+    .workflow-card h3{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:1rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+    .workflow-card p{
+      margin:0;
+      color:var(--text-dim);
+      line-height:1.55;
+      font-size:.88rem;
+    }
+    .workflow-steps{
+      margin:0;
+      padding-left:1rem;
+      display:grid;
+      gap:.35rem;
+      color:#fff;
+      line-height:1.45;
+      font-size:.86rem;
+    }
+    .workflow-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+    }
+    .hero-stat{
+      padding:.9rem 1rem;
+      border-radius:18px;
+      background:var(--panel-soft);
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .hero-stat.highlight{
+      border-color:rgba(255,45,85,.35);
+      background:linear-gradient(180deg, rgba(255,45,85,.16), rgba(255,255,255,.04));
+    }
+    .hero-stat .label{
+      font-size:.74rem;
+      letter-spacing:.12em;
+      color:var(--text-dim);
+      text-transform:uppercase;
+      margin-bottom:.2rem;
+    }
+    .hero-stat .value{
+      font-family:var(--font-display);
+      font-size:1.75rem;
+      line-height:1;
+      letter-spacing:.06em;
+    }
+
+    .chart-panel{
+      display:none;
+      padding:1rem;
+      border:1px solid var(--border);
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(15,18,26,.96), rgba(8,11,18,.98));
+      box-shadow:0 18px 42px rgba(0,0,0,.22);
+    }
+    .chart-panel.visible{ display:block; }
+    .chart-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+      margin-bottom:.8rem;
+    }
+    .chart-head h3{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:1rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .chart-grid{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0,1fr));
+      gap:.75rem;
+      align-items:end;
+      min-height:140px;
+    }
+    .chart-col{
+      display:grid;
+      gap:.45rem;
+      justify-items:stretch;
+    }
+    .chart-bar-wrap{
+      height:120px;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+      overflow:hidden;
+      display:flex;
+      align-items:flex-end;
+    }
+    .chart-bar{
+      width:100%;
+      background:linear-gradient(180deg, rgba(255,45,85,.96), rgba(255,45,85,.45));
+      border-top-left-radius:16px;
+      border-top-right-radius:16px;
+      min-height:8px;
+    }
+    .chart-label{
+      text-align:center;
+      font-size:.78rem;
+      color:var(--text-dim);
+      line-height:1.35;
+    }
+    .chart-value{
+      text-align:center;
+      font-family:var(--font-display);
+      font-size:1.05rem;
+      letter-spacing:.05em;
+    }
+
+    .row-actions{
+      display:flex;
+      gap:.45rem;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .row-actions .icon-btn{
+      min-height:30px;
+      padding:0 .7rem;
+      font-size:.75rem;
+    }
+
+
+    .server-banner{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px 18px;
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:22px;
+    }
+    .server-dot{ width:10px;height:10px;border-radius:50%;background:var(--text-dim);flex-shrink:0; }
+    .server-dot.ok{ background:var(--green); box-shadow:0 0 8px rgba(48,209,88,.6); }
+    .server-dot.error{ background:var(--red); box-shadow:0 0 8px rgba(255,45,85,.6); }
+    .server-info{ flex:1; }
+    .server-info strong{ display:block; margin-bottom:2px; }
+    .server-info span{ color:var(--text-dim); font-size:.84rem; }
+    .server-actions{ display:flex; gap:.5rem; flex-wrap:wrap; }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0,1fr));
+      gap:.85rem;
+    }
+    .stat{
+      padding:1rem 1.05rem;
+      border-radius:22px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(15,18,26,.96), rgba(8,11,18,.98));
+    }
+    .stat .k{ font-size:.74rem; color:var(--text-dim); letter-spacing:.12em; text-transform:uppercase; margin-bottom:.35rem; }
+    .stat .v{ font-family:var(--font-display); font-size:1.8rem; line-height:1; letter-spacing:.05em; }
+
+    .tabs{
+      display:flex;
+      flex-direction:column;
+      gap:.6rem;
+      position:sticky;
+      top:70px;
+      z-index:25;
+      background:linear-gradient(180deg, rgba(5,7,11,.96), rgba(5,7,11,.82));
+      backdrop-filter:blur(6px);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:.75rem;
+      max-width:340px;
+    }
+    .tab-btn{
+      width:100%;
+      text-align:left;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      color:rgba(255,255,255,.75);
+      border-radius:12px;
+      padding:.9rem 1rem;
+      font-weight:800;
+      font-size:.95rem;
+    }
+    .tab-btn.active{
+      color:#fff;
+      background:rgba(255,255,255,.08);
+      border-color:rgba(255,255,255,.12);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .tab-pane{ display:none; }
+    .tab-pane.active{ display:block; }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:1rem;
+      flex-wrap:wrap;
+      padding:0 .15rem;
+      margin-bottom:.8rem;
+    }
+    .section-head h2{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:clamp(1.35rem, 2vw, 2rem);
+      line-height:1;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .section-head p{
+      margin:.25rem 0 0;
+      color:var(--text-dim);
+      line-height:1.55;
+      font-size:.88rem;
+      max-width:64ch;
+    }
+
+    .notice{
+      padding:.9rem 1rem;
+      border-radius:18px;
+      background:rgba(255,255,255,.035);
+      border:1px solid rgba(255,255,255,.08);
+      color:rgba(255,255,255,.78);
+      line-height:1.65;
+      font-size:.88rem;
+      margin-bottom:1rem;
+    }
+    .notice code{
+      font-family:var(--font-mono);
+      color:#fff;
+      background:rgba(255,255,255,.06);
+      padding:.05rem .35rem;
+      border-radius:6px;
+    }
+
+    .table-card{ overflow:hidden; }
+    .table-wrap{ overflow:auto; max-height:56vh; }
+    table{ width:100%; border-collapse:collapse; }
+    thead th{
+      text-align:left;
+      padding:.85rem .95rem;
+      font-size:.78rem;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--text-dim);
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+      position:sticky;
+      top:0;
+      z-index:3;
+      background:linear-gradient(180deg, rgba(15,18,26,.98), rgba(10,13,20,.98));
+    }
+    tbody td{
+      padding:.9rem .95rem;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      vertical-align:middle;
+      white-space:nowrap;
+      font-size:.86rem;
+      line-height:1.45;
+    }
+    tbody tr:hover{ background:rgba(255,255,255,.03); }
+    tbody td:first-child{
+      font-family:var(--font-mono);
+      font-size:.82rem;
+      letter-spacing:.02em;
+      color:rgba(255,255,255,.82);
+    }
+    tbody td .row-actions .icon-btn{
+      min-height:32px;
+      padding:0 .72rem;
+      border-radius:10px;
+      font-size:.76rem;
+      font-weight:700;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:26px;
+      padding:0 .55rem;
+      border-radius:999px;
+      font-size:.75rem;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+    }
+    .result-badge{
+      margin-left:.45rem;
+      border-color:rgba(255,255,255,.18);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      font-size:.72rem;
+    }
+    .tier-free{ color:var(--text-dim); }
+    .tier-premium{ color:var(--gold); }
+    .tier-admin{ color:var(--red); }
+
+    .panel-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:1rem;
+    }
+
+    .form-card{ padding:1rem; }
+    .form-head{
+      display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap;
+      margin-bottom:.85rem;
+    }
+    .form-head h3{
+      margin:0;
+      font-family:var(--font-display);
+      font-size:1.25rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .form-head p{ margin:.2rem 0 0; color:var(--text-dim); font-size:.86rem; line-height:1.5; }
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }
+    .form-grid.three{ grid-template-columns:repeat(3, minmax(0,1fr)); }
+    .field{ display:grid; gap:.35rem; }
+    .field label{ font-size:.8rem; color:var(--text-dim); letter-spacing:.06em; }
+    .input, .select, textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      padding:.85rem .95rem;
+      font:inherit;
+      outline:none;
+    }
+    /* 무엇: 정렬 셀렉트 기본 표시 색상 고정 -> 왜: 브라우저 테마 영향으로 흰 글자/흰 배경이 되는 문제를 막기 위해 */
+    .select{
+      background:#1a1f2b;
+      color:#fff;
+      appearance:none;
+      -webkit-text-fill-color:#fff;
+    }
+    /* 무엇: 시스템 테마가 select 배경을 덮어써도 색상 유지 -> 왜: 최신 가입순 텍스트가 흰 배경과 겹치는 문제를 막기 위해 */
+    #users-sort{
+      background-color:#1a1f2b !important;
+      color:#fff !important;
+      min-width:196px !important;
+      padding-right:2rem;
+    }
+    /* 무엇: 옵션 목록 색상 분리 -> 왜: 드롭다운 펼침 시 항목 가독성을 높이기 위해 */
+    .select option{
+      background:#fff;
+      color:#111;
+    }
+    textarea{ min-height:96px; resize:vertical; }
+    .input:focus,.select:focus,textarea:focus{ border-color:rgba(255,255,255,.24); }
+
+    .stack{ display:grid; gap:.8rem; }
+    .toolbar{ display:flex; gap:.55rem; flex-wrap:wrap; align-items:center; }
+    /* 무엇: 같은 계열 컨트롤 크기 통일 -> 왜: 탭별 UI 일관성과 가독성을 높이기 위해 */
+    .section-head .toolbar .input,
+    .section-head .toolbar .select,
+    .section-head .toolbar .btn-sm,
+    .section-head .toolbar .btn-primary{
+      min-height:38px;
+      font-size:.84rem;
+      border-radius:12px;
+    }
+    .section-head .toolbar .input,
+    .section-head .toolbar .select{
+      padding:.55rem .8rem;
+    }
+    .section-head .toolbar .badge.result-badge{
+      min-height:30px;
+      padding:0 .6rem;
+      align-self:center;
+    }
+
+    .editor{
+      display:grid;
+      grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);
+      gap:1rem;
+      align-items:start;
+      margin-top:1rem;
+    }
+    .video-box, .side-box{
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    .video-box{
+      position:sticky;
+      top:80px;
+      aspect-ratio:16/9;
+      min-height:320px;
+    }
+    #timestamp-video,#video-only{ width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+    .marker-overlay{
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;
+      background:linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.58));
+      color:rgba(255,255,255,.8);
+      text-align:center;
+      padding:1rem;
+      z-index:3;
+    }
+    .marker-overlay.hidden{ display:none; }
+    .marker-badge{
+      position:absolute; top:12px; left:12px; z-index:4;
+      border-radius:12px; padding:.45rem .65rem;
+      background:rgba(255,45,85,.18); border:1px solid rgba(255,45,85,.22); color:#fff; font-size:.78rem; font-weight:800;
+    }
+    .marker-status{ margin-top:.6rem; font-size:.84rem; color:var(--text-dim); }
+
+    .side-box{ padding:1rem; display:grid; gap:.85rem; }
+    .side-box h4{ margin:0; font-size:.95rem; }
+    .side-box p{ margin:0; color:var(--text-dim); line-height:1.55; font-size:.88rem; }
+
+    .timestamps{
+      display:grid;
+      gap:.7rem;
+    }
+    .ts-row{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      border-radius:18px;
+      padding:.8rem;
+      display:grid;
+      gap:.65rem;
+    }
+    .ts-main, .ts-advanced{
+      display:grid;
+      gap:.55rem;
+    }
+    .ts-main{ grid-template-columns: 1.1fr 1fr .9fr 1fr auto; }
+    .ts-advanced{ grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+    .json-wrap textarea{ min-height:220px; font-family:var(--font-mono); font-size:.82rem; }
+    .help{
+      font-size:.82rem;
+      color:var(--text-dim);
+      line-height:1.55;
+    }
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:26px;
+      padding:0 .55rem;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      font-size:.75rem;
+      font-weight:800;
+      letter-spacing:.02em;
+      background:rgba(255,255,255,.05);
+      color:#fff;
+    }
+    .status-pill.idle{
+      border-color:rgba(255,255,255,.16);
+      color:rgba(255,255,255,.8);
+    }
+    .status-pill.ready{
+      border-color:rgba(48,209,88,.42);
+      color:var(--green);
+      background:rgba(48,209,88,.12);
+    }
+    .status-pill.error{
+      border-color:rgba(255,45,85,.42);
+      color:var(--red);
+      background:rgba(255,45,85,.12);
+    }
+    .metrics-card{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+      padding:.9rem;
+      display:grid;
+      gap:.7rem;
+    }
+    .metrics-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:.55rem;
+    }
+    .metric-item{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      background:rgba(255,255,255,.03);
+      padding:.55rem .65rem;
+      display:grid;
+      gap:.2rem;
+    }
+    .metric-item .k{
+      font-size:.72rem;
+      color:var(--text-dim);
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .metric-item .v{
+      font-family:var(--font-display);
+      font-size:1rem;
+      letter-spacing:.04em;
+    }
+    .quality-note{
+      font-size:.8rem;
+      color:var(--text-dim);
+      line-height:1.5;
+    }
+
+    .modal{
+      position:fixed; inset:0; z-index:200; display:none;
+      align-items:center; justify-content:center;
+      background:rgba(7,11,18,.74); backdrop-filter:blur(10px);
+      padding:1rem;
+    }
+    .modal.open{ display:flex; }
+    .modal-card{
+      width:min(520px, 100%);
+      border-radius:24px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, #0d1118, #090d14);
+      padding:1rem;
+      box-shadow:0 24px 48px rgba(0,0,0,.34);
+    }
+    .modal-card h3{
+      margin:0 0 .35rem;
+      font-family:var(--font-display);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-size:1.2rem;
+    }
+    .modal-card p{
+      margin:.15rem 0 .85rem;
+      color:var(--text-dim);
+      line-height:1.55;
+      font-size:.88rem;
+    }
+    .modal-actions{ display:flex; gap:.6rem; justify-content:flex-end; flex-wrap:wrap; }
+
+    .seed-area{ display:grid; gap:1rem; }
+    .seed-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .seed-links{
+      display:flex;
+      gap:.55rem;
+      flex-wrap:wrap;
+      margin-top:.35rem;
+    }
+    .copy-row{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.6rem; }
+
+    .empty{
+      text-align:center;
+      padding:2rem 1rem;
+      color:var(--text-dim);
+    }
+
+    @media (max-width: 1180px){
+      .hero, .editor, .form-grid, .form-grid.three, .seed-grid{ grid-template-columns:1fr; }
+      .stats{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .ts-main, .ts-advanced{ grid-template-columns:1fr 1fr; }
+      .hero-actions{ grid-template-columns:1fr; }
+    }
+    @media (max-width: 720px){
+      .shell{ width:min(100vw - 1rem, 1380px); }
+      .hero{ grid-template-columns:1fr; }
+      .stats{ grid-template-columns:1fr; }
+      .ts-main, .ts-advanced{ grid-template-columns:1fr; }
+      .section-head{ align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Admin Center</div>
+        <h1 class="hero-title">BOXER OPERATIONS</h1>
+        <p class="hero-desc">
+          사용자, 튜토리얼, 스파링 영상, 랭킹 데이터를 한 곳에서 관리합니다.
+          특히 스파링 영상 관리에서는 영상 재생 중 <strong>M</strong>으로 공격 타임스탬프를 찍고
+          아래 표에서 판정 파라미터를 바로 조정할 수 있습니다.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary" type="button" onclick="switchTab('videos', this)"><span class="hero-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="17" height="11" rx="2"></rect><path d="M10 9.5l5 2.5-5 2.5z"></path></svg></span><span>스파링 영상 관리</span></button>
+          <button class="btn-outline" type="button" onclick="switchTab('users', this)"><span class="hero-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 18.5c1.8-3.1 4.2-4.6 6.5-4.6s4.7 1.5 6.5 4.6"></path></svg></span><span>사용자 관리</span></button>
+          <button class="btn-outline" type="button" onclick="checkHealth()"><span class="hero-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l7 2.8v4.9c0 4.4-2.9 7.9-7 9.3-4.1-1.4-7-4.9-7-9.3V6.3z"></path><path d="M9.2 12.1l1.8 1.8 3.8-3.8"></path></svg></span><span>서버 확인</span></button>
+          <button class="btn-outline" type="button" onclick="switchTab('charts', this)"><span class="hero-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19.5h16"></path><rect x="6.2" y="12.5" width="2.8" height="5.5" rx=".6"></rect><rect x="10.7" y="9.5" width="2.8" height="8.5" rx=".6"></rect><rect x="15.2" y="6.5" width="2.8" height="11.5" rx=".6"></rect></svg></span><span>데이터 차트 보기</span></button>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="hero-stat highlight"><div class="label">Users</div><div class="value" id="stat-users">0</div></div>
+        <div class="hero-stat"><div class="label">Tutorials</div><div class="value" id="stat-tutorials">0</div></div>
+        <div class="hero-stat"><div class="label">Videos</div><div class="value" id="stat-videos">0</div></div>
+        <div class="hero-stat"><div class="label">Top Score</div><div class="value" id="stat-topscore">0</div></div>
+        <div class="hero-stat highlight"><div class="label">My Score</div><div class="value" id="stat-my-score">0</div></div>
+        <div class="hero-stat"><div class="label">Counters</div><div class="value" id="stat-counters">0</div></div>
+        <div class="workflow-card">
+          <h3>Workflow</h3>
+          <p>DB 사용자 관리와 스파링 공격 타임스탬프 추출을 이 화면에서 바로 처리합니다.</p>
+          <ul class="workflow-steps">
+            <li><strong>사용자 관리</strong> - `/api/admin/users`를 불러와 tier를 수정합니다.</li>
+            <li><strong>영상 관리</strong> - 재생 중 <strong>M</strong>으로 `impact_time`을 찍습니다.</li>
+            <li><strong>판정 파라미터</strong> - `dodge_window_ms`, `hitbox_radius`, `required_move`, `target_zone`을 조정합니다.</li>
+          </ul>
+          <div class="workflow-actions">
+            <button class="btn-sm success" type="button" onclick="switchTab('videos', this)">영상 관리 열기</button>
+            <button class="btn-sm" type="button" onclick="switchTab('users', this)">사용자 목록 열기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-charts" aria-live="polite">
+      <div class="chart-head">
+        <h3>데이터 차트</h3>
+        <button class="btn-sm" type="button" onclick="switchTab('videos', this)">영상 관리로</button>
+      </div>
+      <div class="chart-grid" id="chart-grid"></div>
+    </section>
+
+    <div class="server-banner" id="server-banner">
+      <div class="server-dot" id="server-dot"></div>
+      <div class="server-info">
+        <strong id="server-status-text">서버 상태 확인 중...</strong>
+        <span id="server-detail">http://localhost:8001</span>
+      </div>
+      <div class="server-actions">
+        <button class="btn-sm" type="button" onclick="checkHealth()">새로고침</button>
+        <a class="btn-sm success" href="http://localhost:8001/docs" target="_blank" rel="noreferrer">Swagger</a>
+        <a class="btn-sm" href="http://localhost:8001/redoc" target="_blank" rel="noreferrer">ReDoc</a>
+      </div>
+    </div>
+    <div class="notice" id="admin-access-notice" style="display:none;"></div>
+
+    <section class="stats">
+      <div class="stat"><div class="k">사용자</div><div class="v" id="stat-users-card">0</div></div>
+      <div class="stat"><div class="k">튜토리얼</div><div class="v" id="stat-tutorials-card">0</div></div>
+      <div class="stat"><div class="k">영상</div><div class="v" id="stat-videos-card">0</div></div>
+      <div class="stat"><div class="k">최고 점수</div><div class="v" id="stat-topscore-card">0</div></div>
+      <div class="stat"><div class="k">내 점수</div><div class="v" id="stat-my-score-card">0</div></div>
+      <div class="stat"><div class="k">반격 성공</div><div class="v" id="stat-counters-card">0</div></div>
+    </section>
+
+    <div class="tabs" role="tablist" aria-label="관리 목록">
+      <button class="tab-btn" type="button" onclick="switchTab('videos', this)">스파링 영상관리</button>
+      <button class="tab-btn active" type="button" onclick="switchTab('users', this)">사용자 관리</button>
+      <button class="tab-btn" type="button" onclick="switchTab('charts', this)">데이터 차트보기</button>
+    </div>
+
+    <section class="tab-pane active" id="tab-users">
+      <div class="section-head">
+        <div>
+          <h2>DB 사용자 관리</h2>
+          <p>실제 DB의 <code>/api/admin/users</code> 응답을 그대로 불러와 계정 정보를 확인하고 티어를 수정합니다.</p>
+        </div>
+        <div class="toolbar">
+          <input
+            class="input"
+            id="users-search"
+            type="text"
+            placeholder="사용자 검색 (username / email / id)"
+            style="min-width:260px;"
+            oninput="handleUsersSearch(this.value)"
+          />
+          <select class="select" id="users-sort" style="min-width:180px;" onchange="handleUsersSort(this.value)">
+            <option value="created_desc">최신 가입순</option>
+            <option value="created_asc">오래된 가입순</option>
+            <option value="coins_desc">코인 높은순</option>
+            <option value="coins_asc">코인 낮은순</option>
+            <option value="id_desc">ID 높은순</option>
+            <option value="id_asc">ID 낮은순</option>
+          </select>
+          <button class="btn-sm" type="button" onclick="clearUsersSearch()">초기화</button>
+          <button class="btn-sm" type="button" onclick="loadAdminUsers()">새로고침</button>
+        </div>
+      </div>
+      <div class="notice">
+        사용자 관리 표는 랭킹이 아니라 DB 사용자 목록입니다. 티어 수정은 <code>free</code> 와 <code>premium</code> 값을 사용합니다.
+      </div>
+      <div class="table-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Tier</th>
+                <th>Coins</th>
+                <th>ID</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"><tr><td colspan="8" class="empty">불러오는 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-tutorials">
+      <div class="section-head">
+        <div>
+          <h2>튜토리얼</h2>
+          <p>튜토리얼 생성과 삭제를 관리합니다. 실제 DB의 레코드를 그대로 보여줍니다.</p>
+        </div>
+        <button class="btn-primary" type="button" onclick="startTutorialCreate()">+ 튜토리얼 추가</button><button class="btn-sm" type="button" onclick="loadTutorials()">새로고침</button>
+      </div>
+      <div class="notice">튜토리얼 생성은 <code>POST /api/admin/tutorials</code>, 삭제는 <code>DELETE /api/admin/tutorials/{id}</code>를 사용합니다. 목록의 <code>Video URL</code>이 비어 있으면 DB에 경로가 저장되지 않은 상태입니다.</div>
+
+      <div class="form-card" id="tutorial-form" style="display:none;">
+        <div class="form-head">
+          <div>
+            <h3 id="tutorial-form-title">튜토리얼 추가</h3>
+            <p>제목, 설명, 난이도, 보상, 비디오 URL, 자세 JSON을 입력합니다. <span id="tutorial-draft-status" style="color:var(--text-dim);">임시저장 대기</span></p>
+          </div>
+          <button class="btn-sm" type="button" onclick="toggleTutorialForm(false)">닫기</button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>제목</label><input class="input" id="tut-title" type="text" placeholder="예: 기본 자세" /></div>
+          <div class="field"><label>비디오 URL</label><input class="input" id="tut-video-url" type="text" placeholder="./video/스파링초보.mp4" /></div>
+        </div>
+        <div class="field" style="margin-top:.85rem;"><label>설명</label><textarea id="tut-desc" placeholder="짧은 설명"></textarea></div>
+        <div class="form-grid three" style="margin-top:.85rem;">
+          <div class="field"><label>난이도</label><select id="tut-difficulty" class="select"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+          <div class="field"><label>프리미엄</label><select id="tut-premium" class="select"><option value="false">false</option><option value="true">true</option></select></div>
+          <div class="field"><label>순서</label><input id="tut-order" class="input" type="number" min="0" placeholder="자동" /></div>
+        </div>
+        <div class="form-grid three" style="margin-top:.85rem;">
+          <div class="field"><label>EXP</label><input id="tut-exp" class="input" type="number" value="100" /></div>
+          <div class="field"><label>Coins</label><input id="tut-coins" class="input" type="number" value="10" /></div>
+          <div class="field"><label>자세 JSON</label><input id="tut-pose-json" class="input" type="text" placeholder='{"guard":{"min_elbow_angle":80}}' /></div>
+        </div>
+        <div class="toolbar" style="margin-top:.85rem;">
+          <button class="btn-primary" id="tutorial-submit-btn" type="button" onclick="submitTutorial()">저장</button>
+          <button class="btn-sm" type="button" onclick="resetTutorialDraft()">임시저장 삭제</button>
+          <button class="btn-outline" type="button" onclick="toggleTutorialForm(false)">취소</button>
+        </div>
+      </div>
+      <div class="table-card" style="margin-top:1rem;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>Level</th><th>Premium</th><th>Video URL</th><th>EXP</th><th>Coins</th><th>Order</th><th>Action</th></tr>
+            </thead>
+            <tbody id="tutorials-tbody"><tr><td colspan="9" class="empty">불러오는 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-videos">
+      <div class="section-head">
+        <div>
+          <h2>스파링 영상 DB 관리</h2>
+          <p>여기서 영상 파일을 불러오고, 재생 중 <strong>M</strong>으로 공격 시점을 찍어 타임스탬프를 저장합니다.</p>
+        </div>
+        <div class="toolbar">
+          <input
+            class="input"
+            id="videos-search"
+            type="text"
+            placeholder="영상 검색 (title / type / difficulty / path)"
+            style="min-width:260px;"
+            oninput="handleVideosSearch(this.value)"
+          />
+          <select class="select" id="videos-sort" style="min-width:180px;" onchange="handleVideosSort(this.value)">
+            <option value="curated_first">추천 세트 우선</option>
+            <option value="id_desc">최신 등록순</option>
+            <option value="id_asc">오래된 등록순</option>
+            <option value="duration_desc">길이 긴순</option>
+            <option value="duration_asc">길이 짧은순</option>
+            <option value="difficulty_asc">난이도 오름차순</option>
+            <option value="difficulty_desc">난이도 내림차순</option>
+            <option value="timestamps_desc">타임스탬프 많은순</option>
+            <option value="timestamps_asc">타임스탬프 적은순</option>
+          </select>
+          <button class="btn-sm" type="button" onclick="clearVideosSearch()">초기화</button>
+          <span class="badge result-badge" id="videos-result-count">0건</span>
+          <button class="btn-primary" type="button" onclick="showVideoForm()">+ 영상 추가</button>
+          <button class="btn-sm" type="button" onclick="loadVideos()">새로고침</button>
+        </div>
+        <div class="toolbar" id="videos-curated-filters" style="margin-top:.5rem;">
+          <button class="btn-sm active-filter" type="button" data-curated-filter="" onclick="applyCuratedVideoFilter('')">전체</button>
+          <button class="btn-sm" type="button" data-curated-filter="Entry Jab" onclick="applyCuratedVideoFilter('Entry Jab')">Entry Jab</button>
+          <button class="btn-sm" type="button" data-curated-filter="Counter Straight" onclick="applyCuratedVideoFilter('Counter Straight')">Counter Straight</button>
+          <button class="btn-sm" type="button" data-curated-filter="Inside Hook" onclick="applyCuratedVideoFilter('Inside Hook')">Inside Hook</button>
+          <button class="btn-sm" type="button" data-curated-filter="Pressure Mix" onclick="applyCuratedVideoFilter('Pressure Mix')">Pressure Mix</button>
+        </div>
+      </div>
+      <div class="notice">
+        공격 타임스탬프 추출 흐름: 영상 재생 → <code>M</code>으로 현재 시점 마킹 → 아래 표에서
+        <code>impact_time</code>, <code>dodge_window_ms</code>, <code>hitbox_radius</code>,
+        <code>required_move</code>, <code>target_zone</code> 조정 → 저장.
+        목록의 <code>File Path</code>가 비어 있으면 DB에 경로가 저장되지 않은 상태입니다.
+      </div>
+
+      <div class="form-card" id="video-form" style="display:none;">
+        <div class="form-head">
+          <div>
+            <h3>스파링 영상 편집</h3>
+            <p>영상 생성/수정과 공격 타임스탬프를 함께 다룹니다. <span id="video-draft-status" style="color:var(--text-dim);">임시저장 대기</span></p>
+          </div>
+          <button class="btn-sm" type="button" onclick="hideVideoForm()">닫기</button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>제목</label><input id="vid-title" class="input" type="text" placeholder="예: Beginner Jab 01" /></div>
+          <div class="field"><label>파일 경로</label><input id="vid-path" class="input" type="text" placeholder="./video/스파링초보.mp4" /></div>
+        </div>
+        <div class="toolbar" style="margin-top:.65rem;">
+          <select class="select" id="vid-path-preset" style="min-width:360px;">
+            <option value="">추천 경로 선택 (실제 파일 기준)</option>
+          </select>
+          <button class="btn-sm" type="button" onclick="applyVideoPathPreset()">선택 경로 적용</button>
+        </div>
+        <div class="form-grid three" style="margin-top:.85rem;">
+          <div class="field"><label>공격 타입</label><select id="vid-type" class="select"><option value="jab">jab</option><option value="straight">straight</option><option value="hook">hook</option><option value="uppercut">uppercut</option><option value="mixed">mixed</option></select></div>
+          <div class="field"><label>난이도</label><select id="vid-difficulty" class="select"><option value="beginner">beginner</option><option value="intermediate">intermediate</option><option value="advanced">advanced</option><option value="pro">pro</option></select></div>
+          <div class="field"><label>길이(초)</label><input id="vid-duration" class="input" type="number" step="0.1" value="5.0" /></div>
+        </div>
+        <div class="toolbar" style="margin-top:.85rem;">
+          <button class="btn-sm success" type="button" onclick="applySparringVideoPreset('beginner')">초급 프리셋</button>
+          <button class="btn-sm" type="button" onclick="applySparringVideoPreset('intermediate')">중급 프리셋</button>
+          <button class="btn-sm" type="button" onclick="applySparringVideoPreset('advanced')">상급 프리셋</button>
+          <button class="btn-sm danger" type="button" onclick="applySparringVideoPreset('pro')">프로 프리셋</button>
+        </div>
+
+        <div class="editor">
+          <div class="video-box">
+            <div class="marker-badge">TIMESTAMP MARKER</div>
+            <video id="timestamp-video" playsinline controls muted preload="metadata"></video>
+            <div class="marker-overlay" id="marker-overlay">
+              <strong>영상 파일을 불러와 주세요</strong>
+              <span>재생 중 M으로 현재 시점을 저장합니다.</span>
+            </div>
+          </div>
+
+          <div class="side-box">
+            <h4>마킹 도구</h4>
+            <p>Space는 재생/정지, M은 현재 시점 마킹, , / . 는 한 프레임씩 이동입니다.</p>
+            <div class="toolbar">
+              <span class="badge">Time <strong id="marker-current-time" style="margin-left:.35rem;">0.000</strong>s</span>
+              <span class="badge">Rate <strong id="marker-playback-rate" style="margin-left:.35rem;">1.00x</strong></span>
+            </div>
+            <div class="toolbar">
+              <button class="btn-sm" type="button" data-marker-rate="0.25">0.25x</button>
+              <button class="btn-sm" type="button" data-marker-rate="0.5">0.5x</button>
+              <button class="btn-sm" type="button" data-marker-rate="1">1x</button>
+              <button class="btn-sm" id="marker-toggle-btn" type="button" onclick="toggleMarkerPlayback()">재생/정지</button>
+              <button class="btn-sm" id="marker-step-prev-btn" type="button" onclick="stepMarkerFrame(-1)">이전 프레임</button>
+              <button class="btn-sm" id="marker-step-next-btn" type="button" onclick="stepMarkerFrame(1)">다음 프레임</button>
+              <button class="btn-sm success" id="marker-mark-btn" type="button" onclick="markCurrentTimestamp()">현재 시점 마킹(M)</button>
+              <button class="btn-sm" type="button" onclick="undoTimestamp()">마지막 삭제</button>
+              <button class="btn-sm danger" type="button" onclick="clearTimestamps()">전체 초기화</button>
+            </div>
+            <div class="field">
+              <label>마킹할 영상 경로</label>
+              <input id="vid-path-marker" class="input" type="text" placeholder="./video/스파링초보.mp4" />
+            </div>
+            <div class="toolbar">
+              <button class="btn-primary" type="button" id="marker-load-video-btn" onclick="loadMarkerVideoFromPath({ resetTime:true, autoplay:false })">영상 불러오기</button>
+              <button class="btn-outline" type="button" onclick="loadMarkerVideoFromPath({ resetTime:true, autoplay:true })">미리보기 재생</button>
+              <span class="status-pill idle" id="marker-ready-pill">영상 대기</span>
+            </div>
+            <div class="marker-status" id="marker-status">영상 경로를 넣고 불러오기 버튼을 누르세요.</div>
+          </div>
+        </div>
+
+        <div class="notice" style="margin-top:1rem;">
+          각 행의 <code>impact_time</code>과 판정 파라미터를 수정한 뒤 저장하면 DB의 공격 타임스탬프가 함께 갱신됩니다.
+        </div>
+
+        <div class="timestamps" id="timestamps-container"></div>
+        <button class="btn-sm success" type="button" onclick="addTimestamp()">+ 타임스탬프 추가</button>
+        <div class="form-grid three">
+          <button class="btn-sm success" type="button" onclick="applyDifficultyPreset('beginner')">초급 프리셋</button>
+          <button class="btn-sm" type="button" onclick="applyDifficultyPreset('intermediate')">중급 프리셋</button>
+          <button class="btn-sm danger" type="button" onclick="applyDifficultyPreset('advanced')">고급 프리셋</button>
+        </div>
+        <div class="help">권장: 초급은 넓은 윈도우와 큰 히트박스, 고급은 작은 윈도우와 작은 히트박스로 맞춥니다.</div>
+        <div class="quality-note" id="difficulty-balance-guide">
+          밸런스 기준(5판 테스트): 초급 650ms/0.22, 중급 520ms/0.16, 고급 460ms/0.13, 프로 390ms/0.10
+        </div>
+        <div class="metrics-card">
+          <strong style="font-size:.9rem;">임시 분석 지표 (프론트 기준)</strong>
+          <div class="metrics-grid">
+            <div class="metric-item"><div class="k">타임스탬프</div><div class="v" id="metric-ts-count">0</div></div>
+            <div class="metric-item"><div class="k">평균 회피창(ms)</div><div class="v" id="metric-window-avg">0</div></div>
+            <div class="metric-item"><div class="k">평균 히트박스</div><div class="v" id="metric-radius-avg">0.00</div></div>
+            <div class="metric-item"><div class="k">회피율(수동)</div><div class="v" id="metric-dodge-rate">0%</div></div>
+            <div class="metric-item"><div class="k">평균 반응(ms)</div><div class="v" id="metric-reaction-ms">0</div></div>
+            <div class="metric-item"><div class="k">품질 상태</div><div class="v" id="metric-quality-state">점검 전</div></div>
+          </div>
+          <div class="toolbar">
+            <button class="btn-sm success" type="button" onclick="recordTrainingOutcome('dodge')">회피 +1</button>
+            <button class="btn-sm danger" type="button" onclick="recordTrainingOutcome('hit')">피격 +1</button>
+            <button class="btn-sm" type="button" onclick="resetTrainingMetrics()">지표 초기화</button>
+          </div>
+          <div class="quality-note" id="quality-note">저장 전에 자동 검증이 실행됩니다.</div>
+        </div>
+        <div class="json-wrap">
+          <label style="display:block;margin:.6rem 0 .35rem;color:var(--text-dim);font-size:.8rem;">timestamps JSON 미리보기</label>
+          <textarea id="timestamps-json-preview" readonly></textarea>
+        </div>
+
+        <div class="toolbar" style="margin-top:1rem;">
+          <button class="btn-primary" type="button" onclick="submitVideo()">저장</button>
+          <button class="btn-sm" type="button" onclick="resetVideoDraft()">임시저장 삭제</button>
+          <button class="btn-outline" type="button" onclick="hideVideoForm()">취소</button>
+        </div>
+      </div>
+
+      <div class="table-card" style="margin-top:1rem;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Title</th><th>Type</th><th>Difficulty</th><th>File Path</th><th>Length</th><th>Timestamps</th><th>Premium</th><th>Action</th></tr>
+            </thead>
+            <tbody id="videos-tbody"><tr><td colspan="9" class="empty">불러오는 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-leaderboard">
+      <div class="section-head">
+        <div>
+          <h2>랭킹</h2>
+          <p>현재 랭킹은 <code>GET /api/leaderboard</code> 응답을 그대로 보여줍니다.</p>
+        </div>
+        <button class="btn-sm" type="button" onclick="loadLeaderboard()">새로고침</button>
+      </div>
+      <div class="table-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>User</th><th>Score</th><th>Combo</th><th>Dodges</th><th>Win Rate</th><th>Tier</th><th>Points</th></tr>
+            </thead>
+            <tbody id="lb-tbody"><tr><td colspan="8" class="empty">불러오는 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+        <section class="tab-pane" id="tab-seed">
+      <div class="section-head">
+        <div>
+          <h2>시드 SQL</h2>
+          <p>개발용 초기 데이터를 한 번에 복사할 수 있습니다. 버튼으로 템플릿을 다시 불러올 수 있습니다.</p>
+        </div>
+        <button class="btn-sm" type="button" onclick="fillSeedSql()">새로고침</button>
+      </div>
+      <div class="seed-grid">
+        <div class="seed-card">
+          <div class="form-head">
+            <div>
+              <h3>튜토리얼 시드</h3>
+              <p>초기 튜토리얼 데이터 예시입니다.</p>
+            </div>
+            <button class="btn-sm" type="button" onclick="copyText('seed-tutorial-sql')">복사</button>
+          </div>
+          <textarea id="seed-tutorial-sql" readonly></textarea>
+          <div class="seed-links">
+            <button class="btn-sm" type="button" onclick="switchTab('tutorials', this)">튜토리얼로 이동</button>
+          </div>
+        </div>
+        <div class="seed-card">
+          <div class="form-head">
+            <div>
+              <h3>스파링 영상 시드</h3>
+              <p>초기 영상 데이터 예시입니다.</p>
+            </div>
+            <button class="btn-sm" type="button" onclick="copyText('seed-video-sql')">복사</button>
+          </div>
+          <textarea id="seed-video-sql" readonly></textarea>
+          <div class="seed-links">
+            <button class="btn-sm" type="button" onclick="switchTab('videos', this)">영상으로 이동</button>
+          </div>
+        </div>
+      </div>
+      <div class="seed-grid" style="margin-top:1rem;">
+        <div class="seed-card">
+          <div class="form-head">
+            <div>
+              <h3>샵 시드</h3>
+              <p>프로모션/아이템 데이터 예시입니다.</p>
+            </div>
+            <button class="btn-sm" type="button" onclick="copyText('seed-shop-sql')">복사</button>
+          </div>
+          <textarea id="seed-shop-sql" readonly></textarea>
+          <div class="seed-links">
+            <button class="btn-sm" type="button" onclick="window.location.href='/shop.html'">샵 열기</button>
+          </div>
+        </div>
+        <div class="seed-card">
+          <div class="form-head">
+            <div>
+              <h3>관리자 라우트</h3>
+              <p>admin router 연결 예시입니다.</p>
+            </div>
+            <button class="btn-sm" type="button" onclick="copyText('admin-route-template')">복사</button>
+          </div>
+          <textarea id="admin-route-template" readonly></textarea>
+          <div class="seed-links">
+            <button class="btn-sm" type="button" onclick="switchTab('users', this)">사용자 관리</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="user-modal" aria-hidden="true">
+    <div class="modal-card">
+      <h3>사용자 티어 수정</h3>
+      <p id="user-modal-info">-</p>
+      <div class="field">
+        <label>티어</label>
+        <select id="user-modal-tier" class="select">
+          <option value="free">free</option>
+          <option value="premium">premium</option>
+          <option value="admin">admin</option>
+        </select>
+      </div>
+      <div class="modal-actions" style="margin-top:1rem;">
+        <button class="btn-primary" type="button" onclick="saveUserTier()">저장</button>
+        <button class="btn-outline" type="button" onclick="closeUserModal()">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/core/api.js"></script>
+  <script src="js/core/auth.js"></script>
+  <script src="js/ui/navbar.js"></script>
+  <script>
+    const state = {
+      allUsers: [],
+      allTutorials: [],
+      allVideos: [],
+      allLeaderboard: [],
+      editingUser: null,
+      editingTutorial: null,
+      editingVideo: null,
+      timestampBound: false,
+      filters: {
+        users: '',
+        videos: ''
+      },
+      sorts: {
+        users: 'created_desc',
+        videos: 'curated_first'
+      },
+      trainingMetrics: {
+        dodge: 0,
+        hit: 0,
+        markIntervalsMs: [],
+        lastMarkTimeSec: null
+      }
+    };
+    // 무엇: admin 페이지에서 표시할 API 포트를 한 곳에 고정 -> 왜: 팀 작업 중 포트 하드코딩 불일치를 줄이기 위해
+    const ADMIN_API_PORT = 8000;
+    // 무엇: 현재 호스트 기준 admin API 기본 주소를 계산 -> 왜: localhost/사설망 환경에서 링크를 안정적으로 맞추기 위해
+    const ADMIN_API_HOST = window.location.hostname || 'localhost';
+    const ADMIN_API_BASE = `http://${ADMIN_API_HOST}:${ADMIN_API_PORT}`;
+    // 무엇: 어드민 폼 임시저장 키를 고정 -> 왜: 새로고침 후에도 작성 중 데이터 복원을 안정적으로 처리하기 위해
+    const ADMIN_DRAFT_KEYS = {
+      tutorial: 'boxer_admin_tutorial_draft_v1',
+      video: 'boxer_admin_video_draft_v1'
+    };
+    // 무엇: API 실패 시 사용할 기본 추천 목록 -> 왜: 백엔드 연결 문제에서도 최소 경로 추천을 유지하기 위해
+    const ADMIN_VIDEO_PATH_PRESETS_FALLBACK = (function () {
+      var base = './video/';
+      function u(name) {
+        return base + encodeURIComponent(name);
+      }
+      return [
+        u('스파링초보.mp4'),
+        u('스파링보통.mp4'),
+        u('스파링어려움.mp4'),
+        u('복싱스탠스.mp4'),
+        u('복싱 위빙.mp4'),
+        u('복싱 콤비네이션 강의.mp4'),
+        u('복싱프로.mp4'),
+        u('라이트모드.mp4'),
+        u('스탠다드모드.mp4'),
+        u('인탠스모드.mp4'),
+      ];
+    })();
+    // 무엇: 운영 기준 추천 시드 영상 이름을 고정 -> 왜: 관리자 목록에서 핵심 4개를 먼저 확인하기 쉽게 만들기 위해
+    const CURATED_VIDEO_ORDER = ["Entry Jab", "Counter Straight", "Inside Hook", "Pressure Mix"];
+    const CURATED_VIDEO_RANK = CURATED_VIDEO_ORDER.reduce((acc, title, index) => {
+      acc[title] = index + 1;
+      return acc;
+    }, {});
+    let adminVideoPathPresets = [...ADMIN_VIDEO_PATH_PRESETS_FALLBACK];
+
+    const $ = id => document.getElementById(id);
+    const getArray = resp => Array.isArray(resp) ? resp : (resp?.items || resp?.data?.items || resp?.tutorials || resp?.videos || resp?.leaderboard || []);
+    // 무엇: 사용자 입력/DB 문자열을 HTML 안전 문자열로 변환 -> 왜: 테이블 렌더링 시 스크립트 삽입(XSS) 위험을 줄이기 위해
+    const escapeHtml = value => String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    const normalizePath = path => {
+      const raw = String(path || '').trim();
+      if (!raw) return '';
+      if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('blob:') || raw.startsWith('data:')) return raw;
+      const windowsPath = raw.replace(/\\/g, '/');
+      // 무엇: ./video/ 아래 한글·공백 파일명은 퍼센트 인코딩으로 요청 / 왜: 브라우저가 그대로 요청하면 404가 나기 쉬움
+      const localVid = windowsPath.match(/^\.\/video\/(.+)$/i) || windowsPath.match(/^video\/(.+)$/i);
+      if (localVid) {
+        const tail = localVid[1];
+        if (tail && !/%[0-9A-Fa-f]{2}/.test(tail)) return './video/' + encodeURIComponent(tail);
+        if (tail) return './video/' + tail;
+      }
+      const assetMatch = windowsPath.match(/\/assets\/(.*)$/i);
+      if (assetMatch) return '/assets/' + assetMatch[1].replace(/^\/+/, '');
+      if (raw.startsWith('/assets/')) return raw;
+      if (raw.startsWith('assets/')) return '/' + raw;
+      if (raw.startsWith('/frontend/assets/')) return raw.replace('/frontend/assets/', '/assets/');
+      return raw.startsWith('/') ? raw : '/' + raw.replace(/^\/+/, '');
+    };
+
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      // 무엇: 버튼 인자가 없을 때도 탭 전환 허용 -> 왜: 코드 호출/자동 전환 시 런타임 에러를 방지하기 위해
+      if (btn?.classList) btn.classList.add('active');
+      else {
+        const matchedBtn = document.querySelector(`.tab-btn[onclick*="switchTab('${name}'"]`);
+        if (matchedBtn) matchedBtn.classList.add('active');
+      }
+      $('tab-' + name).classList.add('active');
+      if (name === 'charts') renderChartPanel();
+    }
+
+    function syncServerLinks() {
+      const detail = $('server-detail');
+      const swagger = document.querySelector('.server-actions a[href*="/docs"]');
+      const redoc = document.querySelector('.server-actions a[href*="/redoc"]');
+      if (detail) detail.textContent = ADMIN_API_BASE;
+      if (swagger) swagger.href = `${ADMIN_API_BASE}/docs`;
+      if (redoc) redoc.href = `${ADMIN_API_BASE}/redoc`;
+    }
+
+    // 무엇: 사용자 객체에서 관리자 권한 여부를 판별 -> 왜: 비관리자 계정의 어드민 페이지 접근을 초기에 차단하기 위해
+    function hasAdminAccess(user) {
+      if (!user || typeof user !== 'object') return false;
+      const tier = String(user.tier || '').toLowerCase();
+      const role = String(user.role || '').toLowerCase();
+      if (tier === 'admin') return true;
+      if (role) return role === 'admin' || role === 'superadmin';
+      if (typeof user.is_admin === 'boolean') return user.is_admin;
+      if (typeof user.is_superuser === 'boolean') return user.is_superuser;
+      return false;
+    }
+
+    function showAdminAccessDenied(user) {
+      const notice = $('admin-access-notice');
+      if (notice) {
+        notice.style.display = 'block';
+        notice.textContent = '관리자 권한이 없어 어드민 기능을 사용할 수 없습니다. 관리자 계정으로 다시 로그인해 주세요.';
+      }
+      showToast('관리자 권한이 없습니다.', 'error');
+      console.warn('Admin access denied:', user);
+      setTimeout(() => {
+        window.location.href = '/dashboard.html';
+      }, 1200);
+    }
+
+    async function initAdmin() {
+      let user = await auth.requireAuthAsync().catch(() => null);
+      if (!user) return;
+      if (typeof auth.fetchCurrentUser === 'function') {
+        const freshUser = await auth.fetchCurrentUser().catch(() => null);
+        if (freshUser) user = freshUser;
+      }
+      if (!hasAdminAccess(user)) {
+        showAdminAccessDenied(user);
+        return;
+      }
+      // 무엇: 없는 엘리먼트 접근을 방지 -> 왜: 일부 브랜치/마크업 차이에서 초기화 중단을 막기 위해
+      const adminNameEl = $('nav-admin-name');
+      if (adminNameEl) adminNameEl.textContent = user.username || 'admin';
+      try {
+        await hydrateAdminPanels();
+        setTimeout(() => {
+          hydrateAdminPanels().catch(() => {});
+        }, 700);
+      } catch (err) {
+        showToast('관리자 데이터를 불러오는 중 오류: ' + err.message, 'error');
+      } finally {
+        fillSeedSql();
+      }
+    }
+
+    async function hydrateAdminPanels() {
+      await checkHealth();
+      await loadAdminUsers();
+      await loadTutorials();
+      await loadVideos();
+      await loadLeaderboard();
+      await loadMyScore().catch(() => {});
+    }
+
+    async function checkHealth() {
+      const dot = $('server-dot');
+      const text = $('server-status-text');
+      const detail = $('server-detail');
+      try {
+        const res = await api.get('/api/health/db');
+        if (res?.status === 'ok' || res?.database === 'connected') {
+          dot.className = 'server-dot ok';
+          text.textContent = 'DB connected';
+          detail.textContent = ADMIN_API_BASE;
+          return true;
+        }
+        throw new Error('DB not ready');
+      } catch (err) {
+        dot.className = 'server-dot error';
+        text.textContent = 'DB disconnected';
+        detail.textContent = ADMIN_API_BASE;
+        return false;
+      }
+    }
+
+    async function loadMyScore() {
+      const stats = await api.get('/api/stats/me').catch(() => null);
+      const score = Number(stats?.total_score || 0).toLocaleString();
+      const counters = Number(stats?.total_counters || 0).toLocaleString();
+      $('stat-my-score').textContent = score;
+      $('stat-my-score-card').textContent = score;
+      $('stat-counters').textContent = counters;
+      $('stat-counters-card').textContent = counters;
+      renderChartPanel();
+    }
+
+    async function loadAdminUsers() {
+      try {
+        const resp = await api.get('/api/admin/users');
+        state.allUsers = getArray(resp);
+        $('stat-users').textContent = state.allUsers.length;
+        $('stat-users-card').textContent = state.allUsers.length;
+        renderUsers();
+        renderChartPanel();
+      } catch (err) {
+        state.allUsers = [];
+        $('stat-users').textContent = '0';
+        $('stat-users-card').textContent = '0';
+        renderUsers();
+        showToast('사용자 목록을 불러오지 못했습니다. 로그인 상태와 DB 연결을 확인하세요.', 'error');
+        console.error(err);
+      }
+    }
+
+    async function loadTutorials() {
+      try {
+        const resp = await api.get('/api/tutorials');
+        state.allTutorials = getArray(resp);
+        $('stat-tutorials').textContent = state.allTutorials.length;
+        $('stat-tutorials-card').textContent = state.allTutorials.length;
+        renderTutorials();
+        renderChartPanel();
+      } catch (err) {
+        state.allTutorials = [];
+        $('stat-tutorials').textContent = '0';
+        $('stat-tutorials-card').textContent = '0';
+        renderTutorials();
+        console.error(err);
+      }
+    }
+
+    async function loadVideos() {
+      try {
+        const resp = await api.get('/api/videos');
+        state.allVideos = getArray(resp);
+        $('stat-videos').textContent = state.allVideos.length;
+        $('stat-videos-card').textContent = state.allVideos.length;
+        renderVideos();
+        renderChartPanel();
+      } catch (err) {
+        state.allVideos = [];
+        $('stat-videos').textContent = '0';
+        $('stat-videos-card').textContent = '0';
+        renderVideos();
+        console.error(err);
+      }
+    }
+
+    async function loadLeaderboard() {
+      try {
+        const resp = await api.get('/api/leaderboard');
+        state.allLeaderboard = getArray(resp);
+        const topScore = state.allLeaderboard.reduce((max, row) => Math.max(max, Number(row.total_score || 0)), 0);
+        $('stat-topscore').textContent = topScore.toLocaleString();
+        $('stat-topscore-card').textContent = topScore.toLocaleString();
+        renderLeaderboard();
+        renderChartPanel();
+      } catch (err) {
+        state.allLeaderboard = [];
+        $('stat-topscore').textContent = '0';
+        $('stat-topscore-card').textContent = '0';
+        renderLeaderboard();
+        console.error(err);
+      }
+    }
+
+    function renderUsers() {
+      const tbody = $('users-tbody');
+      // 무엇: 사용자 검색어를 적용 -> 왜: 운영 중 많은 계정에서 원하는 대상을 빠르게 찾기 위해
+      const query = String(state.filters.users || '').trim().toLowerCase();
+      const rows = state.allUsers.filter(row => {
+        if (!query) return true;
+        const username = String(row.username || '').toLowerCase();
+        const email = String(row.email || '').toLowerCase();
+        const id = String(row.id || '').toLowerCase();
+        return username.includes(query) || email.includes(query) || id.includes(query);
+      });
+      const usersSort = state.sorts.users || 'created_desc';
+      rows.sort((a, b) => {
+        const aId = Number(a.id || 0);
+        const bId = Number(b.id || 0);
+        const aCoins = Number(a.coins || 0);
+        const bCoins = Number(b.coins || 0);
+        const aCreated = Date.parse(a.created_at || '') || 0;
+        const bCreated = Date.parse(b.created_at || '') || 0;
+        switch (usersSort) {
+          case 'created_asc': return aCreated - bCreated;
+          case 'created_desc': return bCreated - aCreated;
+          case 'coins_asc': return aCoins - bCoins;
+          case 'coins_desc': return bCoins - aCoins;
+          case 'id_asc': return aId - bId;
+          case 'id_desc': return bId - aId;
+          default: return bCreated - aCreated;
+        }
+      });
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">등록된 사용자가 없습니다.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((row, index) => `
+        <tr>
+          <td style="color:${index < 3 ? 'var(--gold)' : 'var(--text-dim)'};font-family:var(--font-mono);font-weight:800;">${index + 1}</td>
+          <td style="font-weight:700;">${escapeHtml(row.username || `#${row.id}`)}</td>
+          <td>${escapeHtml(row.email || '-')}</td>
+          <td><span class="badge ${String(row.tier || 'free') === 'admin' ? 'tier-admin' : String(row.tier || 'free') === 'premium' ? 'tier-premium' : 'tier-free'}">${escapeHtml(row.tier || 'free')}</span></td>
+          <td>${Number(row.coins || 0).toLocaleString()}</td>
+          <td style="font-family:var(--font-mono);">${escapeHtml(row.id)}</td>
+          <td>${escapeHtml(row.created_at ? String(row.created_at).slice(0, 10) : '-')}</td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn" type="button" onclick='openUserModal(${JSON.stringify(row).replace(/"/g, "&quot;")})'>수정</button>
+              <button class="icon-btn" type="button" onclick="deleteUser(${row.id}, ${JSON.stringify(row.username || `#${row.id}`).replace(/"/g, "&quot;")})">삭제</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleUsersSearch(value) {
+      state.filters.users = value || '';
+      renderUsers();
+    }
+
+    function handleUsersSort(value) {
+      state.sorts.users = value || 'created_desc';
+      renderUsers();
+    }
+
+    function clearUsersSearch() {
+      state.filters.users = '';
+      const input = $('users-search');
+      if (input) input.value = '';
+      renderUsers();
+    }
+
+    function bindUsersSearchEnter() {
+      const input = $('users-search');
+      if (!input) return;
+      // 무엇: Enter/Escape 키 검색 제어를 추가 -> 왜: 마우스 없이 키보드만으로 빠르게 검색/초기화를 처리하기 위해
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleUsersSearch(input.value);
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          clearUsersSearch();
+        }
+      });
+    }
+
+    function bindVideosSearchKeys() {
+      const input = $('videos-search');
+      if (!input) return;
+      // 무엇: Enter/Escape 키 검색 제어를 추가 -> 왜: 스파링 영상 검색도 사용자 탭과 동일한 키보드 UX를 제공하기 위해
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          handleVideosSearch(input.value);
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          clearVideosSearch();
+        }
+      });
+    }
+
+    function renderTutorials() {
+      const tbody = $('tutorials-tbody');
+      if (!state.allTutorials.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty">튜토리얼 데이터가 없습니다.</td></tr>';
+        return;
+      }
+      const levelLabel = {1:'초급',2:'중급',3:'고급'};
+      tbody.innerHTML = state.allTutorials.map(row => `
+        <tr>
+          <td style="font-family:var(--font-mono);">#${escapeHtml(row.id)}</td>
+          <td style="font-weight:700;">${escapeHtml(row.title)}</td>
+          <td>${escapeHtml(levelLabel[row.difficulty_level] || row.difficulty_level || '-')}</td>
+          <td>${row.is_premium ? '<span class="tier-premium">premium</span>' : '<span class="tier-free">free</span>'}</td>
+          <td style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(row.video_url || '-')}</td>
+          <td>${row.reward_exp ?? 0}</td>
+          <td>${row.reward_coins ?? 0}</td>
+          <td>${escapeHtml(row.order_sequence ?? '-')}</td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn" type="button" onclick='editTutorial(${JSON.stringify(row).replace(/"/g, "&quot;")})'>편집</button>
+              <button class="icon-btn" type="button" onclick="deleteTutorial(${row.id})">삭제</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderVideos() {
+      const tbody = $('videos-tbody');
+      // 무엇: 영상 검색어를 적용 -> 왜: 제목/타입/난이도 기준으로 빠르게 찾기 위해
+      const query = String(state.filters.videos || '').trim().toLowerCase();
+      const rows = state.allVideos.filter(row => {
+        if (!query) return true;
+        const title = String(row.title || '').toLowerCase();
+        const type = String(row.attack_type || '').toLowerCase();
+        const difficulty = String(row.difficulty || '').toLowerCase();
+        const path = String(row.file_path || '').toLowerCase();
+        return title.includes(query) || type.includes(query) || difficulty.includes(query) || path.includes(query);
+      });
+      const difficultyRank = { beginner: 1, intermediate: 2, advanced: 3, pro: 4 };
+      const videosSort = state.sorts.videos || 'curated_first';
+      rows.sort((a, b) => {
+        const aId = Number(a.id || 0);
+        const bId = Number(b.id || 0);
+        const aDuration = Number(a.duration_sec || 0);
+        const bDuration = Number(b.duration_sec || 0);
+        const aTs = Number(a.timestamp_count ?? a.timestamps?.length ?? 0);
+        const bTs = Number(b.timestamp_count ?? b.timestamps?.length ?? 0);
+        const aDiff = difficultyRank[String(a.difficulty || '').toLowerCase()] || 999;
+        const bDiff = difficultyRank[String(b.difficulty || '').toLowerCase()] || 999;
+        const aCuratedRank = CURATED_VIDEO_RANK[String(a.title || "")] || 999;
+        const bCuratedRank = CURATED_VIDEO_RANK[String(b.title || "")] || 999;
+        switch (videosSort) {
+          case 'curated_first':
+            if (aCuratedRank !== bCuratedRank) return aCuratedRank - bCuratedRank;
+            if (aDiff !== bDiff) return aDiff - bDiff;
+            return bId - aId;
+          case 'id_asc': return aId - bId;
+          case 'id_desc': return bId - aId;
+          case 'duration_asc': return aDuration - bDuration;
+          case 'duration_desc': return bDuration - aDuration;
+          case 'difficulty_asc': return aDiff - bDiff;
+          case 'difficulty_desc': return bDiff - aDiff;
+          case 'timestamps_asc': return aTs - bTs;
+          case 'timestamps_desc': return bTs - aTs;
+          default: return bId - aId;
+        }
+      });
+      const videosCountEl = $('videos-result-count');
+      if (videosCountEl) videosCountEl.textContent = `${rows.length}건`;
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty">스파링 영상 데이터가 없습니다.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td style="font-family:var(--font-mono);">#${escapeHtml(row.id)}</td>
+          <td style="font-weight:700;">${escapeHtml(row.title)}</td>
+          <td>${escapeHtml(row.attack_type || '-')}</td>
+          <td>${escapeHtml(row.difficulty || '-')}</td>
+          <td style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(row.file_path || '-')}</td>
+          <td>${Number(row.duration_sec || 0).toFixed(1)}s</td>
+          <td>${(row.timestamp_count ?? row.timestamps?.length ?? 0)}개</td>
+          <td>${row.is_premium ? '<span class="tier-premium">premium</span>' : '<span class="tier-free">free</span>'}</td>
+          <td><div class="row-actions"><button class="icon-btn" type="button" onclick="openVideoEditor(${row.id})">편집</button><button class="icon-btn" type="button" onclick="deleteVideo(${row.id})">삭제</button></div></td>
+        </tr>
+      `).join('');
+    }
+
+    function handleVideosSearch(value) {
+      state.filters.videos = value || '';
+      syncCuratedFilterButtons();
+      renderVideos();
+    }
+
+    function handleVideosSort(value) {
+      state.sorts.videos = value || 'curated_first';
+      renderVideos();
+    }
+
+    function clearVideosSearch() {
+      state.filters.videos = '';
+      const input = $('videos-search');
+      if (input) input.value = '';
+      syncCuratedFilterButtons();
+      renderVideos();
+    }
+
+    // 무엇: 현재 검색값에 맞는 curated 필터 버튼을 강조 -> 왜: 운영자가 어떤 필터가 적용됐는지 즉시 알 수 있게 하기 위해
+    function syncCuratedFilterButtons() {
+      const container = $('videos-curated-filters');
+      if (!container) return;
+      const normalized = String(state.filters.videos || '').trim().toLowerCase();
+      container.querySelectorAll('[data-curated-filter]').forEach(btn => {
+        const key = String(btn.getAttribute('data-curated-filter') || '').trim().toLowerCase();
+        if (key === normalized) btn.classList.add('active-filter');
+        else btn.classList.remove('active-filter');
+      });
+    }
+
+    // 무엇: curated 영상명을 한 번에 검색창에 반영 -> 왜: 운영자가 핵심 4개 영상을 빠르게 찾기 위해
+    function applyCuratedVideoFilter(title) {
+      const keyword = String(title || '');
+      state.filters.videos = keyword;
+      const input = $('videos-search');
+      if (input) input.value = keyword;
+      syncCuratedFilterButtons();
+      renderVideos();
+    }
+
+    function renderLeaderboard() {
+      const tbody = $('lb-tbody');
+      if (!state.allLeaderboard.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">랭킹 데이터가 없습니다.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = state.allLeaderboard.map((row, index) => `
+        <tr>
+          <td style="font-family:var(--font-mono);font-weight:800;">${index + 1}</td>
+          <td style="font-weight:700;">${escapeHtml(row.username || `User #${row.user_id}`)}</td>
+          <td>${Number(row.total_score || 0).toLocaleString()}</td>
+          <td>${row.max_combo || 0}</td>
+          <td>${row.total_dodges || 0}</td>
+          <td>${row.win_rate != null ? Math.round(row.win_rate * 100) + '%' : '-'}</td>
+          <td>${escapeHtml(row.rank_tier || '-')}</td>
+          <td>${row.rank_points || 0}</td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleChartPanel() {
+      switchTab('charts');
+      renderChartPanel();
+    }
+
+    function renderChartPanel() {
+      const panel = $('chart-grid');
+      if (!panel) return;
+      const rows = [
+        { label:'Users', value:Number($('stat-users')?.textContent || 0), color:'#ff2d55' },
+        { label:'Tutorials', value:Number($('stat-tutorials')?.textContent || 0), color:'#ff5f7f' },
+        { label:'Videos', value:Number($('stat-videos')?.textContent || 0), color:'#ff7a94' },
+        { label:'Leaderboard', value:Number(state.allLeaderboard?.length || 0), color:'#ffd60a' },
+        { label:'My Score', value:Number(String($('stat-my-score')?.textContent || '0').replace(/,/g, '')) || 0, color:'#ffffff' },
+        { label:'Counters', value:Number(String($('stat-counters')?.textContent || '0').replace(/,/g, '')) || 0, color:'#30d158' },
+      ];
+      const max = Math.max(1, ...rows.map(item => item.value));
+      panel.innerHTML = rows.map(item => {
+        const pct = Math.max(6, Math.round((item.value / max) * 100));
+        return `
+          <div class="chart-col">
+            <div class="chart-bar-wrap">
+              <div class="chart-bar" style="height:${pct}%; background:linear-gradient(180deg, ${item.color}, rgba(255,255,255,.08));"></div>
+            </div>
+            <div class="chart-value">${item.value.toLocaleString()}</div>
+            <div class="chart-label">${item.label}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function syncTutorialFormMode() {
+      const isEditing = Boolean(state.editingTutorial?.id);
+      $('tutorial-form-title').textContent = isEditing ? '튜토리얼 수정' : '튜토리얼 추가';
+      $('tutorial-submit-btn').textContent = isEditing ? '수정' : '저장';
+    }
+
+    function setDraftStatus(targetId, message) {
+      const el = $(targetId);
+      if (el) el.textContent = message;
+    }
+
+    function readDraft(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeDraft(key, payload, statusId) {
+      try {
+        localStorage.setItem(key, JSON.stringify(payload));
+        const stamp = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+        setDraftStatus(statusId, `임시저장됨 (${stamp})`);
+      } catch {
+        setDraftStatus(statusId, '임시저장 실패');
+      }
+    }
+
+    function clearDraft(key, statusId) {
+      localStorage.removeItem(key);
+      setDraftStatus(statusId, '임시저장 비움');
+    }
+
+    function collectTutorialDraft() {
+      return {
+        title: $('tut-title').value,
+        desc: $('tut-desc').value,
+        difficulty: $('tut-difficulty').value,
+        premium: $('tut-premium').value,
+        exp: $('tut-exp').value,
+        coins: $('tut-coins').value,
+        videoUrl: $('tut-video-url').value,
+        order: $('tut-order').value,
+        poseJson: $('tut-pose-json').value
+      };
+    }
+
+    function applyTutorialDraft(draft) {
+      if (!draft) return;
+      $('tut-title').value = draft.title || '';
+      $('tut-desc').value = draft.desc || '';
+      $('tut-difficulty').value = draft.difficulty || '1';
+      $('tut-premium').value = draft.premium || 'false';
+      $('tut-exp').value = draft.exp || '100';
+      $('tut-coins').value = draft.coins || '10';
+      $('tut-video-url').value = draft.videoUrl || '';
+      $('tut-order').value = draft.order || '';
+      $('tut-pose-json').value = draft.poseJson || '';
+    }
+
+    function saveTutorialDraft() {
+      if (state.editingTutorial?.id) return;
+      writeDraft(ADMIN_DRAFT_KEYS.tutorial, collectTutorialDraft(), 'tutorial-draft-status');
+    }
+
+    function restoreTutorialDraftIfNeeded() {
+      if (state.editingTutorial?.id) return;
+      const draft = readDraft(ADMIN_DRAFT_KEYS.tutorial);
+      if (!draft) {
+        setDraftStatus('tutorial-draft-status', '임시저장 없음');
+        return;
+      }
+      applyTutorialDraft(draft);
+      setDraftStatus('tutorial-draft-status', '임시저장 복원됨');
+    }
+
+    function resetTutorialDraft() {
+      if (!confirm('튜토리얼 임시저장을 삭제할까요?')) return;
+      clearDraft(ADMIN_DRAFT_KEYS.tutorial, 'tutorial-draft-status');
+      if (!state.editingTutorial?.id) {
+        fillTutorialForm(null);
+        setDraftStatus('tutorial-draft-status', '임시저장 없음');
+      }
+    }
+
+    function collectVideoDraft() {
+      return {
+        title: $('vid-title').value,
+        path: $('vid-path').value,
+        type: $('vid-type').value,
+        difficulty: $('vid-difficulty').value,
+        duration: $('vid-duration').value,
+        markerPath: $('vid-path-marker').value,
+        timestamps: collectTimestampsFromEditor()
+      };
+    }
+
+    function applyVideoDraft(draft) {
+      if (!draft) return;
+      $('vid-title').value = draft.title || '';
+      $('vid-path').value = draft.path || '';
+      $('vid-type').value = draft.type || 'jab';
+      $('vid-difficulty').value = draft.difficulty || 'beginner';
+      $('vid-duration').value = draft.duration || '5.0';
+      $('vid-path-marker').value = draft.markerPath || draft.path || '';
+      loadTimestampsIntoEditor(Array.isArray(draft.timestamps) ? draft.timestamps : [], $('vid-type').value || 'jab');
+      refreshTimestampJsonPreview();
+    }
+
+    function saveVideoDraft() {
+      if (state.editingVideo?.id) return;
+      writeDraft(ADMIN_DRAFT_KEYS.video, collectVideoDraft(), 'video-draft-status');
+    }
+
+    function restoreVideoDraftIfNeeded() {
+      if (state.editingVideo?.id) return;
+      const draft = readDraft(ADMIN_DRAFT_KEYS.video);
+      if (!draft) {
+        setDraftStatus('video-draft-status', '임시저장 없음');
+        return;
+      }
+      applyVideoDraft(draft);
+      setDraftStatus('video-draft-status', '임시저장 복원됨');
+    }
+
+    function resetVideoDraft() {
+      if (!confirm('영상 임시저장을 삭제할까요?')) return;
+      clearDraft(ADMIN_DRAFT_KEYS.video, 'video-draft-status');
+      if (!state.editingVideo?.id) {
+        clearVideoForm();
+        setDraftStatus('video-draft-status', '임시저장 없음');
+      }
+    }
+
+    // 무엇: 저장 전 핵심 정보 재확인 -> 왜: 오입력 저장을 줄이기 위해
+    function confirmSaveSummary(title, rows) {
+      const list = Array.isArray(rows) ? rows : [];
+      const message = [title, '', ...list.map(row => `- ${row}`)].join('\n');
+      return confirm(`${message}\n\n저장하시겠습니까?`);
+    }
+
+    function fillTutorialForm(tutorial = null) {
+      $('tut-title').value = tutorial?.title || '';
+      $('tut-desc').value = tutorial?.description || '';
+      $('tut-difficulty').value = String(tutorial?.difficulty_level || 1);
+      $('tut-premium').value = String(Boolean(tutorial?.is_premium));
+      $('tut-exp').value = String(tutorial?.reward_exp ?? 100);
+      $('tut-coins').value = String(tutorial?.reward_coins ?? 10);
+      $('tut-video-url').value = tutorial?.video_url || '';
+      $('tut-order').value = tutorial?.order_sequence ?? '';
+      $('tut-pose-json').value = tutorial?.target_pose_json ? JSON.stringify(tutorial.target_pose_json, null, 2) : '';
+    }
+
+    function clearTutorialForm() {
+      state.editingTutorial = null;
+      fillTutorialForm(null);
+      syncTutorialFormMode();
+      setDraftStatus('tutorial-draft-status', '임시저장 대기');
+    }
+
+    function startTutorialCreate() {
+      $('tutorial-form').style.display = 'block';
+      clearTutorialForm();
+      restoreTutorialDraftIfNeeded();
+      $('tutorial-form').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function editTutorial(tutorial) {
+      state.editingTutorial = tutorial;
+      $('tutorial-form').style.display = 'block';
+      fillTutorialForm(tutorial);
+      syncTutorialFormMode();
+      setDraftStatus('tutorial-draft-status', '편집 모드(임시저장 비활성)');
+      $('tutorial-form').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    function toggleTutorialForm(show) {
+      $('tutorial-form').style.display = show ? 'block' : 'none';
+      if (!show) clearTutorialForm();
+    }
+
+    async function submitTutorial() {
+      const title = $('tut-title').value.trim();
+      if (!title) return showToast('제목을 입력해 주세요.', 'error');
+      let targetPoseJson = null;
+      const raw = $('tut-pose-json').value.trim();
+      if (raw) {
+        try { targetPoseJson = JSON.parse(raw); }
+        catch { return showToast('자세 JSON 형식이 올바르지 않습니다.', 'error'); }
+      }
+      const payload = {
+        title,
+        description: $('tut-desc').value.trim(),
+        difficulty_level: Number($('tut-difficulty').value || 1),
+        is_premium: $('tut-premium').value === 'true',
+        reward_exp: Number($('tut-exp').value || 100),
+        reward_coins: Number($('tut-coins').value || 10),
+        video_url: $('tut-video-url').value.trim() || null,
+        order_sequence: $('tut-order').value ? Number($('tut-order').value) : null,
+        target_pose_json: targetPoseJson
+      };
+      const tutorialSummary = [
+        `제목: ${payload.title || '-'}`,
+        `난이도: ${payload.difficulty_level}`,
+        `프리미엄: ${payload.is_premium ? 'true' : 'false'}`,
+        `보상(EXP/Coins): ${payload.reward_exp}/${payload.reward_coins}`,
+        `비디오 URL: ${payload.video_url || '-'}`,
+      ];
+      if (!confirmSaveSummary('튜토리얼 저장 전 확인', tutorialSummary)) return;
+      try {
+        if (state.editingTutorial?.id) {
+          await api.put(`/api/admin/tutorials/${state.editingTutorial.id}`, payload);
+          showToast('튜토리얼이 수정되었습니다.', 'success');
+        } else {
+          await api.post('/api/admin/tutorials', payload);
+          showToast('튜토리얼이 저장되었습니다.', 'success');
+          clearDraft(ADMIN_DRAFT_KEYS.tutorial, 'tutorial-draft-status');
+        }
+        toggleTutorialForm(false);
+        await loadTutorials();
+      } catch (err) {
+        showToast('튜토리얼 저장 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteTutorial(id) {
+      if (!confirm(`튜토리얼 #${id}을(를) 삭제할까요?`)) return;
+      // 무엇: ID 재입력 확인을 추가 -> 왜: 실수 삭제를 줄이기 위해
+      const tutorialTyped = prompt(`튜토리얼 #${id} 삭제 확인\n\n확인을 위해 ID를 다시 입력하세요:`);
+      if (tutorialTyped == null || String(tutorialTyped).trim() !== String(id)) {
+        showToast('삭제 확인 값이 일치하지 않아 취소되었습니다.', 'error');
+        return;
+      }
+      try {
+        await api.delete(`/api/admin/tutorials/${id}`);
+        showToast('튜토리얼을 삭제했습니다.', 'success');
+        await loadTutorials();
+      } catch (err) {
+        showToast('삭제 실패: ' + err.message, 'error');
+      }
+    }
+
+    const SPARRING_VIDEO_PRESETS = {
+      beginner: { attack_type:'jab', difficulty:'beginner', duration_sec:5.0, titlePrefix:'Beginner Jab', filePrefix:'sparring_beginner_jab_' },
+      intermediate: { attack_type:'straight', difficulty:'intermediate', duration_sec:6.0, titlePrefix:'Intermediate Straight', filePrefix:'sparring_intermediate_straight_' },
+      advanced: { attack_type:'hook', difficulty:'advanced', duration_sec:6.5, titlePrefix:'Advanced Hook', filePrefix:'sparring_advanced_hook_' },
+      pro: { attack_type:'mixed', difficulty:'pro', duration_sec:7.5, titlePrefix:'Pro Mixed', filePrefix:'sparring_pro_mixed_' }
+    };
+
+    function clearVideoForm() {
+      state.editingVideo = null;
+      $('vid-title').value = '';
+      $('vid-path').value = '';
+      $('vid-type').value = 'jab';
+      $('vid-difficulty').value = 'beginner';
+      $('vid-duration').value = '5.0';
+      $('video-form').dataset.mode = 'create';
+      $('timestamp-video').removeAttribute('src');
+      $('timestamp-video').load();
+      $('timestamps-container').innerHTML = '';
+      addTimestamp();
+      updateMarkerStatus('영상 경로를 넣고 불러오기 버튼을 누르세요.');
+      refreshTimestampJsonPreview();
+      setDraftStatus('video-draft-status', '임시저장 대기');
+    }
+
+    function showVideoForm(video = null) {
+      $('video-form').style.display = 'block';
+      if (!video) {
+        clearVideoForm();
+        restoreVideoDraftIfNeeded();
+        return;
+      }
+      state.editingVideo = video;
+      $('video-form').dataset.mode = 'edit';
+      $('vid-title').value = video.title || '';
+      $('vid-path').value = video.file_path || '';
+      $('vid-type').value = video.attack_type || 'jab';
+      $('vid-difficulty').value = video.difficulty || 'beginner';
+      $('vid-duration').value = String(video.duration_sec || 5.0);
+      loadTimestampsIntoEditor(video.timestamps || [], video.attack_type || 'jab');
+      $('vid-path-marker').value = video.file_path || '';
+      loadMarkerVideoFromPath({ resetTime:true, autoplay:false });
+      setDraftStatus('video-draft-status', '편집 모드(임시저장 비활성)');
+      $('video-form').scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    async function openVideoEditor(videoId) {
+      try {
+        const detail = await api.get(`/api/videos/${videoId}`);
+        showVideoForm(detail);
+      } catch (err) {
+        showToast('영상 상세를 불러오지 못했습니다: ' + err.message, 'error');
+      }
+    }
+
+    function hideVideoForm() {
+      $('video-form').style.display = 'none';
+      clearVideoForm();
+    }
+
+    function applySparringVideoPreset(level) {
+      const preset = SPARRING_VIDEO_PRESETS[level] || SPARRING_VIDEO_PRESETS.beginner;
+      const clipIndex = Math.max(1, Math.min(3, Number($('vid-clip-index')?.value || 1)));
+      const suffix = String(clipIndex).padStart(2, '0');
+      const filePath = './video/' + encodeURIComponent('스파링초보.mp4');
+      $('vid-title').value = `${preset.titlePrefix} ${suffix}`;
+      $('vid-path').value = filePath;
+      $('vid-type').value = preset.attack_type;
+      $('vid-difficulty').value = preset.difficulty;
+      $('vid-duration').value = String(preset.duration_sec);
+      $('vid-path-marker').value = filePath;
+      loadMarkerVideoFromPath({ resetTime:true, autoplay:false });
+      loadTimestampsIntoEditor([], preset.attack_type);
+      applyDifficultyPreset(level);
+    }
+
+    // 무엇: 추천 경로 셀렉트를 채움 -> 왜: 저장 가능한 경로를 클릭만으로 입력할 수 있게 하기 위해
+    function fillVideoPathPresets() {
+      const select = $('vid-path-preset');
+      if (!select) return;
+      const currentValue = select.value;
+      const options = ['<option value="">추천 경로 선택 (실제 파일 기준)</option>']
+        .concat(adminVideoPathPresets.map(path => `<option value="${path}">${path}</option>`));
+      select.innerHTML = options.join('');
+      if (currentValue && adminVideoPathPresets.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    }
+
+    // 무엇: 선택한 추천 경로를 입력창에 반영 -> 왜: 수동 타이핑 오류를 줄이고 영상 로드를 빠르게 하기 위해
+    function applyVideoPathPreset() {
+      const select = $('vid-path-preset');
+      const path = String(select?.value || '').trim();
+      if (!path) return showToast('추천 경로를 먼저 선택해 주세요.', 'error');
+      $('vid-path').value = path;
+      $('vid-path-marker').value = path;
+      saveVideoDraft();
+      loadMarkerVideoFromPath({ resetTime:true, autoplay:false });
+      showToast('추천 경로를 적용했습니다.', 'success');
+    }
+
+    // 무엇: 백엔드에서 실제 영상 경로 목록을 가져옴 -> 왜: 수동 배열 유지 없이 현재 파일 상태를 추천 경로에 자동 반영하기 위해
+    async function loadVideoPathPresetsFromApi() {
+      try {
+        const response = await api.get('/api/admin/video-paths');
+        const items = Array.isArray(response)
+          ? response
+          : (response?.items || response?.data?.items || []);
+        const normalized = items
+          .map(path => normalizePath(path))
+          .filter(path => String(path || '').trim());
+        if (normalized.length) {
+          adminVideoPathPresets = Array.from(new Set(normalized)).sort();
+          fillVideoPathPresets();
+          return;
+        }
+      } catch (err) {
+        console.warn('Video path preset API fallback:', err);
+      }
+      // API가 실패하면 기본 목록을 그대로 사용합니다.
+      adminVideoPathPresets = [...ADMIN_VIDEO_PATH_PRESETS_FALLBACK];
+      fillVideoPathPresets();
+    }
+
+    function inferDefaultsForAttackType(type) {
+      switch (String(type || 'jab').toLowerCase()) {
+        case 'hook': return { judge_shape:'ellipse', required_move:'slip_side', target_zone:'head', min_displacement:0.12 };
+        case 'straight': return { judge_shape:'lane', required_move:'lean_back', target_zone:'head', min_displacement:0.10 };
+        case 'uppercut': return { judge_shape:'lane', required_move:'duck', target_zone:'body', min_displacement:0.09 };
+        case 'mixed': return { judge_shape:'circle', required_move:'auto', target_zone:'head', min_displacement:0.10 };
+        default: return { judge_shape:'circle', required_move:'slip_side', target_zone:'head', min_displacement:0.10 };
+      }
+    }
+
+    // 무엇: 행의 공격타입 기본값을 고급 필드에 반영 -> 왜: 운영자가 프리셋 이후에도 필드 불일치를 줄일 수 있게 하기 위해
+    function applyAttackDefaultsToRow(row, force = false) {
+      if (!row) return;
+      const attackType = row.querySelector('.ts-type')?.value || $('vid-type').value || 'jab';
+      const inferred = inferDefaultsForAttackType(attackType);
+      const shapeEl = row.querySelector('.ts-shape');
+      const zoneEl = row.querySelector('.ts-zone');
+      const moveEl = row.querySelector('.ts-move');
+      const minEl = row.querySelector('.ts-min');
+      if (!shapeEl || !zoneEl || !moveEl || !minEl) return;
+
+      if (force || !shapeEl.value) shapeEl.value = inferred.judge_shape;
+      if (force || !zoneEl.value) zoneEl.value = inferred.target_zone;
+      if (force || !moveEl.value) moveEl.value = inferred.required_move;
+      if (force || !minEl.value) minEl.value = inferred.min_displacement;
+    }
+
+    function addTimestamp(values = {}) {
+      const row = document.createElement('div');
+      row.className = 'ts-row';
+      row.innerHTML = `
+        <div class="ts-main">
+          <input class="input ts-impact" type="number" step="0.1" placeholder="impact_time" />
+          <input class="input ts-window" type="number" value="500" placeholder="dodge_window_ms" />
+          <select class="select ts-type">
+            <option value="jab">jab</option><option value="straight">straight</option><option value="hook">hook</option><option value="uppercut">uppercut</option><option value="mixed">mixed</option>
+          </select>
+          <input class="input ts-radius" type="number" step="0.01" value="0.15" placeholder="hitbox_radius" />
+          <button class="btn-sm danger ts-remove" type="button">삭제</button>
+        </div>
+        <div class="ts-advanced">
+          <select class="select ts-shape">
+            <option value="">judge_shape</option><option value="circle">circle</option><option value="ellipse">ellipse</option><option value="lane">lane</option>
+          </select>
+          <select class="select ts-zone">
+            <option value="">target_zone</option><option value="head">head</option><option value="body">body</option><option value="left_head">left_head</option><option value="right_head">right_head</option>
+          </select>
+          <select class="select ts-move">
+            <option value="">required_move</option><option value="auto">auto</option><option value="slip_left">slip_left</option><option value="slip_right">slip_right</option><option value="slip_side">slip_side</option><option value="duck">duck</option><option value="lean_back">lean_back</option><option value="step_out">step_out</option>
+          </select>
+          <input class="input ts-min" type="number" step="0.01" placeholder="min_displacement" />
+        </div>
+      `;
+      $('timestamps-container').appendChild(row);
+      row.querySelector('.ts-remove').addEventListener('click', () => {
+        row.remove();
+        if (!$('timestamps-container').children.length) addTimestamp();
+        refreshTimestampJsonPreview();
+      });
+      const attackType = values.attack_type || $('vid-type').value || 'jab';
+      const inferred = inferDefaultsForAttackType(attackType);
+      row.querySelector('.ts-impact').value = values.impact_time ?? '';
+      row.querySelector('.ts-window').value = values.dodge_window_ms ?? 500;
+      row.querySelector('.ts-type').value = attackType;
+      row.querySelector('.ts-radius').value = values.hitbox_radius ?? 0.15;
+      row.querySelector('.ts-shape').value = values.judge_shape || inferred.judge_shape;
+      row.querySelector('.ts-zone').value = values.target_zone || inferred.target_zone;
+      row.querySelector('.ts-move').value = (values.required_move === 'any' ? 'auto' : values.required_move) || inferred.required_move;
+      row.querySelector('.ts-min').value = values.min_displacement ?? inferred.min_displacement ?? '';
+      row.querySelector('.ts-type').addEventListener('change', () => {
+        applyAttackDefaultsToRow(row, true);
+        refreshTimestampJsonPreview();
+      });
+      row.querySelectorAll('input,select').forEach(el => el.addEventListener('input', refreshTimestampJsonPreview));
+      refreshTimestampJsonPreview();
+      return row;
+    }
+
+    function loadTimestampsIntoEditor(timestamps = [], fallbackAttackType = 'jab') {
+      const container = $('timestamps-container');
+      container.innerHTML = '';
+      if (!timestamps || !timestamps.length) {
+        addTimestamp({ attack_type: fallbackAttackType });
+        return;
+      }
+      timestamps.forEach(ts => addTimestamp({ ...ts, attack_type: ts.attack_type || fallbackAttackType }));
+      refreshTimestampJsonPreview();
+    }
+
+    function collectTimestampsFromEditor() {
+      return Array.from($('timestamps-container').querySelectorAll('.ts-row'))
+        .map(row => {
+          const impactRaw = row.querySelector('.ts-impact').value.trim();
+          if (impactRaw === '') return null;
+          return {
+            impact_time: Number(impactRaw),
+            dodge_window_ms: Number(row.querySelector('.ts-window').value || 500),
+            hitbox_radius: Number(row.querySelector('.ts-radius').value || 0.15),
+            attack_type: row.querySelector('.ts-type').value,
+            judge_shape: row.querySelector('.ts-shape').value || null,
+            target_zone: row.querySelector('.ts-zone').value || null,
+            required_move: (row.querySelector('.ts-move').value || null),
+            min_displacement: row.querySelector('.ts-min').value ? Number(row.querySelector('.ts-min').value) : null
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function refreshTimestampJsonPreview() {
+      const timestamps = collectTimestampsFromEditor();
+      $('timestamps-json-preview').value = JSON.stringify(timestamps, null, 2);
+      updateTrainingMetricsView(timestamps);
+      // 무엇: 타임스탬프 변경 시 임시저장 반영 -> 왜: 영상 편집 중 새로고침으로 데이터 유실을 막기 위해
+      saveVideoDraft();
+    }
+
+    function updateMarkerStatus(message) { $('marker-status').textContent = message; }
+    function updateMarkerTime() { $('marker-current-time').textContent = (Number($('timestamp-video').currentTime || 0)).toFixed(3); }
+    function updateMarkerRate() { $('marker-playback-rate').textContent = `${Number($('timestamp-video').playbackRate || 1).toFixed(2)}x`; }
+
+    // 무엇: 마킹 가능 상태를 제어 -> 왜: 영상 준비 전 조작으로 인한 오작동을 막기 위해
+    function setMarkerControlEnabled(enabled) {
+      ['marker-toggle-btn', 'marker-step-prev-btn', 'marker-step-next-btn', 'marker-mark-btn']
+        .forEach(id => {
+          const el = $(id);
+          if (el) el.disabled = !enabled;
+        });
+    }
+
+    // 무엇: 영상 로딩 상태를 배지로 표시 -> 왜: 사용자가 현재 동작 상태를 즉시 이해할 수 있게 하기 위해
+    function setMarkerReadyState(status, message = '') {
+      const pill = $('marker-ready-pill');
+      if (!pill) return;
+      pill.classList.remove('idle', 'ready', 'error');
+      if (status === 'ready') {
+        pill.classList.add('ready');
+        pill.textContent = '영상 준비됨';
+        setMarkerControlEnabled(true);
+      } else if (status === 'error') {
+        pill.classList.add('error');
+        pill.textContent = '영상 오류';
+        setMarkerControlEnabled(false);
+      } else {
+        pill.classList.add('idle');
+        pill.textContent = message || '영상 대기';
+        setMarkerControlEnabled(false);
+      }
+    }
+
+    function loadMarkerVideoFromPath(options = {}) {
+      const rawPath = $('vid-path-marker').value.trim() || $('vid-path').value.trim();
+      if (!rawPath) { updateMarkerStatus('영상 경로를 확인해 주세요.'); return; }
+      const video = $('timestamp-video');
+      const resolved = normalizePath(rawPath);
+      if (!resolved) {
+        updateMarkerStatus('영상 경로를 확인해 주세요.');
+        return;
+      }
+      video.onloadeddata = () => {
+        $('marker-overlay').classList.add('hidden');
+        updateMarkerStatus(`미리보기 준비 완료: ${resolved}`);
+        setMarkerReadyState('ready');
+        updateMarkerTime();
+        updateMarkerRate();
+      };
+      video.onerror = () => {
+        $('marker-overlay').classList.remove('hidden');
+        updateMarkerStatus(`재생 실패: ${resolved} 경로를 확인해 주세요.`);
+        setMarkerReadyState('error');
+      };
+      video.src = resolved;
+      if (options.resetTime !== false) video.currentTime = 0;
+      video.load();
+      if (options.autoplay) video.play().catch(() => {});
+      updateMarkerStatus(`로딩 완료: ${resolved}`);
+      setMarkerReadyState('idle', '영상 로딩중');
+      updateMarkerTime();
+      updateMarkerRate();
+    }
+    function toggleMarkerPlayback() {
+      const video = $('timestamp-video');
+      if (video.paused) video.play().catch(() => {});
+      else video.pause();
+      updateMarkerRate();
+    }
+    function stepMarkerFrame(dir) {
+      const video = $('timestamp-video');
+      video.pause();
+      video.currentTime = Math.max(0, (video.currentTime || 0) + (1 / 30) * dir);
+      updateMarkerTime();
+    }
+    function markCurrentTimestamp() {
+      const time = Number($('timestamp-video').currentTime || 0);
+      addTimestamp({ impact_time: time, attack_type: $('vid-type').value || 'jab' });
+      const lastMarkTimeSec = state.trainingMetrics.lastMarkTimeSec;
+      if (typeof lastMarkTimeSec === 'number' && time > lastMarkTimeSec) {
+        state.trainingMetrics.markIntervalsMs.push(Math.round((time - lastMarkTimeSec) * 1000));
+      }
+      state.trainingMetrics.lastMarkTimeSec = time;
+      refreshTimestampJsonPreview();
+      updateMarkerStatus(`impact_time ${time.toFixed(3)}s 마킹 완료`);
+    }
+    function undoTimestamp() {
+      const rows = $('timestamps-container').querySelectorAll('.ts-row');
+      if (!rows.length) return;
+      rows[rows.length - 1].remove();
+      if (!$('timestamps-container').children.length) addTimestamp();
+      refreshTimestampJsonPreview();
+      updateMarkerStatus('마지막 타임스탬프를 삭제했습니다.');
+    }
+    function clearTimestamps() {
+      $('timestamps-container').innerHTML = '';
+      addTimestamp({ attack_type: $('vid-type').value || 'jab' });
+      refreshTimestampJsonPreview();
+      updateMarkerStatus('타임스탬프를 모두 초기화했습니다.');
+    }
+
+    function applyDifficultyPreset(level) {
+      // 무엇: 5판 실전 테스트 기준 프리셋 고정 -> 왜: 난이도별 판정 체감을 일관되게 유지하기 위해
+      const preset = {
+        beginner:{ window:650, radius:0.22, min:0.14 },
+        intermediate:{ window:520, radius:0.16, min:0.11 },
+        // 무엇: 상위 난이도 프리셋을 소폭 완화 -> 왜: 판정 스트레스를 줄이면서 도전성은 유지하기 위해
+        advanced:{ window:460, radius:0.13, min:0.09 },
+        pro:{ window:390, radius:0.10, min:0.07 }
+      }[level] || { window:520, radius:0.16, min:0.11 };
+      $('timestamps-container').querySelectorAll('.ts-row').forEach(row => {
+        row.querySelector('.ts-window').value = preset.window;
+        row.querySelector('.ts-radius').value = preset.radius;
+        row.querySelector('.ts-min').value = preset.min;
+        applyAttackDefaultsToRow(row, false);
+      });
+      refreshTimestampJsonPreview();
+    }
+
+    // 무엇: 난이도별 검증 기준을 반환 -> 왜: 초급/고급의 허용 범위를 다르게 적용하기 위해
+    function getDifficultyValidationProfile(difficulty) {
+      const map = {
+        beginner: {
+          label: '초급',
+          presetWindow: 650,
+          presetRadius: 0.22,
+          dodgeWindow: { min: 320, max: 1000 },
+          hitboxRadius: { min: 0.14, max: 0.30 },
+          minGapSec: 0.06
+        },
+        intermediate: {
+          label: '중급',
+          presetWindow: 520,
+          presetRadius: 0.16,
+          dodgeWindow: { min: 260, max: 820 },
+          hitboxRadius: { min: 0.10, max: 0.22 },
+          minGapSec: 0.07
+        },
+        advanced: {
+          label: '고급',
+          presetWindow: 460,
+          presetRadius: 0.13,
+          dodgeWindow: { min: 220, max: 700 },
+          hitboxRadius: { min: 0.08, max: 0.18 },
+          minGapSec: 0.08
+        },
+        pro: {
+          label: '프로',
+          presetWindow: 390,
+          presetRadius: 0.10,
+          dodgeWindow: { min: 180, max: 580 },
+          hitboxRadius: { min: 0.06, max: 0.15 },
+          minGapSec: 0.085
+        }
+      };
+      return map[String(difficulty || '').toLowerCase()] || map.intermediate;
+    }
+
+    // 무엇: 단일 타임스탬프 입력값을 검증 -> 왜: 저장 전 잘못된 수치로 판정이 깨지는 것을 막기 위해
+    function validateTimestampEntry(ts, idx, durationSec, profile) {
+      const errors = [];
+      const impactTime = Number(ts.impact_time);
+      const dodgeWindow = Number(ts.dodge_window_ms);
+      const hitboxRadius = Number(ts.hitbox_radius);
+      if (!Number.isFinite(impactTime) || impactTime < 0) errors.push(`${idx}행 impact_time은 0 이상 숫자여야 합니다.`);
+      if (Number.isFinite(durationSec) && durationSec > 0 && impactTime > durationSec + 0.05) {
+        errors.push(`${idx}행 impact_time이 영상 길이(${durationSec}s)를 초과합니다.`);
+      }
+      if (!Number.isFinite(dodgeWindow) || dodgeWindow < profile.dodgeWindow.min || dodgeWindow > profile.dodgeWindow.max) {
+        errors.push(`${idx}행 dodge_window_ms는 ${profile.label} 기준 ${profile.dodgeWindow.min}~${profile.dodgeWindow.max} 범위여야 합니다.`);
+      }
+      if (!Number.isFinite(hitboxRadius) || hitboxRadius < profile.hitboxRadius.min || hitboxRadius > profile.hitboxRadius.max) {
+        errors.push(`${idx}행 hitbox_radius는 ${profile.label} 기준 ${profile.hitboxRadius.min}~${profile.hitboxRadius.max} 범위여야 합니다.`);
+      }
+      const allowedAttackTypes = ['jab', 'straight', 'hook', 'uppercut', 'mixed'];
+      const allowedJudgeShapes = ['circle', 'ellipse', 'lane'];
+      const allowedTargetZones = ['head', 'body', 'left_head', 'right_head'];
+      const allowedRequiredMoves = ['auto', 'slip_left', 'slip_right', 'slip_side', 'duck', 'lean_back', 'step_out'];
+      const attackType = String(ts.attack_type || '').toLowerCase();
+      const judgeShape = ts.judge_shape ? String(ts.judge_shape).toLowerCase() : '';
+      const targetZone = ts.target_zone ? String(ts.target_zone).toLowerCase() : '';
+      const requiredMove = ts.required_move ? String(ts.required_move).toLowerCase() : '';
+      if (!allowedAttackTypes.includes(attackType)) {
+        errors.push(`${idx}행 attack_type은 ${allowedAttackTypes.join(', ')} 중 하나여야 합니다.`);
+      }
+      if (judgeShape && !allowedJudgeShapes.includes(judgeShape)) {
+        errors.push(`${idx}행 judge_shape은 ${allowedJudgeShapes.join(', ')} 중 하나여야 합니다.`);
+      }
+      if (targetZone && !allowedTargetZones.includes(targetZone)) {
+        errors.push(`${idx}행 target_zone은 ${allowedTargetZones.join(', ')} 중 하나여야 합니다.`);
+      }
+      if (requiredMove && !allowedRequiredMoves.includes(requiredMove)) {
+        errors.push(`${idx}행 required_move는 ${allowedRequiredMoves.join(', ')} 중 하나여야 합니다.`);
+      }
+      return errors;
+    }
+
+    // 무엇: 영상 payload를 저장 전에 일괄 검증 -> 왜: 실수 입력을 사전에 차단해 운영 데이터 품질을 높이기 위해
+    function validateVideoPayload(payload) {
+      const errors = [];
+      const profile = getDifficultyValidationProfile(payload.difficulty);
+      if (!payload.title) errors.push('제목은 필수입니다.');
+      if (!payload.file_path) errors.push('파일 경로는 필수입니다.');
+      if (!Array.isArray(payload.timestamps) || !payload.timestamps.length) errors.push('타임스탬프를 1개 이상 입력해 주세요.');
+      if (!Number.isFinite(payload.duration_sec) || payload.duration_sec <= 0 || payload.duration_sec > 60) {
+        errors.push('영상 길이는 0초 초과, 60초 이하로 입력해 주세요.');
+      }
+      const tsErrors = (payload.timestamps || []).flatMap((ts, index) =>
+        validateTimestampEntry(ts, index + 1, payload.duration_sec, profile)
+      );
+      const sorted = [...(payload.timestamps || [])]
+        .map(ts => Number(ts.impact_time))
+        .filter(Number.isFinite)
+        .sort((a, b) => a - b);
+      if (sorted.length >= 2) {
+        for (let i = 1; i < sorted.length; i += 1) {
+          if (Math.abs(sorted[i] - sorted[i - 1]) < profile.minGapSec) {
+            errors.push(`impact_time 간격이 너무 좁은 항목이 있습니다. (${profile.label} 권장 최소 ${profile.minGapSec}초)`);
+            break;
+          }
+        }
+      }
+      return [...errors, ...tsErrors];
+    }
+
+    // 무엇: 저장 전 영상 파일 실제 존재 여부를 확인 -> 왜: DB에 404 경로가 누적되는 것을 방지하기 위해
+    async function verifyVideoFilePathExists(filePath) {
+      const normalized = normalizePath(filePath);
+      if (!normalized) return false;
+      try {
+        const headRes = await fetch(normalized, { method: 'HEAD', cache: 'no-store' });
+        if (headRes.ok) return true;
+      } catch (_) {
+        // HEAD 요청이 막히는 환경을 대비해 GET으로 한 번 더 확인합니다.
+      }
+      try {
+        const getRes = await fetch(normalized, { method: 'GET', cache: 'no-store' });
+        return getRes.ok;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    // 무엇: 임시 분석 지표를 계산/표시 -> 왜: 저장 전 품질을 직관적으로 점검할 수 있게 하기 위해
+    function updateTrainingMetricsView(timestamps = collectTimestampsFromEditor()) {
+      const rows = Array.isArray(timestamps) ? timestamps : [];
+      const count = rows.length;
+      const sumWindow = rows.reduce((acc, item) => acc + Number(item.dodge_window_ms || 0), 0);
+      const sumRadius = rows.reduce((acc, item) => acc + Number(item.hitbox_radius || 0), 0);
+      const avgWindow = count ? Math.round(sumWindow / count) : 0;
+      const avgRadius = count ? (sumRadius / count).toFixed(2) : '0.00';
+      const dodge = Number(state.trainingMetrics.dodge || 0);
+      const hit = Number(state.trainingMetrics.hit || 0);
+      const totalResult = dodge + hit;
+      const dodgeRate = totalResult ? Math.round((dodge / totalResult) * 100) : 0;
+      const intervals = state.trainingMetrics.markIntervalsMs || [];
+      const avgReactionMs = intervals.length ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length) : 0;
+      $('metric-ts-count').textContent = String(count);
+      $('metric-window-avg').textContent = String(avgWindow);
+      $('metric-radius-avg').textContent = String(avgRadius);
+      $('metric-dodge-rate').textContent = `${dodgeRate}%`;
+      $('metric-reaction-ms').textContent = String(avgReactionMs);
+      const qualityEl = $('metric-quality-state');
+      const noteEl = $('quality-note');
+      const selectedDifficulty = $('vid-difficulty')?.value || 'intermediate';
+      const profile = getDifficultyValidationProfile(selectedDifficulty);
+      const guideEl = $('difficulty-balance-guide');
+      if (guideEl) {
+        guideEl.textContent = `밸런스 기준(5판 테스트): ${profile.label} 프리셋 회피창 ${profile.presetWindow}ms / 히트박스 ${profile.presetRadius}`;
+      }
+      const validationErrors = validateVideoPayload({
+        title: $('vid-title').value.trim(),
+        file_path: $('vid-path').value.trim(),
+        difficulty: selectedDifficulty,
+        duration_sec: Number($('vid-duration').value || 0),
+        timestamps: rows
+      });
+      if (validationErrors.length) {
+        qualityEl.textContent = '보완 필요';
+        if (noteEl) noteEl.textContent = `점검 결과: ${validationErrors[0]}`;
+      } else {
+        qualityEl.textContent = '저장 가능';
+        if (noteEl) noteEl.textContent = `점검 결과: ${profile.label} 기준 충족(회피창 ${profile.dodgeWindow.min}~${profile.dodgeWindow.max}ms, 히트박스 ${profile.hitboxRadius.min}~${profile.hitboxRadius.max}).`;
+      }
+    }
+
+    // 무엇: 훈련 결과를 수동 기록 -> 왜: 백엔드 연동 전에도 회피율을 임시로 점검할 수 있게 하기 위해
+    function recordTrainingOutcome(type) {
+      if (type === 'dodge') state.trainingMetrics.dodge += 1;
+      if (type === 'hit') state.trainingMetrics.hit += 1;
+      updateTrainingMetricsView();
+    }
+
+    // 무엇: 임시 지표를 초기화 -> 왜: 테스트 라운드별로 지표를 다시 측정하기 위해
+    function resetTrainingMetrics() {
+      state.trainingMetrics = { dodge: 0, hit: 0, markIntervalsMs: [], lastMarkTimeSec: null };
+      updateTrainingMetricsView();
+      updateMarkerStatus('지표를 초기화했습니다. 새 라운드를 시작하세요.');
+    }
+
+    async function submitVideo() {
+      const payload = {
+        title: $('vid-title').value.trim(),
+        file_path: $('vid-path').value.trim(),
+        attack_type: $('vid-type').value,
+        difficulty: $('vid-difficulty').value,
+        duration_sec: Number($('vid-duration').value || 5),
+        is_premium: false,
+        timestamps: collectTimestampsFromEditor()
+      };
+      const validationErrors = validateVideoPayload(payload);
+      if (validationErrors.length) {
+        updateTrainingMetricsView(payload.timestamps);
+        return showToast(`저장 전 확인: ${validationErrors[0]}`, 'error');
+      }
+      const fileExists = await verifyVideoFilePathExists(payload.file_path);
+      if (!fileExists) {
+        const noteEl = $('quality-note');
+        if (noteEl) noteEl.textContent = `점검 결과: 파일 경로를 찾을 수 없습니다 (${payload.file_path})`;
+        return showToast('저장 전 확인: 영상 파일 경로가 존재하지 않습니다.', 'error');
+      }
+      const videoSummary = [
+        `제목: ${payload.title}`,
+        `공격 타입/난이도: ${payload.attack_type} / ${payload.difficulty}`,
+        `길이: ${payload.duration_sec}s`,
+        `파일 경로: ${payload.file_path}`,
+        `타임스탬프 개수: ${payload.timestamps.length}개`,
+      ];
+      if (!confirmSaveSummary('영상 저장 전 확인', videoSummary)) return;
+      try {
+        if (state.editingVideo?.id) {
+          await api.put(`/api/admin/videos/${state.editingVideo.id}`, payload);
+          showToast('영상이 수정되었습니다.', 'success');
+        } else {
+          await api.post('/api/admin/videos', payload);
+          showToast('영상이 추가되었습니다.', 'success');
+          clearDraft(ADMIN_DRAFT_KEYS.video, 'video-draft-status');
+        }
+        hideVideoForm();
+        await loadVideos();
+      } catch (err) {
+        showToast('영상 저장 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteVideo(id) {
+      if (!confirm(`영상 #${id}를 삭제할까요?`)) return;
+      // 무엇: ID 재입력 확인을 추가 -> 왜: 실수 삭제를 줄이기 위해
+      const videoTyped = prompt(`영상 #${id} 삭제 확인\n\n확인을 위해 ID를 다시 입력하세요:`);
+      if (videoTyped == null || String(videoTyped).trim() !== String(id)) {
+        showToast('삭제 확인 값이 일치하지 않아 취소되었습니다.', 'error');
+        return;
+      }
+      try {
+        await api.delete(`/api/admin/videos/${id}`);
+        showToast('영상이 삭제되었습니다.', 'success');
+        await loadVideos();
+      } catch (err) {
+        showToast('삭제 실패: ' + err.message, 'error');
+      }
+    }
+
+    function openUserModal(user) {
+      state.editingUser = user;
+      $('user-modal-info').textContent = `${user.username || `#${user.id}`} · ${user.email || '-'}`;
+      $('user-modal-tier').value = ['free', 'premium', 'admin'].includes(user.tier) ? user.tier : 'free';
+      $('user-modal').classList.add('open');
+      $('user-modal').setAttribute('aria-hidden','false');
+    }
+    function closeUserModal() {
+      $('user-modal').classList.remove('open');
+      $('user-modal').setAttribute('aria-hidden','true');
+      state.editingUser = null;
+    }
+    async function saveUserTier() {
+      if (!state.editingUser) return;
+      try {
+        await api.put(`/api/admin/users/${state.editingUser.id}/tier`, { tier: $('user-modal-tier').value });
+        showToast('사용자 티어가 수정되었습니다.', 'success');
+        closeUserModal();
+        await loadAdminUsers();
+      } catch (err) {
+        showToast('티어 수정 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteUser(userId, userLabel = '') {
+      if (!confirm(`사용자 ${userLabel || userId}를 삭제할까요?`)) return;
+      // 무엇: 사용자 삭제는 USERNAME 재입력으로 2차 확인 -> 왜: 운영자가 식별하기 쉬운 값으로 오삭제를 방지하기 위해
+      const expectedUsername = String(userLabel || '').trim().replace(/^#/, '');
+      const userTyped = prompt(`사용자 ${userLabel || userId} 삭제 확인\n\n확인을 위해 USERNAME을 다시 입력하세요:`);
+      if (userTyped == null || String(userTyped).trim() !== expectedUsername) {
+        showToast('삭제 확인 값이 일치하지 않아 취소되었습니다.', 'error');
+        return;
+      }
+      try {
+        await api.delete(`/api/admin/users/${userId}`);
+        showToast('사용자를 삭제했습니다.', 'success');
+        if (state.editingUser?.id === userId) closeUserModal();
+        await loadAdminUsers();
+      } catch (err) {
+        showToast('사용자 삭제 실패: ' + err.message, 'error');
+      }
+    }
+
+    function copyText(id) {
+      const el = $(id);
+      el.select();
+      document.execCommand('copy');
+      showToast('복사되었습니다.', 'success');
+    }
+
+    function fillSeedSql() {
+      $('seed-tutorial-sql').value = `USE boxer_db;
+INSERT INTO boxing_tutorials (title, description, target_pose_json, difficulty_level, is_premium, reward_exp, reward_coins, order_sequence) VALUES
+('기본 스탠스', '복싱의 가장 기본이 되는 자세를 익힙니다.', '{"guard":{"min_elbow_angle":80}}', 1, FALSE, 100, 10, 1),
+('잽 회피', '짧은 공격을 피하는 입문 훈련입니다.', '{"guard":{"min_elbow_angle":78}}', 1, FALSE, 100, 10, 2);`;
+      $('seed-video-sql').value = `USE boxer_db;
+INSERT INTO attack_videos (title, file_path, attack_type, difficulty, duration_sec, is_premium) VALUES
+('Beginner Jab 01', './video/%EC%8A%A4%ED%8C%8C%EB%A7%81%EC%B4%88%EB%B3%B4.mp4', 'jab', 'beginner', 5.0, FALSE),
+('Intermediate Straight 01', './video/%EC%8A%A4%ED%8C%8C%EB%A7%81%EC%B4%88%EB%B3%B4.mp4', 'straight', 'intermediate', 6.0, FALSE);`;
+      $('seed-shop-sql').value = `USE boxer_db;
+INSERT INTO shop_items (name, description, item_type, price_coins, is_active) VALUES
+('프리미엄 구독', '전체 콘텐츠 이용', 'premium', 0, TRUE),
+('자세 분석 리포트', '훈련 분석 리포트', 'report', 300, TRUE);`;
+      $('admin-route-template').value = `from app.routers import admin
+app.include_router(admin.router, prefix="/api/admin", tags=["admin"])`;
+    }
+
+window.addEventListener('pageshow', () => {
+      hydrateAdminPanels().catch(() => {});
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeUserModal();
+      if (e.key === ' ' && $('video-form')?.style.display !== 'none') {
+        const video = $('timestamp-video');
+        if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          toggleMarkerPlayback();
+        }
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        if ($('video-form')?.style.display !== 'none') {
+          e.preventDefault();
+          markCurrentTimestamp();
+        }
+      }
+      if (e.key === ',') { if ($('video-form')?.style.display !== 'none') { e.preventDefault(); stepMarkerFrame(-1); } }
+      if (e.key === '.') { if ($('video-form')?.style.display !== 'none') { e.preventDefault(); stepMarkerFrame(1); } }
+    });
+
+    $('timestamp-video').addEventListener('timeupdate', updateMarkerTime);
+    $('timestamp-video').addEventListener('ratechange', updateMarkerRate);
+    $('timestamp-video').addEventListener('loadedmetadata', updateMarkerTime);
+    $('timestamp-video').addEventListener('play', updateMarkerRate);
+    $('timestamp-video').addEventListener('pause', updateMarkerRate);
+    $('marker-load-video-btn').addEventListener('click', () => loadMarkerVideoFromPath({ resetTime:true, autoplay:false }));
+    document.querySelectorAll('[data-marker-rate]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $('timestamp-video').playbackRate = Number(btn.getAttribute('data-marker-rate') || '1');
+        updateMarkerRate();
+      });
+    });
+    $('vid-path-marker').addEventListener('change', () => loadMarkerVideoFromPath({ resetTime:true, autoplay:false }));
+    $('vid-path').addEventListener('change', () => {
+      $('vid-path-marker').value = $('vid-path').value.trim();
+      saveVideoDraft();
+    });
+    $('user-modal').addEventListener('click', e => { if (e.target === $('user-modal')) closeUserModal(); });
+    $('timestamp-video').addEventListener('click', () => updateMarkerStatus('영상이 준비되었습니다. M으로 마킹하세요.'));
+    ['tut-title','tut-desc','tut-difficulty','tut-premium','tut-exp','tut-coins','tut-video-url','tut-order','tut-pose-json'].forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('input', saveTutorialDraft);
+      if (el) el.addEventListener('change', saveTutorialDraft);
+    });
+    ['vid-title','vid-path','vid-type','vid-difficulty','vid-duration','vid-path-marker'].forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('input', saveVideoDraft);
+      if (el) el.addEventListener('change', saveVideoDraft);
+    });
+    $('vid-difficulty')?.addEventListener('change', () => updateTrainingMetricsView());
+
+    syncServerLinks();
+    fillVideoPathPresets();
+    loadVideoPathPresetsFromApi().catch(() => {});
+    setMarkerReadyState('idle');
+    updateTrainingMetricsView([]);
+    bindUsersSearchEnter();
+    bindVideosSearchKeys();
+    initAdmin().catch(err => console.error(err));
+    const videosSortEl = $('videos-sort');
+    if (videosSortEl) videosSortEl.value = state.sorts.videos;
+  </script>
+</body>
+</html>

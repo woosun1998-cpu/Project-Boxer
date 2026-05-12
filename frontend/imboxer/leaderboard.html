@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 리더보드</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --red:    #E8000D;
+      --yellow: #FFE500;
+      --green:  #39D353;
+      --s1: #000000;
+      --s2: #0e0e0e;
+      --s3: #161616;
+      --s4: #1e1e1e;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.62);
+      --t3: rgba(255,255,255,0.32);
+      --border: rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.14);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--s1); color: var(--t1); font-family: var(--fp); }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% 10%, rgba(232,0,13,0.16), transparent 32%),
+        linear-gradient(180deg, rgba(0,0,0,0.96), rgba(0,0,0,1)),
+        var(--s1);
+    }
+
+    /* ── Topbar ─────────────────────────── */
+    .bx-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 62px;
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+    .bx-topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 0 28px;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 14px; }
+    .bx-brand { text-decoration: none; display: flex; align-items: center; gap: 9px; }
+    .bx-brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.3));
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--fp);
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.4);
+      background: rgba(232,0,13,0.06);
+      padding: 3px 9px;
+      border-radius: 2px;
+    }
+    .bx-live::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .bx-nav { display: flex; align-items: center; gap: 22px; }
+    .bx-nav a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t3);
+      text-decoration: none;
+      letter-spacing: .03em;
+      transition: color .15s;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav a[aria-current] { color: var(--red); border-bottom: 1px solid var(--red); padding-bottom: 1px; }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t3);
+      background: none;
+      border: 1px solid var(--border-2);
+      padding: 5px 13px;
+      cursor: pointer;
+      border-radius: 2px;
+      letter-spacing: .02em;
+      transition: color .15s, border-color .15s;
+    }
+    .bx-nav button[data-logout-button]:hover { color: var(--t1); border-color: var(--t2); }
+
+    /* ── Page layout ─────────────────────── */
+    .lb-page {
+      padding-top: 62px;
+      min-height: 100vh;
+    }
+
+    /* ── Hero / Header section ───────────── */
+    .lb-hero {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(232,0,13,0.08) 0%, transparent 58%),
+        var(--s1);
+      border-bottom: 1px solid var(--border);
+      padding: 52px 28px 40px;
+    }
+    .lb-hero-inner {
+      max-width: 1360px; margin: 0 auto;
+      display: grid; grid-template-columns: 1.05fr .9fr auto;
+      align-items: center; gap: 24px;
+      position: relative; z-index: 1;
+    }
+    .lb-hero-left { position: relative; z-index: 2; }
+    .lb-section-tag {
+      font-family: var(--fm); font-size: 12px; letter-spacing: .22em;
+      color: var(--red); margin-bottom: 10px; display: block;
+    }
+    .lb-hero-title {
+      font-family: var(--fm); font-size: clamp(52px, 8vw, 88px);
+      letter-spacing: .04em; line-height: .9; color: var(--t1);
+    }
+    .lb-hero-sub {
+      font-size: 14px; color: var(--t2); margin-top: 14px; letter-spacing: .04em;
+    }
+
+    .lb-hero-visual {
+      position: relative;
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-hero-stage {
+      position: relative;
+      width: min(100%, 840px);
+      min-height: 340px;
+      aspect-ratio: 21 / 9;
+      border-radius: 10px;
+      background:
+        url("./assets/images/leaderboard/ranking_1.png") center center / cover no-repeat,
+        radial-gradient(circle at center, rgba(255,229,0,0.08), rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.96));
+      border: none;
+      box-shadow:
+        0 24px 70px rgba(0,0,0,0.52),
+        0 0 40px rgba(232,0,13,0.12);
+      overflow: hidden;
+    }
+    .lb-hero-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at center, rgba(0,0,0,0.00), rgba(0,0,0,0.52) 74%),
+        linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.42));
+    }
+    /* My rank card */
+    .lb-my-rank-card {
+      background: var(--s3);
+      border: 1px solid var(--border-2);
+      border-radius: 4px;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 24px;
+      flex-shrink: 0;
+      width: fit-content;
+      min-width: 230px;
+    }
+    .lb-my-rank-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--s4);
+      border: 2px solid rgba(255,229,0,0.36);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex: 0 0 52px;
+      font-family: var(--fm);
+      font-size: 20px;
+      color: var(--t2);
+    }
+    .lb-my-rank-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .lb-my-rank-num {
+      font-family: var(--fm); font-size: 40px; letter-spacing: .04em;
+      color: var(--yellow); line-height: 1;
+    }
+    .lb-my-rank-num span { font-family: var(--fp); font-size: 18px; color: var(--t3); }
+    .lb-my-rank-info { display: flex; flex-direction: column; gap: 3px; }
+    .lb-my-rank-name { font-size: 14px; font-weight: 600; color: var(--t1); }
+    .lb-my-rank-score { font-family: var(--fp); font-size: 14px; font-weight: 800; letter-spacing: 0; color: var(--t2); }
+    .lb-my-rank-score .lb-score-num { font-family: var(--fm); font-size: 20px; letter-spacing: .06em; color: var(--t1); }
+    .lb-my-rank-label { font-size: 11px; letter-spacing: .1em; color: var(--t3); }
+
+    /* ── Main content ────────────────────── */
+    .lb-content {
+      max-width: 1360px; margin: 0 auto;
+      padding: 48px 28px 80px;
+    }
+
+    /* ── Podium top 3 ────────────────────── */
+    .lb-podium {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 48px;
+    }
+    .lb-podium-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 10px; position: relative;
+    }
+    /* Reorder: 2nd, 1st, 3rd */
+    .lb-podium-item:nth-child(1) { order: 2; } /* 1st — center */
+    .lb-podium-item:nth-child(2) { order: 1; } /* 2nd — left */
+    .lb-podium-item:nth-child(3) { order: 3; } /* 3rd — right */
+
+    .lb-podium-crown {
+      font-family: var(--fm); font-size: 11px; letter-spacing: .14em;
+      padding: 3px 10px 2px; border-radius: 2px;
+    }
+    .lb-podium-item[data-rank="1"] .lb-podium-crown { background: var(--yellow); color: #000; }
+    .lb-podium-item[data-rank="2"] .lb-podium-crown { background: var(--s4); color: var(--t2); border: 1px solid var(--border-2); }
+    .lb-podium-item[data-rank="3"] .lb-podium-crown { background: var(--s4); color: var(--t2); border: 1px solid var(--border-2); }
+
+    .lb-podium-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--s4); border: 2px solid var(--border-2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--fm); font-size: 22px; letter-spacing: .06em; color: var(--t2);
+      overflow: hidden;
+    }
+    .lb-podium-item[data-rank="1"] .lb-podium-avatar {
+      width: 72px; height: 72px; font-size: 28px;
+      border-color: var(--yellow); box-shadow: 0 0 20px rgba(255,229,0,0.25);
+    }
+    .lb-podium-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .lb-podium-name {
+      font-size: 14px; font-weight: 600; color: var(--t1); letter-spacing: .02em;
+      text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .lb-podium-score {
+      font-family: var(--fm); font-size: 26px; letter-spacing: .06em; color: var(--t1);
+    }
+    .lb-podium-item[data-rank="1"] .lb-podium-score { font-size: 36px; color: var(--yellow); }
+
+    .lb-podium-stand {
+      width: 100%; border-radius: 3px 3px 0 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--fm); font-size: 28px; color: rgba(255,255,255,0.12);
+      padding: 12px 0;
+    }
+    .lb-podium-item[data-rank="1"] .lb-podium-stand { height: 80px; background: linear-gradient(180deg, rgba(255,229,0,0.15), rgba(255,229,0,0.06)); border: 1px solid rgba(255,229,0,0.2); border-bottom: none; }
+    .lb-podium-item[data-rank="2"] .lb-podium-stand { height: 56px; background: var(--s3); border: 1px solid var(--border); border-bottom: none; }
+    .lb-podium-item[data-rank="3"] .lb-podium-stand { height: 40px; background: var(--s3); border: 1px solid var(--border); border-bottom: none; }
+
+    /* ── Table section label ─────────────── */
+    .lb-table-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .lb-table-title {
+      font-family: var(--fm); font-size: 18px; letter-spacing: .12em; color: var(--t2);
+    }
+    .lb-table-filter {
+      display: flex; gap: 6px;
+    }
+    .lb-filter-btn {
+      font-family: var(--fp); font-size: 12px; font-weight: 900; letter-spacing: .04em;
+      background: none; color: var(--t3); border: 1px solid var(--border);
+      padding: 4px 12px 3px; border-radius: 2px; cursor: pointer; transition: all .15s;
+    }
+    .lb-filter-btn[aria-pressed="true"],
+    .lb-filter-btn:hover { color: var(--t1); border-color: var(--t2); background: var(--s4); }
+    .lb-filter-btn[aria-pressed="true"] { border-color: var(--red); color: var(--red); background: rgba(232,0,13,0.07); }
+
+    /* ── Rank table ──────────────────────── */
+    .lb-table {
+      width: 100%; border-collapse: collapse;
+      border: 1px solid var(--border);
+      border-radius: 4px; overflow: hidden;
+    }
+    .lb-table thead tr {
+      background: var(--s3);
+      border-bottom: 1px solid var(--border-2);
+    }
+    .lb-table th {
+      font-family: var(--fp); font-size: 12px; letter-spacing: 0;
+      color: var(--t3); padding: 10px 16px; text-align: left; font-weight: 900;
+    }
+    .lb-table th.lb-th-num,
+    .lb-table td.lb-td-num { text-align: center; width: 64px; }
+    .lb-table th.lb-th-score,
+    .lb-table td.lb-td-score { text-align: right; }
+    .lb-table th.lb-th-date,
+    .lb-table td.lb-td-date { color: var(--t3); }
+
+    .lb-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .12s;
+    }
+    .lb-table tbody tr:last-child { border-bottom: none; }
+    .lb-table tbody tr:hover { background: var(--s3); }
+
+    /* Own rank row highlight */
+    .lb-table tbody tr[data-own-rank] {
+      background: rgba(232,0,13,0.05);
+      border-left: 2px solid var(--red);
+    }
+    .lb-table tbody tr[data-own-rank]:hover { background: rgba(232,0,13,0.09); }
+
+    .lb-table td {
+      padding: 13px 16px; font-size: 14px; color: var(--t1);
+    }
+    .lb-td-rank {
+      font-family: var(--fm); font-size: 20px; letter-spacing: .06em;
+      color: var(--t2); text-align: center;
+    }
+    .lb-td-rank[data-rank="1"] { color: var(--yellow); }
+    .lb-td-rank[data-rank="2"] { color: #c0c0c0; }
+    .lb-td-rank[data-rank="3"] { color: #cd7f32; }
+
+    .lb-td-user { display: flex; align-items: center; gap: 10px; }
+    .lb-td-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--s4); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: var(--t3); flex-shrink: 0;
+      overflow: hidden;
+      font-family: var(--fp);
+      line-height: 1;
+    }
+    .lb-td-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .lb-td-username { font-size: 14px; font-weight: 500; color: var(--t1); }
+    .lb-td-badge {
+      font-family: var(--fp); font-size: 10px; font-weight: 900; letter-spacing: .04em;
+      color: var(--t3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 1px;
+    }
+    .lb-td-score {
+      font-family: var(--fm); font-size: 20px; letter-spacing: .06em;
+      color: var(--t1); text-align: right;
+    }
+    .lb-td-date { font-size: 12px; color: var(--t3); letter-spacing: .03em; }
+
+    /* Loading / placeholder state */
+    .lb-placeholder-row td {
+      color: var(--t3); font-size: 12px; letter-spacing: .08em;
+      text-align: center; padding: 32px;
+    }
+
+    /* API slot (hidden by default, Codex fills) */
+    [data-api-leaderboard-slot] { display: none; }
+
+    /* ── Responsive ──────────────────────── */
+    @media (max-width: 768px) {
+      .lb-hero-inner { grid-template-columns: 1fr; }
+      .lb-my-rank-card { width: fit-content; }
+      .lb-hero-title { font-size: clamp(40px, 12vw, 64px); }
+      .lb-table th.lb-th-date, .lb-table td.lb-td-date { display: none; }
+      .bx-nav a:not([aria-current]) { display: none; }
+      .lb-hero-visual { min-height: 260px; }
+      .lb-hero-stage { width: min(100%, 560px); min-height: 220px; aspect-ratio: 16 / 8.5; border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="bx-topbar">
+  <div class="bx-topbar-inner">
+    <div class="bx-topbar-left">
+      <a class="bx-brand" href="./dashboard.html" aria-label="AI Coach 홈">
+        <span class="bx-brand-logo"></span>
+      </a>
+      <span class="bx-live">Ranking</span>
+    </div>
+    <nav class="bx-nav">
+      <a href="./dashboard.html">대시보드</a>
+      <a href="./tutorial.html">튜토리얼</a>
+      <a href="./training.html">훈련</a>
+      <a href="./sparring.html">스파링</a>
+      <a href="./leaderboard.html" aria-current="page">랭킹</a>
+      <a href="./boxing-gyms.html">복싱장 찾기</a>
+      <a href="./mypage.html">마이페이지</a>
+      <a href="./shop.html">샵</a>
+      <button type="button" data-logout-button>로그아웃</button>
+    </nav>
+  </div>
+</header>
+
+<div class="lb-page">
+
+  <!-- ── Hero ──────────────────────────────── -->
+  <section class="lb-hero">
+    <div class="lb-hero-inner">
+      <div class="lb-hero-left">
+        <span class="lb-section-tag">GLOBAL RANKING</span>
+        <h1 class="lb-hero-title">LEADER<br>BOARD</h1>
+        <p class="lb-hero-sub" data-page-message>훈련 점수로 겨루는 전 세계 복서 순위</p>
+      </div>
+
+      <div class="lb-hero-visual" aria-hidden="true">
+        <div class="lb-hero-stage"></div>
+      </div>
+
+      <!-- My rank card -->
+      <div class="lb-my-rank-card">
+        <div class="lb-my-rank-avatar" data-my-rank-avatar>ME</div>
+        <div class="lb-my-rank-num" data-my-rank-num>
+          —<span>위</span>
+        </div>
+        <div class="lb-my-rank-info">
+          <span class="lb-my-rank-label">내 순위</span>
+          <span class="lb-my-rank-name" data-user-name>—</span>
+          <span class="lb-my-rank-score" data-my-rank-score>—</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Content ─────────────────────────────── -->
+  <main class="lb-content">
+
+    <!-- Podium top 3 -->
+    <div class="lb-podium" data-podium>
+
+      <div class="lb-podium-item" data-rank="1">
+        <div class="lb-podium-crown">1ST</div>
+        <div class="lb-podium-avatar" data-podium-avatar-1>1</div>
+        <div class="lb-podium-name"  data-podium-name-1>CHAMPION</div>
+        <div class="lb-podium-score" data-podium-score-1>9999</div>
+        <div class="lb-podium-stand">01</div>
+      </div>
+
+      <div class="lb-podium-item" data-rank="2">
+        <div class="lb-podium-crown">2ND</div>
+        <div class="lb-podium-avatar" data-podium-avatar-2>2</div>
+        <div class="lb-podium-name"  data-podium-name-2>PLAYER 02</div>
+        <div class="lb-podium-score" data-podium-score-2>8450</div>
+        <div class="lb-podium-stand">02</div>
+      </div>
+
+      <div class="lb-podium-item" data-rank="3">
+        <div class="lb-podium-crown">3RD</div>
+        <div class="lb-podium-avatar" data-podium-avatar-3>3</div>
+        <div class="lb-podium-name"  data-podium-name-3>PLAYER 03</div>
+        <div class="lb-podium-score" data-podium-score-3>7890</div>
+        <div class="lb-podium-stand">03</div>
+      </div>
+
+    </div>
+
+    <!-- Table filters + rank list -->
+    <div class="lb-table-header">
+      <span class="lb-table-title">RANK 4 — 100</span>
+      <div class="lb-table-filter">
+        <button class="lb-filter-btn" aria-pressed="true" data-filter="all">전체</button>
+        <button class="lb-filter-btn" aria-pressed="false" data-filter="week">이번 주</button>
+        <button class="lb-filter-btn" aria-pressed="false" data-filter="month">이번 달</button>
+      </div>
+    </div>
+
+    <!-- API slot: leaderboard.js가 채워넣을 영역 -->
+    <div data-api-leaderboard-slot></div>
+
+    <!-- Fallback static table (leaderboard.js가 교체하기 전까지 표시) -->
+    <table class="lb-table" data-leaderboard-table>
+      <thead>
+        <tr>
+          <th class="lb-th-num">순위</th>
+          <th>플레이어</th>
+          <th class="lb-th-score">점수</th>
+          <th class="lb-th-date">기록일</th>
+        </tr>
+      </thead>
+      <tbody data-leaderboard-tbody>
+        <tr class="lb-placeholder-row">
+          <td colspan="4">순위 데이터를 불러오는 중...</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </main>
+</div>
+
+<!-- hidden tier text for hydratePage -->
+<span hidden data-user-tier-badge>free</span>
+<span hidden data-user-tier-text></span>
+<span hidden data-user-summary>리더보드</span>
+
+<script type="module" src="./js/core/api.js"></script>
+<script type="module" src="./js/core/auth.js"></script>
+<script type="module" src="./js/core/ui.js"></script>
+<script type="module" src="./js/pages/leaderboard.js?v=20260507-profile-avatar-fix"></script>
+
+</body>
+</html>

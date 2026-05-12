@@ -15,10 +15,12 @@ from app.utils.dependencies import get_current_user
 router = APIRouter()
 
 
-def _ensure_admin_access(_: User) -> None:
-    # Project currently has no role/permission model.
-    # Keep it gated behind authentication for now.
-    return
+def _ensure_admin_access(current_user: User) -> None:
+    if current_user.tier != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access is required.",
+        )
 
 
 @router.post(

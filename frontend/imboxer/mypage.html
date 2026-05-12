@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 마이페이지</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:    #ff3e3e;
+      --red-dk: #E8000D;
+      --gold:   #f5c518;
+      --green:  #39D353;
+      --orange: #ff9a3d;
+      --blue:   #38bdf8;
+      --s0: #040404;
+      --s1: #080808;
+      --s2: #0e0e0e;
+      --s3: #151515;
+      --s4: #1c1c1c;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.65);
+      --t3: rgba(255,255,255,0.32);
+      --t4: rgba(255,255,255,0.14);
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.15);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--s0);
+      color: var(--t1);
+      font-family: var(--fp);
+    }
+
+    /* ── TOPBAR ──────────────────────────────────────── */
+    .bx-topbar {
+      position: sticky;
+      top: 0; z-index: 100;
+      height: 62px;
+      background: rgba(4,4,4,0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+    }
+    .bx-topbar-inner {
+      height: 100%;
+      max-width: 1360px; margin: 0 auto;
+      padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 12px; }
+    .bx-brand { display: flex; align-items: center; text-decoration: none; }
+    .bx-brand-logo {
+      width: 30px; height: 30px; border-radius: 8px; object-fit: cover;
+      filter: drop-shadow(0 0 8px rgba(255,62,62,0.25));
+    }
+    .bx-live {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px;
+      border: 1px solid rgba(255,62,62,0.28);
+      background: rgba(255,62,62,0.06);
+      font-family: var(--fp); font-size: 11px; font-weight: 900;
+      letter-spacing: .12em; color: var(--red); text-transform: uppercase; border-radius: 2px;
+    }
+    .bx-live::before { content:""; width:4px; height:4px; border-radius:50%; background:var(--red); }
+    .bx-nav { display: flex; align-items: center; gap: 18px; }
+    .bx-nav a {
+      font-size: 12px; font-weight: 700; color: var(--t3);
+      text-decoration: none; letter-spacing: .04em; transition: color .15s;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav a[aria-current] { color: var(--red); border-bottom: 1px solid var(--red); padding-bottom: 1px; }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp); font-size: 12px; font-weight: 700; color: var(--t3);
+      background: none; border: 1px solid var(--border-2); padding: 5px 12px;
+      cursor: pointer; border-radius: 2px; transition: color .15s;
+    }
+    .bx-nav button[data-logout-button]:hover { color: var(--t1); }
+
+    /* ── FIGHTER HERO ────────────────────────────────── */
+    .fighter-hero {
+      background:
+        radial-gradient(ellipse at 25% 60%, rgba(255,62,62,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 20%, rgba(245,197,24,0.06) 0%, transparent 40%),
+        var(--s1);
+      border-bottom: 2px solid rgba(255,62,62,0.22);
+      padding: 40px 24px 32px;
+    }
+    .fh-inner {
+      max-width: 1360px; margin: 0 auto;
+      display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+    }
+
+    /* Avatar */
+    .fh-avatar-wrap { flex-shrink: 0; position: relative; }
+    .fh-avatar {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: var(--s3);
+      border: 2px solid rgba(255,62,62,0.4);
+      box-shadow: 0 0 20px rgba(255,62,62,0.15);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      font-family: var(--fm); font-size: 40px; color: var(--t2);
+    }
+    .fh-avatar img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+
+    /* Info */
+    .fh-info { flex: 1; min-width: 180px; }
+    .fh-tier {
+      display: inline-block;
+      font-family: var(--fp); font-size: 10px; font-weight: 900;
+      letter-spacing: .14em; color: var(--red);
+      border: 1px solid rgba(255,62,62,0.35); padding: 2px 8px 1px;
+      border-radius: 2px; margin-bottom: 6px; text-transform: uppercase;
+    }
+    .fh-name {
+      font-family: var(--fp); font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 900; letter-spacing: -.02em; line-height: 1;
+      color: var(--t1); margin-bottom: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .fh-fighter-title {
+      font-family: var(--fp); font-size: 13px; font-weight: 700;
+      letter-spacing: .06em; color: var(--t3); text-transform: uppercase; margin-bottom: 14px;
+    }
+    .fh-level-row {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;
+    }
+    .fh-lv {
+      font-family: var(--fm); font-size: 20px; letter-spacing: .06em; color: var(--gold);
+    }
+    .fh-xp-label {
+      font-size: 11px; font-weight: 700; color: var(--t3); letter-spacing: .04em;
+    }
+    .fh-xp-track {
+      width: min(260px, 100%); height: 6px;
+      background: var(--s4); border-radius: 3px; overflow: hidden;
+    }
+    .fh-xp-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--red-dk), var(--red), var(--gold));
+      border-radius: 3px;
+      transition: width .9s cubic-bezier(.22,1,.36,1);
+    }
+
+    /* Rank badge */
+    .fh-rank {
+      flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .fh-rank-img {
+      width: 80px; height: 80px; object-fit: contain;
+      filter: drop-shadow(0 0 12px rgba(245,197,24,0.4));
+    }
+    .fh-rank-label {
+      font-family: var(--fm); font-size: 13px; letter-spacing: .16em; color: var(--gold);
+    }
+
+    /* Stats row */
+    .fh-stats {
+      display: flex; gap: 0;
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 4px; overflow: hidden; flex-shrink: 0;
+    }
+    .fh-stat-cell {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 14px 24px; border-right: 1px solid var(--border);
+    }
+    .fh-stat-cell:last-child { border-right: none; }
+    .fh-stat-cell > span {
+      font-family: var(--fm); font-size: 28px; letter-spacing: .05em; color: var(--t1); line-height: 1;
+    }
+    .fh-stat-cell > small {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      letter-spacing: .1em; color: var(--t3); text-transform: uppercase;
+    }
+
+    /* ── SHELL (main content) ────────────────────────── */
+    .mp-page { padding-top: 62px; }
+    .mp-shell {
+      max-width: 1360px; margin: 0 auto;
+      padding: 24px 24px 80px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    /* 2-column row */
+    .mp-row--two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .mp-row--60-40 {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+    }
+
+    /* ── CARD BASE ───────────────────────────────────── */
+    .mp-card {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .mp-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mp-card-title {
+      font-family: var(--fp); font-size: 11px; font-weight: 900;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--red);
+    }
+    .mp-card-sub {
+      font-family: var(--fm);
+      font-size: 13px;
+      letter-spacing: .08em;
+      color: var(--t3);
+    }
+    .mp-card-action {
+      font-family: var(--fp); font-size: 11px; font-weight: 800;
+      color: var(--t3); text-decoration: none; letter-spacing: .04em;
+      border: 1px solid var(--border); padding: 3px 10px; border-radius: 2px;
+      transition: color .15s, border-color .15s;
+    }
+    .mp-card-action:hover { color: var(--t1); border-color: var(--border-2); }
+    .mp-card-body { padding: 18px; }
+
+    /* ── TODAY'S TRAINING ────────────────────────────── */
+    .today-time-row {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px;
+    }
+    .today-time-label {
+      font-size: 11px; font-weight: 800; letter-spacing: .1em;
+      color: var(--t3); text-transform: uppercase;
+    }
+    .today-time-val {
+      font-family: var(--fm); font-size: 32px; letter-spacing: .05em; color: var(--t1); line-height: 1;
+    }
+    .today-time-val .mp-num,
+    .stat-box__val .mp-num {
+      font-family: var(--fm);
+      letter-spacing: .05em;
+    }
+    .today-time-val .mp-unit,
+    .stat-box__val .mp-unit {
+      font-family: var(--fp);
+      font-size: .42em;
+      font-weight: 800;
+      letter-spacing: 0;
+      color: var(--t3);
+      margin-left: 4px;
+      vertical-align: baseline;
+    }
+    .today-moves-section { margin-bottom: 14px; }
+    .today-moves-label {
+      font-size: 10px; font-weight: 900; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--green); margin-bottom: 7px;
+    }
+    .today-moves-label--pending { color: var(--t3); }
+    .today-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .today-chip {
+      font-family: var(--fp); font-size: 11px; font-weight: 800;
+      padding: 4px 10px; border-radius: 2px; letter-spacing: .04em;
+    }
+    .today-chip--done {
+      background: rgba(57,211,83,0.1);
+      border: 1px solid rgba(57,211,83,0.3);
+      color: var(--green);
+    }
+    .today-chip--pending {
+      background: var(--s3);
+      border: 1px solid var(--border);
+      color: var(--t3);
+    }
+    .today-recommend {
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--red);
+      border-radius: 3px;
+    }
+    .today-recommend-text {
+      font-size: 13px; color: var(--t2); line-height: 1.6; margin-bottom: 10px;
+    }
+    .today-cta {
+      display: inline-block;
+      font-family: var(--fp); font-size: 12px; font-weight: 900;
+      letter-spacing: .04em;
+      background: var(--red); border: 1px solid var(--red); color: #fff;
+      padding: 8px 16px; border-radius: 3px; text-decoration: none;
+      transition: opacity .15s;
+    }
+    .today-cta:hover { opacity: .82; }
+
+    /* ── RECENT STATS ────────────────────────────────── */
+    .stats-2x2 {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 14px;
+    }
+    .stat-box {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 3px; padding: 14px;
+    }
+    .stat-box__val {
+      display: block; font-family: var(--fm);
+      font-size: 36px; letter-spacing: .04em; color: var(--gold); line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-box__val--text {
+      font-family: var(--fp); font-size: 16px; font-weight: 900;
+      letter-spacing: 0; color: var(--t1);
+    }
+    .stat-box__label {
+      font-family: var(--fp);
+      font-size: 10px; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--t3);
+    }
+    .recent-session-wrap { border-top: 1px solid var(--border); padding-top: 12px; }
+
+    /* ── SKILL ANALYSIS ──────────────────────────────── */
+    .mp-skills { display: flex; flex-direction: column; gap: 12px; }
+    .mp-skill-row { display: flex; flex-direction: column; gap: 4px; }
+    .mp-skill-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .mp-skill-name {
+      font-family: var(--fp); font-size: 13px; font-weight: 700; color: var(--t2);
+    }
+    .mp-skill-pct {
+      font-family: var(--fm); font-size: 16px; letter-spacing: .06em; color: var(--t1);
+    }
+    .mp-skill-track {
+      height: 5px; background: var(--s4); border-radius: 3px; overflow: hidden;
+    }
+    .mp-skill-fill {
+      height: 100%; width: 0%; border-radius: 3px;
+      transition: width 1s cubic-bezier(.22,1,.36,1) var(--delay, 0s);
+      background: linear-gradient(90deg, var(--red-dk), var(--red));
+    }
+    .mp-skill-fill[data-level="excellent"] { background: linear-gradient(90deg, #2ea84e, var(--green)); }
+    .mp-skill-fill[data-level="good"]      { background: linear-gradient(90deg, #d4a010, var(--gold)); }
+    .mp-skill-fill[data-level="warning"]   { background: linear-gradient(90deg, var(--red-dk), var(--red)); }
+    .mp-skill-fill[data-level="critical"]  { background: rgba(232,0,13,0.55); }
+    .mp-skill-feedback {
+      font-size: 11px; color: var(--t3); margin-top: 1px; letter-spacing: .01em;
+    }
+
+    /* ── WEEKLY CHART ────────────────────────────────── */
+    .week-chart {
+      position: relative;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 8px; height: 154px;
+      padding: 14px 8px 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04) 1px, transparent 1px) 0 18px / 100% 32px,
+        linear-gradient(180deg, rgba(255,62,62,0.05), transparent 62%),
+        var(--s2);
+    }
+    .week-chart::before {
+      content: "AVG";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 50%;
+      border-top: 1px dashed rgba(245,197,24,0.26);
+      font-family: var(--fm);
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: rgba(245,197,24,0.5);
+    }
+    .week-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .week-bar-track {
+      flex: 1; width: 100%; max-width: 36px;
+      background: rgba(255,255,255,0.05); border-radius: 4px 4px 0 0;
+      display: flex; align-items: flex-end; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .week-bar-fill {
+      width: 100%; height: 0%;
+      background: linear-gradient(180deg, var(--gold), var(--red-dk));
+      border-radius: 3px 3px 0 0;
+      transition: height 0.9s cubic-bezier(.22,1,.36,1) var(--delay, 0s);
+    }
+    .week-bar-fill--today {
+      background: linear-gradient(180deg, var(--gold), var(--red));
+      box-shadow: 0 0 10px rgba(245,197,24,0.4);
+    }
+    .week-bar-score {
+      font-family: var(--fm); font-size: 12px; letter-spacing: .04em; color: var(--t3);
+    }
+    .week-bar-day {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      letter-spacing: .08em; color: var(--t3); text-transform: uppercase;
+    }
+    .week-bar-date {
+      font-family: var(--fm);
+      font-size: 12px;
+      letter-spacing: .04em;
+      color: var(--t4);
+      line-height: 1;
+    }
+    .week-bar-day--today { color: var(--gold); }
+
+    /* ── RANK SYSTEM ─────────────────────────────────── */
+    .rank-showcase {
+      display: flex; align-items: center; gap: 18px; margin-bottom: 16px;
+    }
+    .rank-main-img {
+      width: 72px; height: 72px; object-fit: contain; flex-shrink: 0;
+      filter: drop-shadow(0 0 12px rgba(245,197,24,0.4));
+    }
+    .rank-main-info { flex: 1; }
+    .rank-current-text {
+      font-family: var(--fm); font-size: 24px; letter-spacing: .1em; color: var(--gold); line-height: 1;
+      margin-bottom: 4px;
+    }
+    .rank-xp-needed {
+      font-size: 12px; font-weight: 700; color: var(--t2); margin-bottom: 8px;
+    }
+    .rank-xp-track {
+      height: 5px; background: var(--s4); border-radius: 3px; overflow: hidden;
+    }
+    .rank-xp-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--red-dk), var(--red), var(--gold));
+      border-radius: 3px; transition: width .9s cubic-bezier(.22,1,.36,1);
+    }
+    .rank-today-earn {
+      margin-top: 8px; font-size: 11px; color: var(--t3); letter-spacing: .03em;
+    }
+    .rank-ladder {
+      display: flex; gap: 6px; justify-content: space-between;
+    }
+    .rank-step {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 8px 4px;
+      background: var(--s2); border: 1px solid var(--border); border-radius: 3px;
+      opacity: .45; transition: opacity .2s;
+    }
+    .rank-step--active { opacity: 1; border-color: rgba(245,197,24,0.4); background: rgba(245,197,24,0.05); }
+    .rank-step__img { width: 32px; height: 32px; object-fit: contain; }
+    .rank-step__label {
+      font-family: var(--fm); font-size: 11px; letter-spacing: .1em; color: var(--t3);
+    }
+    .rank-step--active .rank-step__label { color: var(--gold); }
+
+    /* ── ACHIEVEMENTS ────────────────────────────────── */
+    .achievement-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    }
+    .ach-card {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 3px; padding: 14px 12px; text-align: center;
+    }
+    .ach-card--locked { opacity: .38; }
+    .ach-icon {
+      font-size: 24px; line-height: 1; margin-bottom: 6px; display: block;
+    }
+    .ach-title {
+      font-family: var(--fp); font-size: 11px; font-weight: 900;
+      color: var(--t1); margin-bottom: 3px; letter-spacing: .02em;
+    }
+    .ach-desc { font-size: 10px; color: var(--t3); line-height: 1.4; }
+    .ach-badge {
+      display: inline-block; margin-top: 5px;
+      font-family: var(--fp); font-size: 9px; font-weight: 900;
+      letter-spacing: .1em; padding: 2px 6px;
+      border-radius: 2px; text-transform: uppercase;
+    }
+    .ach-badge--done { background: rgba(57,211,83,0.12); border: 1px solid rgba(57,211,83,0.3); color: var(--green); }
+    .ach-badge--lock { background: var(--s3); border: 1px solid var(--border); color: var(--t4); }
+
+    /* ── AI COACH ────────────────────────────────────── */
+    .coach-body {
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .coach-avatar-section {
+      flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .coach-avatar-img {
+      width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
+      border: 2px solid rgba(255,62,62,0.3);
+    }
+    .coach-name {
+      font-family: var(--fp); font-size: 10px; font-weight: 900;
+      letter-spacing: .1em; color: var(--red); text-transform: uppercase;
+    }
+    .coach-bubble {
+      flex: 1;
+      background: var(--s2); border: 1px solid var(--border);
+      border-left: 2px solid var(--red);
+      border-radius: 4px; padding: 14px;
+    }
+    .coach-bubble p {
+      font-size: 14px; line-height: 1.82; color: var(--t1); font-weight: 500;
+    }
+    .coach-cta {
+      display: inline-block; margin-top: 12px;
+      font-family: var(--fp); font-size: 12px; font-weight: 900;
+      letter-spacing: .04em;
+      background: none; border: 1px solid var(--border-2); color: var(--t2);
+      padding: 7px 14px; border-radius: 3px; text-decoration: none; cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .coach-cta:hover { color: var(--t1); border-color: var(--t1); }
+
+    /* ── SETTINGS ────────────────────────────────────── */
+    .mp-account-rows { display: flex; flex-direction: column; margin-bottom: 14px; }
+    .mp-account-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .mp-account-row:last-child { border-bottom: none; }
+    .mp-account-key {
+      font-family: var(--fp); font-size: 11px; font-weight: 800;
+      letter-spacing: .06em; color: var(--t3); text-transform: uppercase;
+    }
+    .mp-account-val {
+      font-family: var(--fp); font-size: 13px; font-weight: 600; color: var(--t1);
+    }
+    .settings-links { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .settings-link {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; background: var(--s2); border: 1px solid var(--border);
+      border-radius: 3px; font-size: 12px; font-weight: 700; color: var(--t2);
+      text-decoration: none; transition: color .15s, border-color .15s;
+    }
+    .settings-link:hover { color: var(--t1); border-color: var(--border-2); }
+    .mp-edit-btn {
+      display: block; width: 100%; padding: 11px;
+      font-family: var(--fp); font-size: 13px; font-weight: 900;
+      background: none; color: var(--t2); border: 1px solid var(--border-2);
+      border-radius: 2px; cursor: pointer; text-align: center;
+      transition: color .15s, border-color .15s; margin-bottom: 8px;
+    }
+    .mp-edit-btn:hover { color: var(--t1); border-color: var(--t1); }
+    .mp-profile-modal {
+      position: fixed; inset: 0; z-index: 300;
+      display: none; align-items: center; justify-content: center;
+      padding: 18px; background: rgba(0,0,0,.72); backdrop-filter: blur(12px);
+    }
+    .mp-profile-modal[data-open="true"] { display: flex; }
+    .mp-profile-card {
+      width: min(460px, 100%);
+      border: 1px solid rgba(255,62,62,.28);
+      border-radius: 10px;
+      background: #0b0b0b;
+      box-shadow: 0 30px 80px rgba(0,0,0,.65), 0 0 36px rgba(255,62,62,.12);
+      padding: 22px;
+    }
+    .mp-profile-card h3 { margin-bottom: 14px; font-size: 18px; }
+    .mp-profile-grid { display: grid; gap: 12px; }
+    .mp-profile-upload-row {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .mp-profile-preview {
+      width: 86px; height: 86px; border-radius: 50%; overflow: hidden;
+      display: grid; place-items: center; background: var(--s3);
+      border: 2px solid rgba(255,62,62,.36); font-family: var(--fm); font-size: 34px;
+    }
+    .mp-profile-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .mp-profile-file-btn {
+      display: inline-flex; justify-content: center; align-items: center;
+      min-height: 42px; padding: 0 14px; border-radius: 4px;
+      border: 1px solid var(--border-2); background: var(--s2); color: var(--t2);
+      font-family: var(--fp); font-size: 13px; font-weight: 900; cursor: pointer;
+    }
+    .mp-profile-file-btn input { display: none; }
+    .mp-profile-label { display: grid; gap: 6px; font-size: 11px; font-weight: 900; letter-spacing: .08em; color: var(--t3); text-transform: uppercase; }
+    .mp-profile-label input {
+      width: 100%; padding: 11px 12px; border-radius: 4px;
+      border: 1px solid var(--border-2); background: var(--s2); color: var(--t1);
+      font-family: var(--fp); font-size: 14px;
+    }
+    .mp-profile-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .mp-profile-actions button {
+      padding: 10px 14px; border-radius: 4px; cursor: pointer; font-family: var(--fp); font-weight: 900;
+      border: 1px solid var(--border-2); background: transparent; color: var(--t2);
+    }
+    .mp-profile-actions button[data-profile-save] { border-color: var(--red); background: var(--red); color: #fff; }
+    .logout-btn {
+      display: block; width: 100%; padding: 11px;
+      font-family: var(--fp); font-size: 13px; font-weight: 900;
+      background: none; color: rgba(255,62,62,0.6);
+      border: 1px solid rgba(255,62,62,0.2);
+      border-radius: 2px; cursor: pointer; text-align: center;
+      transition: color .15s, border-color .15s;
+    }
+    .logout-btn:hover { color: var(--red); border-color: rgba(255,62,62,0.5); }
+
+    /* ── HISTORY (session) ───────────────────────────── */
+    .mp-history { display: flex; flex-direction: column; }
+    .mp-session-row {
+      display: flex; align-items: center; gap: 12px; padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .mp-session-row:last-child { border-bottom: none; }
+    .mp-session-type {
+      font-family: var(--fm); font-size: 10px; letter-spacing: .12em;
+      padding: 3px 7px 2px; border-radius: 2px; flex-shrink: 0;
+    }
+    .mp-session-type[data-type="training"] { background: rgba(57,211,83,0.1); color: var(--green); border: 1px solid rgba(57,211,83,0.25); }
+    .mp-session-type[data-type="sparring"] { background: rgba(255,62,62,0.1); color: var(--red); border: 1px solid rgba(255,62,62,0.25); }
+    .mp-session-info { flex: 1; min-width: 0; }
+    .mp-session-lesson { font-size: 13px; color: var(--t1); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mp-session-date { font-size: 11px; color: var(--t3); margin-top: 1px; }
+    .mp-session-score { font-family: var(--fm); font-size: 20px; letter-spacing: .06em; color: var(--t1); flex-shrink: 0; }
+
+    body,
+    .mp-card-title,
+    .mp-session-lesson,
+    .mp-session-date,
+    .today-time-label,
+    .today-recommend-text,
+    .coach-body,
+    [data-coach-message] {
+      font-family: var(--fp);
+    }
+    .bx-live,
+    .fh-lv,
+    .fh-rank-label,
+    .fh-stat-cell > span,
+    .metric-val,
+    .today-time-val,
+    .stat-box__val,
+    .week-bar-score,
+    .rank-current,
+    .rank-step__label,
+    .mp-session-type,
+    .mp-session-score,
+    [data-my-level],
+    [data-my-xp-text],
+    [data-my-total-sessions],
+    [data-my-best-score],
+    [data-my-rank],
+    [data-my-best-streak] {
+      font-family: var(--fm);
+      letter-spacing: .06em;
+    }
+    [data-stat-best-move],
+    [data-stat-weak-move],
+    [data-my-level-title] {
+      font-family: var(--fp);
+    }
+    .mp-history-empty { padding: 20px 0; text-align: center; font-size: 12px; color: var(--t3); letter-spacing: .06em; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 960px) {
+      .mp-row--two, .mp-row--60-40 { grid-template-columns: 1fr; }
+      .achievement-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .fh-inner { gap: 18px; }
+      .fh-stats { width: 100%; flex-wrap: wrap; }
+      .fh-stat-cell { flex: 1; min-width: 80px; padding: 12px 14px; }
+      .bx-nav a:not([aria-current]) { display: none; }
+      .achievement-grid { grid-template-columns: repeat(2, 1fr); }
+      .coach-body { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .mp-shell { padding: 14px 14px 60px; }
+      .fh-name { font-size: 26px; }
+      .achievement-grid { grid-template-columns: repeat(2, 1fr); }
+      .today-cta { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="bx-topbar">
+  <div class="bx-topbar-inner">
+    <div class="bx-topbar-left">
+      <a class="bx-brand" href="./dashboard.html">
+        <img class="bx-brand-logo" src="./assets/images/dashboard/오버레이 프로필 이미지.png" alt="IM_BOXER">
+      </a>
+      <span class="bx-live">My Page</span>
+    </div>
+    <nav class="bx-nav">
+      <a href="./dashboard.html">대시보드</a>
+      <a href="./tutorial.html">튜토리얼</a>
+      <a href="./training.html">훈련</a>
+      <a href="./sparring.html">스파링</a>
+      <a href="./leaderboard.html">랭킹</a>
+      <a href="./boxing-gyms.html">복싱장 찾기</a>
+      <a href="./mypage.html" aria-current="page">마이페이지</a>
+      <button type="button" data-logout-button>로그아웃</button>
+    </nav>
+  </div>
+</header>
+
+<div class="mp-page">
+
+  <!-- ── 1. Fighter Hero ─────────────────────────────── -->
+  <section class="fighter-hero">
+    <div class="fh-inner">
+
+      <div class="fh-avatar-wrap">
+        <div class="fh-avatar" data-user-avatar>
+          <span data-avatar-initial>B</span>
+        </div>
+      </div>
+
+      <div class="fh-info">
+        <span class="fh-tier" data-user-tier-badge>FREE</span>
+        <div class="fh-name" data-user-name>BOXER</div>
+        <div class="fh-fighter-title" data-my-level-title>ROOKIE FIGHTER</div>
+        <div class="fh-level-row">
+          <span class="fh-lv">LV.<span data-my-level>1</span></span>
+          <span class="fh-xp-label" data-my-xp-text>0 XP</span>
+        </div>
+        <div class="fh-xp-track">
+          <div class="fh-xp-fill" data-my-xp-fill></div>
+        </div>
+      </div>
+
+      <div class="fh-rank">
+        <img class="fh-rank-img" data-rank-hero-img
+          src="./assets/images/tutorials/grades/grade_d.svg" alt="Rank">
+        <span class="fh-rank-label" data-rank-hero-label>D RANK</span>
+      </div>
+
+      <div class="fh-stats">
+        <div class="fh-stat-cell">
+          <span data-my-total-sessions>0</span>
+          <small>SESSIONS</small>
+        </div>
+        <div class="fh-stat-cell">
+          <span data-my-best-score>—</span>
+          <small>BEST</small>
+        </div>
+        <div class="fh-stat-cell">
+          <span data-my-rank>—</span>
+          <small>RANK</small>
+        </div>
+        <div class="fh-stat-cell">
+          <span data-my-best-streak>0</span>
+          <small>STREAK</small>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Main shell ─────────────────────────────────── -->
+  <div class="mp-shell">
+
+    <!-- ── 2+3: Today + Recent Stats ─────────────────── -->
+    <div class="mp-row--two">
+
+      <!-- Today's Training -->
+      <section class="mp-card">
+        <div class="mp-card-header">
+          <span class="mp-card-title">오늘의 훈련</span>
+          <a href="./training.html" class="mp-card-action" data-today-cta-link>훈련 시작 →</a>
+        </div>
+        <div class="mp-card-body">
+          <div class="today-time-row">
+            <span class="today-time-label">훈련 시간</span>
+            <span class="today-time-val" data-today-time>—</span>
+          </div>
+          <div class="today-moves-section">
+            <div class="today-moves-label">완료한 동작</div>
+            <div class="today-chips" data-today-completed></div>
+          </div>
+          <div class="today-moves-section" style="margin-top:10px">
+            <div class="today-moves-label today-moves-label--pending">권장 동작</div>
+            <div class="today-chips" data-today-pending></div>
+          </div>
+          <div class="today-recommend">
+            <p class="today-recommend-text" data-today-recommend>오늘의 추천 훈련을 확인하세요.</p>
+            <a href="./training.html" class="today-cta">오늘의 추천 훈련 시작하기</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Stats -->
+      <section class="mp-card">
+        <div class="mp-card-header">
+          <span class="mp-card-title">최근 성과</span>
+        </div>
+        <div class="mp-card-body">
+          <div class="stats-2x2">
+            <div class="stat-box">
+              <span class="stat-box__val" data-stat-avg-score>—</span>
+              <span class="stat-box__label">평균 점수</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-box__val" data-stat-best-score-display>—</span>
+              <span class="stat-box__label">최고 기록</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-box__val stat-box__val--text" data-stat-best-move>—</span>
+              <span class="stat-box__label">강점 동작</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-box__val stat-box__val--text" data-stat-weak-move>—</span>
+              <span class="stat-box__label">보완 동작</span>
+            </div>
+          </div>
+          <div class="recent-session-wrap">
+            <div class="mp-history" data-session-history-slot>
+              <div class="mp-history-empty">최근 세션 기록이 없습니다</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ── 4. Skill Analysis ──────────────────────────── -->
+    <section class="mp-card">
+      <div class="mp-card-header">
+        <span class="mp-card-title">동작별 분석</span>
+        <a href="./training.html" class="mp-card-action">훈련하기 →</a>
+      </div>
+      <div class="mp-card-body">
+        <div class="mp-skills" data-skills-slot>
+
+          <div class="mp-skill-row">
+            <div class="mp-skill-head">
+              <span class="mp-skill-name">기본 가드 (Guard)</span>
+              <span class="mp-skill-pct" data-skill-pct="guard">—</span>
+            </div>
+            <div class="mp-skill-track">
+              <div class="mp-skill-fill" data-skill-bar="guard" style="--delay:0s"></div>
+            </div>
+            <span class="mp-skill-feedback" data-skill-feedback="guard"></span>
+          </div>
+
+          <div class="mp-skill-row">
+            <div class="mp-skill-head">
+              <span class="mp-skill-name">잽 (Jab)</span>
+              <span class="mp-skill-pct" data-skill-pct="jab">—</span>
+            </div>
+            <div class="mp-skill-track">
+              <div class="mp-skill-fill" data-skill-bar="jab" style="--delay:.08s"></div>
+            </div>
+            <span class="mp-skill-feedback" data-skill-feedback="jab"></span>
+          </div>
+
+          <div class="mp-skill-row">
+            <div class="mp-skill-head">
+              <span class="mp-skill-name">크로스 (Cross)</span>
+              <span class="mp-skill-pct" data-skill-pct="cross">—</span>
+            </div>
+            <div class="mp-skill-track">
+              <div class="mp-skill-fill" data-skill-bar="cross" style="--delay:.16s"></div>
+            </div>
+            <span class="mp-skill-feedback" data-skill-feedback="cross"></span>
+          </div>
+
+          <div class="mp-skill-row">
+            <div class="mp-skill-head">
+              <span class="mp-skill-name">레프트 훅 (Left Hook)</span>
+              <span class="mp-skill-pct" data-skill-pct="left-hook">—</span>
+            </div>
+            <div class="mp-skill-track">
+              <div class="mp-skill-fill" data-skill-bar="left-hook" style="--delay:.24s"></div>
+            </div>
+            <span class="mp-skill-feedback" data-skill-feedback="left-hook"></span>
+          </div>
+
+          <div class="mp-skill-row">
+            <div class="mp-skill-head">
+              <span class="mp-skill-name">어퍼컷 (Uppercut)</span>
+              <span class="mp-skill-pct" data-skill-pct="uppercut">—</span>
+            </div>
+            <div class="mp-skill-track">
+              <div class="mp-skill-fill" data-skill-bar="uppercut" style="--delay:.32s"></div>
+            </div>
+            <span class="mp-skill-feedback" data-skill-feedback="uppercut"></span>
+          </div>
+
+          <div class="mp-skill-row">
+            <div class="mp-skill-head">
+              <span class="mp-skill-name">슬립 (Slip)</span>
+              <span class="mp-skill-pct" data-skill-pct="slip">—</span>
+            </div>
+            <div class="mp-skill-track">
+              <div class="mp-skill-fill" data-skill-bar="slip" style="--delay:.40s"></div>
+            </div>
+            <span class="mp-skill-feedback" data-skill-feedback="slip"></span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5+6: Weekly Chart + Rank ───────────────────── -->
+    <div class="mp-row--two">
+
+      <!-- Weekly Growth Chart -->
+      <section class="mp-card">
+        <div class="mp-card-header">
+          <span class="mp-card-title">이번 주 성장</span>
+          <span class="mp-card-sub" data-week-today-label>오늘</span>
+        </div>
+        <div class="mp-card-body">
+          <div class="week-chart" data-weekly-chart-slot></div>
+        </div>
+      </section>
+
+      <!-- Rank System -->
+      <section class="mp-card">
+        <div class="mp-card-header">
+          <span class="mp-card-title">랭크 시스템</span>
+        </div>
+        <div class="mp-card-body">
+          <div class="rank-showcase">
+            <img class="rank-main-img" data-rank-main-img
+              src="./assets/images/tutorials/grades/grade_d.svg" alt="Rank">
+            <div class="rank-main-info">
+              <div class="rank-current-text" data-rank-current-text>D RANK</div>
+              <div class="rank-xp-needed" data-rank-xp-needed>C Rank까지 200 XP</div>
+              <div class="rank-xp-track">
+                <div class="rank-xp-fill" data-rank-xp-fill></div>
+              </div>
+              <p class="rank-today-earn" data-rank-today-earn>오늘 훈련 완료 시 +40 XP</p>
+            </div>
+          </div>
+          <div class="rank-ladder" data-rank-ladder></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ── 7. Achievements ────────────────────────────── -->
+    <section class="mp-card">
+      <div class="mp-card-header">
+        <span class="mp-card-title">업적</span>
+      </div>
+      <div class="mp-card-body">
+        <div class="achievement-grid" data-achievements-slot></div>
+      </div>
+    </section>
+
+    <!-- ── 8+9: AI Coach + Settings ───────────────────── -->
+    <div class="mp-row--60-40">
+
+      <!-- AI Coach -->
+      <section class="mp-card">
+        <div class="mp-card-header">
+          <span class="mp-card-title">AI COACH MESSAGE</span>
+        </div>
+        <div class="mp-card-body coach-body">
+          <div class="coach-avatar-section">
+            <img class="coach-avatar-img"
+              src="./assets/images/tutorials/coach/coach.jpg" alt="Coach IM"
+              onerror="this.style.display='none'">
+            <span class="coach-name">Coach IM</span>
+          </div>
+          <div class="coach-bubble">
+            <p data-coach-message>훈련 데이터를 분석 중입니다...</p>
+            <a href="./training.html" class="coach-cta">추천 훈련 시작하기 →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section class="mp-card">
+        <div class="mp-card-header">
+          <span class="mp-card-title">설정 &amp; 계정</span>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-account-rows">
+            <div class="mp-account-row">
+              <span class="mp-account-key">이메일</span>
+              <span class="mp-account-val" data-user-email-display>—</span>
+            </div>
+            <div class="mp-account-row">
+              <span class="mp-account-key">가입일</span>
+              <span class="mp-account-val" data-user-joined>—</span>
+            </div>
+            <div class="mp-account-row">
+              <span class="mp-account-key">등급</span>
+              <span class="mp-account-val" data-user-tier-text>—</span>
+            </div>
+          </div>
+          <div class="settings-links">
+            <a href="./settings.html#camera" class="settings-link">카메라 설정 <span>›</span></a>
+            <a href="./settings.html#notifications" class="settings-link">알림 설정 <span>›</span></a>
+            <a href="./settings.html#account" class="settings-link">계정 관리 <span>›</span></a>
+          </div>
+          <button type="button" class="mp-edit-btn" data-edit-profile>프로필 수정</button>
+          <button type="button" class="logout-btn" data-logout-button>로그아웃</button>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="mp-profile-modal" data-profile-modal aria-hidden="true">
+  <form class="mp-profile-card" data-profile-form>
+    <h3>프로필 수정</h3>
+    <div class="mp-profile-upload-row">
+      <div class="mp-profile-preview" data-profile-preview>B</div>
+      <label class="mp-profile-file-btn">
+        프로필 사진 업로드
+        <input type="file" accept="image/*" data-profile-avatar-file>
+      </label>
+    </div>
+    <div class="mp-profile-grid">
+      <label class="mp-profile-label">
+        프로필 사진 URL
+        <input type="url" data-profile-avatar-input placeholder="https://... 또는 이미지 주소">
+      </label>
+      <label class="mp-profile-label">
+        이름
+        <input type="text" data-profile-name-input maxlength="50" placeholder="BOXER">
+      </label>
+      <label class="mp-profile-label">
+        이메일
+        <input type="email" data-profile-email-input placeholder="you@example.com">
+      </label>
+    </div>
+    <div class="mp-profile-actions">
+      <button type="button" data-profile-cancel>취소</button>
+      <button type="submit" data-profile-save>저장</button>
+    </div>
+  </form>
+</div>
+
+<!-- hidden hydratePage slots -->
+<span hidden data-user-summary>마이페이지</span>
+<span hidden data-page-message>나의 복싱 성장 기록</span>
+<span hidden data-user-email>—</span>
+
+<script type="module" src="./js/pages/mypage.js?v=20260507-avatar-url-fix"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39D353" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#39D353" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="70" r="48" fill="url(#glow)"/>
+  <!-- Head (slightly forward) -->
+  <circle cx="52" cy="13" r="10" stroke="white" stroke-width="2.5" fill="rgba(255,255,255,0.07)"/>
+  <!-- Torso (slightly forward lean) -->
+  <line x1="52" y1="23" x2="50" y2="75" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Shoulders -->
+  <line x1="30" y1="36" x2="70" y2="36" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left arm EXTENDED FORWARD (jab) -->
+  <line x1="30" y1="36" x2="8" y2="34" stroke="#39D353" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="7" cy="34" r="5.5" fill="#39D353"/>
+  <!-- Motion lines for jab speed -->
+  <line x1="12" y1="28" x2="20" y2="30" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="11" y1="34" x2="20" y2="34" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="12" y1="40" x2="20" y2="38" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <!-- Right arm (guard MAINTAINED) -->
+  <polyline points="70,36 78,54 73,38" stroke="#39D353" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="73" cy="37" r="5" fill="#39D353"/>
+  <!-- Hips -->
+  <line x1="36" y1="75" x2="64" y2="75" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left leg -->
+  <polyline points="36,75 30,102 32,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="32" y1="128" x2="22" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Right leg -->
+  <polyline points="64,75 70,102 68,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="68" y1="128" x2="78" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Good indicator -->
+  <circle cx="88" cy="14" r="8" fill="#39D353" opacity="0.9"/>
+  <polyline points="84,14 87,17 92,11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

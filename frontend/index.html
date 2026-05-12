@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -28,6 +28,7 @@
       <a href="diet-boxing.html">다이어트 복싱</a>
       <a href="sparring.html">스파링</a>
       <a href="stretch.html">스트레칭</a>
+      <a id="adminModeLink" href="admin.html" hidden>관리자모드</a>
       <button id="navLoginBtn" type="button" class="drawer-auth-link">
         <span id="userLabel">로그인</span>
       </button>
@@ -428,6 +429,7 @@
       const drawerInner    = document.getElementById("drawerInner");
       const userLabel      = document.getElementById("userLabel");
       const navLoginBtn    = document.getElementById("navLoginBtn");
+      const adminModeLink  = document.getElementById("adminModeLink");
       const profilePhotoInput = document.getElementById("profilePhoto");
       const profilePreview    = document.getElementById("profilePreview");
 
@@ -472,8 +474,19 @@
         return `<section class="drawer-profile"><img referrerpolicy="no-referrer" src="${profileImg}" alt="프로필" /><div><p style="margin:0;font-size:25px;line-height:1.2;">${nickname}</p><p style="margin:18px 0 0;font-size:25px;line-height:1.2;">오늘도 트레이닝 해요!</p><div class="drawer-links" style="margin-top:16px;"><button type="button" class="drawer-action-btn" onclick="openProfileModal()">프로필 수정</button><button type="button" class="drawer-action-btn" onclick="performLogout()">로그아웃</button></div></div></section><section class="stat-box"><div class="stat-grid"><div class="stat-cell"><p class="stat-label">최고 점수</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">점</p></div></div><div class="stat-cell"><p class="stat-label">최고 콤보</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">콤보</p></div></div><div class="stat-cell"><p class="stat-label">회피율</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">%</p></div></div><div class="stat-cell"><p class="stat-label">총 운동 횟수</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">회</p></div></div></div></section><section class="graph-box"><h4>최근 회피율 그래프</h4><img referrerpolicy="no-referrer" src="${graphImg}" alt="회피율 그래프" /></section>`;
       }
 
+      function userHasAdminAccess(user) {
+        if (!user || typeof user !== "object") return false;
+        const tier = String(user.tier || "").toLowerCase();
+        const role = String(user.role || "").toLowerCase();
+        return tier === "admin" || role === "admin" || role === "superadmin" || user.is_admin === true || user.is_superuser === true;
+      }
+
+      function getCachedAuthUser() {
+        return typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() : null;
+      }
+
       function getDisplayNickname() {
-        const cachedUser = typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() : null;
+        const cachedUser = getCachedAuthUser();
         const rawName    = (cachedUser?.username || "").trim();
         if (!rawName) return null;
         return rawName.endsWith("님") ? rawName : `${rawName}님`;
@@ -488,6 +501,7 @@
 
       function render() {
         const loggedIn = syncLoginState();
+        const cachedUser = getCachedAuthUser();
         const nickname = getDisplayNickname();
         if (loggedIn) {
           userLabel.textContent = nickname || "내 계정";
@@ -496,6 +510,7 @@
           userLabel.textContent = "로그인";
           userLabel.style.color = "";
         }
+        if (adminModeLink) adminModeLink.hidden = !(loggedIn && userHasAdminAccess(cachedUser));
         drawerInner.innerHTML = loggedIn ? afterOverlay() : beforeOverlay();
         if (typeof window.bxWireDriveImageFallbacks === "function") {
           window.bxWireDriveImageFallbacks();
@@ -513,6 +528,9 @@
           isLoggedIn = auth.isLoggedIn();
         } else {
           isLoggedIn = false;
+        }
+        if (isLoggedIn && typeof auth.fetchCurrentUser === "function") {
+          try { await auth.fetchCurrentUser(); } catch {}
         }
         render();
       }

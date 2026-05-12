@@ -34,7 +34,7 @@
           <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1TUE5jY6eCGOM_yOu8l4p6M6NziIht3ak=w2000" alt="" />
         </div>
         <div class="tut-hero-boxer" aria-hidden="true">
-          <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/15iS0urubtcHar13vK_yWpWGqd6i079cl=w2000" alt="트레이닝 복서" />
+          <img src="imboxer/assets/images/tutorials/woosun-training-boxer.png" alt="트레이닝 복서" />
         </div>
         <div class="tut-hero-copy">
           <p>영상 속 트레이너의 움직임에 맞춰 신나게 펀치를 뻗어보세요.</p>
@@ -442,17 +442,17 @@
         }
       }
 
-      // 레벨 카드 클릭 시 ready.html을 먼저 보여주고, 시작 버튼으로 tutorial2 진입
+      // 레벨 카드 클릭 시 ready.html을 먼저 보여주고, 시작 버튼으로 IM_BOXER lesson 진입
       document.querySelectorAll(".level-card").forEach((card) => {
         const navigateViaReady = () => {
           const selectedLevel = card.getAttribute("data-level") || "beginner";
           const lessonByLevel = {
-            beginner: "beginner-stance",
-            intermediate: "intermediate-slip",
-            advanced: "advanced-combo",
+            beginner: "basic-guard",
+            intermediate: "cross",
+            advanced: "slip",
           };
-          const selectedLesson = lessonByLevel[selectedLevel] || "beginner-stance";
-          const targetPage = "tutorial2.html";
+          const selectedLesson = lessonByLevel[selectedLevel] || "basic-guard";
+          const targetPage = "imboxer/tutorial-lesson.html";
           window.location.href =
             `./ready.html?target=${encodeURIComponent(targetPage)}&level=${encodeURIComponent(selectedLevel)}&lesson=${encodeURIComponent(selectedLesson)}`;
         };

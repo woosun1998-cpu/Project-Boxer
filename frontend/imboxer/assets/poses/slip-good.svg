@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39D353" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#39D353" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="70" r="48" fill="url(#glow)"/>
+  <!-- Head (slipped to the right - moved off center line) -->
+  <circle cx="62" cy="18" r="10" stroke="#39D353" stroke-width="2.5" fill="rgba(57,211,83,0.07)"/>
+  <!-- Torso (slight lean) -->
+  <line x1="60" y1="28" x2="50" y2="78" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Shoulders (tilted) -->
+  <line x1="38" y1="38" x2="74" y2="34" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left arm: guard maintained -->
+  <polyline points="38,38 30,56 34,40" stroke="#39D353" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="34" cy="39" r="5" fill="#39D353"/>
+  <!-- Right arm: guard maintained -->
+  <polyline points="74,34 82,52 77,36" stroke="#39D353" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="77" cy="35" r="5" fill="#39D353"/>
+  <!-- Slip direction arrow (head moved right) -->
+  <path d="M 50,14 Q 56,12 62,18" stroke="#39D353" stroke-width="1.5" fill="none" opacity="0.8"/>
+  <polyline points="59,14 62,18 59,22" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+  <!-- Hips (stable) -->
+  <line x1="36" y1="78" x2="64" y2="76" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left leg -->
+  <polyline points="36,78 30,104 32,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="32" y1="128" x2="22" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Right leg -->
+  <polyline points="64,76 70,103 68,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="68" y1="128" x2="78" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Good indicator -->
+  <circle cx="14" cy="14" r="8" fill="#39D353" opacity="0.9"/>
+  <polyline points="10,14 13,17 18,11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

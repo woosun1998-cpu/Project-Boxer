@@ -1,4 +1,5 @@
-from app.models.leaderboard import Leaderboard
+﻿from app.models.leaderboard import Leaderboard
+from app.models.media_asset import MediaAsset
 from app.models.session import PoseCorrection, RoundResult, TrainingSession
 from app.models.shop import ShopItem, UserPurchase
 from app.models.tutorial import BoxingTutorial, UserProgress
@@ -17,4 +18,5 @@ __all__ = [
     "Leaderboard",
     "ShopItem",
     "UserPurchase",
+    "MediaAsset",
 ]

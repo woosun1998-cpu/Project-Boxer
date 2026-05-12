@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 복싱 튜토리얼</title>
+
+  <!-- Pretendard Variable (CDN) -->
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <!-- Bebas Neue — 숫자/영문 디스플레이 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/common.css">
+
+  <style>
+    /* ── Design tokens ──────────────────────────────────── */
+    :root {
+      --red:    #E8000D;
+      --yellow: #FFE500;
+      --green:  #39D353;
+      --s1:     #000000;
+      --s2:     #0e0e0e;
+      --s3:     #161616;
+      --s4:     #1e1e1e;
+      --fp:     'Pretendard Variable', -apple-system, sans-serif;
+      --fm:     'Bebas Neue', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--s1) !important;
+      font-family: var(--fp);
+      color: #fff;
+    }
+
+    .tut-wrap { width: 100%; min-height: 100vh; padding-top: 62px; }
+    .tut-inner {
+      width: min(1360px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    /* ── TOPBAR ─────────────────────────────────────────── */
+    .tut-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 0;
+      width: min(1360px, calc(100% - 48px));
+      margin: 0 auto;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+      z-index: 20;
+    }
+
+    .tut-topbar-left { display: flex; align-items: center; gap: 14px; }
+
+    .tut-brand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-shrink: 0;
+      width: 184px;
+      height: 34px;
+      background: url("./assets/images/tutorials/오버레이 프로필 이미지.png") center left / contain no-repeat;
+      text-decoration: none;
+      color: transparent;
+      overflow: hidden;
+      white-space: nowrap;
+      text-indent: -9999px;
+    }
+    .tut-brand img {
+      display: none;
+    }
+
+    .tut-brand .tut-brand-logo {
+      display: block !important;
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 4px rgba(255,255,255,0.18))
+              drop-shadow(0 0 14px rgba(255,255,255,0.12));
+    }
+    .tut-brand .tut-brand-text {
+      display: inline-block;
+      font-family: var(--fm);
+      font-size: 1.08rem;
+      letter-spacing: 0.18em;
+      line-height: 1;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .tut-brand .tut-brand-text em {
+      font-style: normal;
+      color: var(--red);
+    }
+    .tut-brand-ai {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(232,0,13,0.08);
+      border: 1px solid rgba(232,0,13,0.25);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+    .tut-brand-ai::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    .tut-brand {
+      width: auto;
+      height: auto;
+      background: none !important;
+      color: #fff;
+      overflow: visible;
+      text-indent: 0;
+      white-space: nowrap;
+    }
+
+    .tut-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(232,0,13,0.08);
+      border: 1px solid rgba(232,0,13,0.25);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+    .tut-live::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .tut-nav { display: flex; gap: 4px; }
+    .tut-nav a, .tut-nav button {
+      padding: 8px 14px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: transparent;
+      color: rgba(255,255,255,0.42);
+      font-size: 0.8rem;
+      font-weight: 500;
+      font-family: var(--fp);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .tut-nav a:hover, .tut-nav button:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .bx-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 62px;
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+    .bx-topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 0 28px;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 14px; }
+    .bx-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .bx-brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.3));
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--fp);
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.4);
+      background: rgba(232,0,13,0.06);
+      padding: 3px 9px;
+      border-radius: 2px;
+    }
+    .bx-live::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    .bx-nav { display: flex; align-items: center; gap: 22px; }
+    .bx-nav a {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      letter-spacing: .03em;
+      transition: color .15s;
+      white-space: nowrap;
+    }
+    .bx-nav a:hover { color: #fff; }
+    .bx-nav a[aria-current] {
+      color: var(--red);
+      border-bottom: 1px solid var(--red);
+      padding-bottom: 1px;
+    }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      background: none;
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 5px 13px;
+      cursor: pointer;
+      border-radius: 2px;
+      letter-spacing: .02em;
+      transition: color .15s, border-color .15s;
+    }
+    .bx-nav button[data-logout-button]:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.65);
+    }
+
+    /* ── HERO ───────────────────────────────────────────── */
+    .tut-hero {
+      position: relative;
+      width: 100%;
+      padding: 72px 0 88px;
+      min-height: calc(100vh - 64px);
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0.22) 36%, rgba(0,0,0,0.50) 72%, rgba(0,0,0,0.82) 100%),
+        url("./assets/images/tutorials/tutorial.png") center center / cover no-repeat;
+    }
+
+    .tut-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(232,0,13,0.18) 0%, transparent 28%),
+        radial-gradient(circle at 78% 12%, rgba(255,229,0,0.12) 0%, transparent 20%),
+        linear-gradient(90deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.30) 40%, rgba(0,0,0,0.66) 78%, rgba(0,0,0,0.90) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .tut-hero::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: min(1360px, calc(100% - 48px));
+      height: 1px;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.10;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 86px 86px;
+      mask-image: radial-gradient(circle at center, black 30%, transparent 78%);
+    }
+
+    .tut-hero-inner {
+      width: min(1360px, calc(100% - 48px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      align-items: center;
+      min-height: calc(100vh - 176px);
+    }
+
+    .tut-hero-copy {
+      max-width: 900px;
+      padding-top: clamp(42px, 10vh, 124px);
+      padding-bottom: clamp(22px, 5vh, 56px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: calc(100vh - 176px);
+    }
+
+    .tut-hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .eyebrow-line { width: 36px; height: 2px; background: var(--red); flex-shrink: 0; }
+    .eyebrow-label {
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+
+    /* 강약 타이포그래피 — Pretendard weight contrast */
+    .tut-hero-title {
+      margin: 0 0 18px;
+      font-family: var(--fp);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      max-width: 14ch;
+    }
+    .title-light {
+      display: block;
+      font-size: clamp(2.55rem, 4.6vw, 4.2rem);
+      font-weight: 600;
+      color: rgba(255,255,255,0.84);
+      text-shadow: 0 2px 16px rgba(0,0,0,0.45);
+      letter-spacing: -0.03em;
+    }
+    .title-heavy {
+      display: block;
+      font-size: clamp(4.8rem, 8.6vw, 7.5rem);
+      font-weight: 900;            /* 굵게 — 핵심 강조 */
+      color: #fff;
+      margin-top: 6px;
+      text-shadow: 0 4px 26px rgba(0,0,0,0.45);
+      letter-spacing: -0.02em;
+    }
+    .title-heavy em {
+      font-style: normal;
+      color: var(--red);
+    }
+
+    .tut-hero-title {
+      font-family: var(--fm);
+      font-size: clamp(72px, 14vw, 128px);
+      font-weight: 900;
+      line-height: .92;
+      letter-spacing: .06em;
+      max-width: 10ch;
+      -webkit-text-stroke: 1px currentColor;
+      text-shadow: 0 0 20px rgba(255,255,255,0.08);
+    }
+    .tut-hero-title .title-light,
+    .tut-hero-title .title-heavy {
+      display: inline;
+      font-size: inherit;
+      font-weight: inherit;
+      letter-spacing: inherit;
+      text-shadow: inherit;
+      margin-top: 0;
+    }
+    .tut-hero-title .title-light { color: #fff; }
+    .tut-hero-title .title-heavy,
+    .tut-hero-title .title-heavy em { color: var(--red); }
+
+    .tut-hero-chip {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin: 2px 0 24px;
+      padding: 6px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.28);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.62);
+      backdrop-filter: blur(6px);
+    }
+    .tut-hero-chip strong {
+      color: var(--yellow);
+      font-weight: 800;
+      margin-left: 6px;
+    }
+
+    .tut-hero-sub {
+      max-width: 540px;
+      margin: 0 0 30px;
+      font-size: 1rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.60);
+      line-height: 1.9;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+    }
+
+    /* CTA button */
+    .tut-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      background: var(--red);
+      color: #fff;
+      font-family: var(--fp);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      border: 0;
+      cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+      transition: background .2s, transform .2s;
+      box-shadow: 0 16px 30px rgba(232,0,13,0.24);
+      width: fit-content;
+    }
+    .tut-cta:hover { background: #ff1a22; transform: translateY(-2px); }
+    .tut-cta-arrow { transition: transform .2s; }
+    .tut-cta:hover .tut-cta-arrow { transform: translateX(5px); }
+
+    /* Stats */
+    .tut-hero-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 36px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-wrap: wrap;
+    }
+
+    .tut-hero-visual { display: none; }
+    .tut-stat { display: flex; flex-direction: column; gap: 5px; }
+    .tut-stat-value {
+      font-family: var(--fm);
+      font-size: 2.8rem;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: 0.04em;
+    }
+    .tut-stat-value .tut-user-name-kr {
+      font-family: var(--fp);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .tut-stat-value .tut-user-name-en {
+      font-family: var(--fm);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+    }
+    .tut-stat-label {
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.26);
+      text-transform: uppercase;
+    }
+
+    /* ── LEVEL CARDS ────────────────────────────────────── */
+    .tut-levels { padding: 80px 0 0; }
+
+    .tut-section-eyebrow {
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      margin: 0 0 10px;
+    }
+    .tut-section-title {
+      margin: 0 0 28px;
+      font-family: var(--fp);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .level-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 28px 24px 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--s3);
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--fp);
+      overflow: hidden;
+      clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    /* Top accent bar */
+    .level-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--lc, rgba(255,255,255,0.08));
+    }
+    .level-card:hover:not([disabled]),
+    .level-card.is-active {
+      border-color: var(--lc, rgba(255,255,255,0.2));
+      background: var(--s4);
+      transform: translateY(-4px);
+    }
+
+    .level-card--bg { --lc: #39D353; }
+    .level-card--im { --lc: #FFE500; }
+    .level-card--ad { --lc: #E8000D; opacity: .72; cursor: pointer; }
+    .level-card--ad:hover { transform: translateY(-4px); }
+
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--lc);
+      width: fit-content;
+    }
+    .level-card.is-active .level-badge::before {
+      content: '▶';
+      font-size: 0.48rem;
+    }
+
+    .level-name {
+      margin: 0;
+      font-family: var(--fp);
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+    .level-desc {
+      margin: 0;
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.32);
+      line-height: 1.65;
+      word-break: keep-all;
+    }
+
+    .level-meta {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .level-meta-item { display: flex; flex-direction: column; gap: 3px; }
+    .level-meta-v {
+      font-family: var(--fm);
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.04em;
+    }
+    .level-meta-v--time {
+      font-family: var(--fp);
+      font-size: 1.02rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: rgba(255,229,0,0.88);
+    }
+    .level-meta-v--time .level-meta-num {
+      font-family: var(--fm);
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+      color: rgba(255,229,0,0.92);
+    }
+    .level-meta-v--time .level-meta-kr {
+      font-family: var(--fp);
+      font-size: 0.98rem;
+      letter-spacing: 0.01em;
+      color: rgba(255,229,0,0.82);
+    }
+    .level-meta-l {
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .level-coming {
+      position: absolute;
+      top: 14px; right: 14px;
+      padding: 3px 9px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.22);
+    }
+
+    /* ── LESSON SECTION ─────────────────────────────────── */
+    .tut-lessons { padding: 72px 0 100px; }
+
+    /* Progress bar */
+    .tut-progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .tut-progress-info { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .tut-progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tut-progress-text {
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.22);
+      text-transform: uppercase;
+    }
+    .tut-progress-pct {
+      font-family: var(--fm);
+      font-size: 0.95rem;
+      color: var(--green);
+      letter-spacing: 0.06em;
+    }
+    .tut-progress-bar-track {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .tut-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red) 0%, var(--yellow) 55%, var(--green) 100%);
+      transition: width .9s ease;
+    }
+
+    /* Section label */
+    .tut-grid-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.24em;
+      color: rgba(255,255,255,0.16);
+      text-transform: uppercase;
+    }
+    .tut-grid-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* ── LESSON CARD GRID ───────────────────────────────── */
+    .tut-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .tut-empty-state {
+      margin-top: 20px;
+    }
+    .tut-empty-card {
+      padding: 32px 28px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background:
+        linear-gradient(180deg, rgba(232,0,13,0.08) 0%, rgba(10,10,10,0.96) 100%);
+      box-shadow: 0 22px 52px rgba(0,0,0,0.22);
+      clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+    }
+    .tut-empty-kicker {
+      margin: 0 0 10px;
+      font-family: var(--fm);
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.36);
+    }
+    .tut-empty-title {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+    .tut-empty-desc {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.58);
+    }
+
+    /* ─ Photo-first portrait card ─ */
+    .lesson-card {
+      position: relative;
+      display: block;           /* override flex */
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--s2);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: border-color .25s, transform .25s, box-shadow .25s;
+    }
+    .lesson-card-link {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      text-decoration: none;
+    }
+    .lesson-card:hover {
+      border-color: rgba(232,0,13,0.55);
+      transform: translateY(-6px);
+      box-shadow: 0 24px 56px rgba(232,0,13,0.16);
+    }
+
+    /* ─ Media: fills entire card ─ */
+    .card-media {
+      position: absolute !important;
+      inset: 0;
+      height: 100% !important;     /* override px height */
+      background: var(--s2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 0;
+    }
+
+    /* Bottom gradient for text legibility */
+    .card-media::before { display: none; }   /* remove old corner arrow */
+    .card-media::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.06) 0%,
+        transparent 30%,
+        rgba(0,0,0,0.55) 62%,
+        rgba(0,0,0,0.96) 100%
+      );
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Image fills the card */
+    .card-pose-img {
+      position: absolute;
+      inset: 0;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+      object-position: center top;
+      z-index: 0;
+      transition: transform .5s ease;
+      filter: none !important;
+    }
+    .lesson-card:hover .card-pose-img {
+      transform: scale(1.06);
+      filter: none !important;
+    }
+
+    /* Card number — top left */
+    .card-number {
+      position: absolute;
+      top: 14px; left: 14px;
+      font-family: var(--fm);
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.5);
+      z-index: 3;
+      letter-spacing: 0.1em;
+      line-height: 1;
+      background: rgba(0,0,0,0.35);
+      padding: 3px 7px;
+    }
+
+    /* Level badge — top right */
+    .card-level-badge {
+      position: absolute !important;
+      top: 14px !important;
+      left: auto !important;
+      right: 14px !important;
+      padding: 4px 10px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      z-index: 3;
+    }
+    .card-level-badge[data-level="beginner"] {
+      background: rgba(57,211,83,0.14);
+      color: var(--green);
+      border: 1px solid rgba(57,211,83,0.28);
+    }
+    .card-level-badge[data-level="intermediate"] {
+      background: rgba(255,229,0,0.1);
+      color: var(--yellow);
+      border: 1px solid rgba(255,229,0,0.25);
+    }
+
+    /* Body — absolute, overlays bottom of card */
+    .card-body {
+      position: absolute !important;
+      bottom: 0; left: 0; right: 0;
+      z-index: 2;
+      padding: 0 18px 18px;
+      display: flex !important;
+      flex-direction: column;
+      gap: 10px;
+      flex: initial !important;
+      background: none !important;
+    }
+
+    .card-name {
+      margin: 0;
+      font-family: var(--fp);
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+    .card-name-en {
+      display: block;
+      margin-top: 3px;
+      font-family: var(--fm);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.42);
+      text-transform: uppercase;
+    }
+
+    /* Summary — hidden, too much clutter */
+    .card-summary { display: none !important; }
+
+    /* Score bar — subtle progress indicator */
+    .card-score-row { display: flex; align-items: center; gap: 8px; }
+    .card-score-bar-track {
+      flex: 1;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    .card-score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), var(--yellow));
+      transition: width .6s ease;
+    }
+    .card-score-label {
+      font-family: var(--fm);
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.28);
+      white-space: nowrap;
+      min-width: 42px;
+      text-align: right;
+      letter-spacing: 0.06em;
+    }
+    .card-score-label[data-has-score="true"] { color: var(--yellow); }
+
+    /* Actions — gear 숨김, 메인 버튼만 */
+    .card-btn-icon { display: none !important; }
+    .card-actions {
+      display: flex;
+      position: relative;
+      z-index: 3;
+    }
+
+    .card-btn-main {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px;
+      background: rgba(232,0,13,0.88);
+      color: #fff;
+      font-family: var(--fp);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      border: 0;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .22s, transform .22s, background .15s;
+      position: relative;
+      z-index: 3;
+    }
+    .lesson-card:hover .card-btn-main {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── PATH ───────────────────────────────────────────── */
+    .tut-path-wrap {
+      margin-top: 56px;
+      padding-top: 36px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .tut-path-section-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.24em;
+      color: rgba(255,255,255,0.16);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .tut-path {
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .tut-path::-webkit-scrollbar { display: none; }
+
+    .tut-path-step { display: flex; align-items: center; }
+    .tut-path-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .tut-path-circle {
+      width: 36px; height: 36px;
+      border: 2px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.22);
+      background: var(--s3);
+      transition: border-color .2s, color .2s, background .2s;
+      text-decoration: none;
+    }
+    .tut-path-circle[data-active="true"] {
+      border-color: var(--red);
+      color: #fff;
+      background: rgba(232,0,13,0.14);
+    }
+    .tut-path-circle[data-done="true"] {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(57,211,83,0.08);
+    }
+    .tut-path-name {
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.18);
+      text-transform: uppercase;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .tut-path-circle[data-done="true"] ~ .tut-path-name,
+    .tut-path-circle[data-active="true"] ~ .tut-path-name {
+      color: rgba(255,255,255,0.4);
+    }
+    .tut-path-line {
+      width: 52px; height: 1px;
+      background: rgba(255,255,255,0.07);
+      flex-shrink: 0;
+      margin-bottom: 24px;
+    }
+    .tut-path-line[data-done="true"] { background: rgba(57,211,83,0.26); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .levels-grid { grid-template-columns: repeat(2, 1fr); }
+      .tut-grid    { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .tut-hero        { padding: 52px 0 68px; }
+      .tut-hero-copy   { min-height: auto; padding-top: 24px; }
+      .tut-hero-title  { font-size: clamp(56px, 14vw, 90px); }
+      .tut-hero-stats  { gap: 24px; margin-top: 40px; padding-top: 28px; }
+      .tut-hero-inner  { grid-template-columns: 1fr; }
+      .bx-nav a:not([aria-current]) { display: none; }
+      .levels-grid     { grid-template-columns: 1fr; }
+      .tut-grid        { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .tut-path-wrap   { display: none; }
+    }
+    @media (max-width: 420px) {
+      .tut-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="tut-wrap" data-page="tutorial">
+
+    <!-- ── Topbar ──────────────────────────────────────── -->
+    <header class="bx-topbar">
+      <div class="bx-topbar-inner">
+        <div class="bx-topbar-left">
+          <a class="bx-brand" href="./dashboard.html" aria-label="AI Coach 홈">
+            <span class="bx-brand-logo"></span>
+          </a>
+          <span class="bx-live">AI Coach</span>
+        </div>
+        <nav class="bx-nav">
+          <a href="./dashboard.html">대시보드</a>
+          <a href="./tutorial.html" aria-current="page">튜토리얼</a>
+          <a href="./training.html">훈련</a>
+          <a href="./sparring.html">스파링</a>
+          <a href="./leaderboard.html">랭킹</a>
+          <a href="./boxing-gyms.html">복싱장 찾기</a>
+          <a href="./mypage.html">마이페이지</a>
+          <a href="./shop.html">샵</a>
+          <button type="button" data-logout-button>로그아웃</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ── Hero ───────────────────────────────────────── -->
+    <section class="tut-hero">
+      <div class="hero-grid-bg" aria-hidden="true"></div>
+      <div class="tut-hero-inner">
+        <div class="tut-hero-copy">
+          <div class="tut-hero-eyebrow">
+            <span class="eyebrow-line"></span>
+            <span class="eyebrow-label">Boxing Fundamentals</span>
+          </div>
+
+          <h1 class="tut-hero-title">
+            <span class="title-light">LEARN </span><span class="title-heavy"><em>BOXING</em></span>
+          </h1>
+
+          <p class="tut-hero-chip" data-active-level-label>전체 레슨</p>
+
+          <p class="tut-hero-sub" data-page-message>
+            기본 가드부터 어퍼컷까지 - 6가지 동작을 익히고<br>
+            AI가 자세를 즉시 평가한다.
+          </p>
+
+          <a href="#lessons" class="tut-cta">
+            시작하기
+            <span class="tut-cta-arrow">→</span>
+          </a>
+
+          <div class="tut-hero-stats">
+            <div class="tut-stat">
+              <span class="tut-stat-value" data-lesson-count>6</span>
+              <span class="tut-stat-label">레슨</span>
+            </div>
+            <div class="tut-stat">
+              <span class="tut-stat-value" data-score-target>100</span>
+              <span class="tut-stat-label">목표 점수</span>
+            </div>
+            <div class="tut-stat">
+              <span class="tut-stat-value" data-user-name>GUEST</span>
+              <span class="tut-stat-label">사용자</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tut-hero-visual" aria-hidden="true">
+          <img src="./assets/images/tutorials/tutorial.jpg" alt="" aria-hidden="true">
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Level cards ────────────────────────────────── -->
+    <section class="tut-levels">
+      <div class="tut-inner">
+        <p class="tut-section-eyebrow">단계 선택</p>
+        <h2 class="tut-section-title">레벨을 선택하세요</h2>
+
+        <div class="levels-grid">
+          <button type="button" class="level-card level-card--bg" data-filter="beginner">
+            <span class="level-badge">입문</span>
+            <p class="level-name">초급</p>
+            <p class="level-desc">기본 자세와 몸의 방향을 익히는 단계. 가드와 잽으로 복싱을 시작한다.</p>
+            <div class="level-meta">
+              <div class="level-meta-item">
+                <span class="level-meta-v" data-beginner-count>2</span>
+                <span class="level-meta-l">동작</span>
+              </div>
+              <div class="level-meta-item">
+                <span class="level-meta-v level-meta-v--time"><span class="level-meta-num">10</span><span class="level-meta-kr">분</span></span>
+                <span class="level-meta-l">예상 시간</span>
+              </div>
+              <div class="level-meta-item">
+                <span class="level-meta-v">Guard · Jab</span>
+                <span class="level-meta-l">대표 동작</span>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="level-card level-card--im" data-filter="intermediate">
+            <span class="level-badge">중급</span>
+            <p class="level-name">중급</p>
+            <p class="level-desc">타격과 회피의 연결을 배우는 단계. 크로스, 훅, 슬립, 어퍼컷을 익힌다.</p>
+            <div class="level-meta">
+              <div class="level-meta-item">
+                <span class="level-meta-v" data-intermediate-count>4</span>
+                <span class="level-meta-l">동작</span>
+              </div>
+              <div class="level-meta-item">
+                <span class="level-meta-v level-meta-v--time"><span class="level-meta-num">20</span><span class="level-meta-kr">분</span></span>
+                <span class="level-meta-l">예상 시간</span>
+              </div>
+              <div class="level-meta-item">
+                <span class="level-meta-v">Cross · Slip</span>
+                <span class="level-meta-l">대표 동작</span>
+              </div>
+            </div>
+          </button>
+
+          <button type="button" class="level-card level-card--ad" data-filter="advanced">
+            <span class="level-coming">준비중</span>
+            <span class="level-badge">고급</span>
+            <p class="level-name">고급</p>
+            <p class="level-desc">실전 연속 동작과 반응 속도를 익히는 단계. 곧 업데이트됩니다.</p>
+            <div class="level-meta">
+              <div class="level-meta-item">
+                <span class="level-meta-v">—</span>
+                <span class="level-meta-l">동작</span>
+              </div>
+              <div class="level-meta-item">
+                <span class="level-meta-v">—</span>
+                <span class="level-meta-l">예상 시간</span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Lessons ─────────────────────────────────────── -->
+    <section class="tut-lessons" id="lessons">
+      <div class="tut-inner">
+
+        <!-- Progress bar -->
+        <div class="tut-progress-wrap">
+          <div class="tut-progress-info">
+            <div class="tut-progress-top">
+              <span class="tut-progress-text">전체 진행도</span>
+              <span class="tut-progress-pct" data-progress-pct>0%</span>
+            </div>
+            <div class="tut-progress-bar-track">
+              <div class="tut-progress-bar-fill" data-progress-bar style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- dots: hidden, required by tutorial.js -->
+        <div style="display:none" data-progress-dots></div>
+
+        <p class="tut-grid-label">레슨 전체 — 순서대로 진행 권장</p>
+
+        <!-- Populated by tutorial.js -->
+        <div class="tut-grid" data-tutorial-grid></div>
+        <div class="tut-empty-state" data-empty-state hidden></div>
+
+        <!-- Path -->
+        <div class="tut-path-wrap">
+          <p class="tut-path-section-label">학습 순서</p>
+          <nav class="tut-path" aria-label="레슨 순서" data-tutorial-path></nav>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="./js/pages/tutorial.js?v=20260507-level-image-map-2"></script>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Analytics</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+
+    /* ── KPI strip ──────────────────────────────────────────── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .kpi-cell {
+      background: var(--s2); padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .kpi-label { font-size: 0.62rem; font-weight: 900; letter-spacing: 0.1em; color: var(--t4); text-transform: uppercase; }
+    .kpi-value { font-family: var(--fm); font-size: 1.55rem; letter-spacing: 0.04em; color: var(--t1); }
+    .kpi-value.ice    { color: var(--ice); }
+    .kpi-value.amber  { color: var(--amber); }
+    .kpi-value.green  { color: var(--green); }
+    .kpi-value.red    { color: var(--red); }
+    .kpi-sub { font-size: 0.62rem; color: var(--t4); }
+
+    /* ── Section table ──────────────────────────────────────── */
+    .an-section-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+    }
+    .an-section-grid > * { background: var(--s2); }
+
+    /* ── Bar chart (no library) ─────────────────────────────── */
+    .bar-chart {
+      display: flex; align-items: flex-end; gap: 6px;
+      height: 80px; padding: 0 4px 0;
+    }
+    .bar-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .bar-col {
+      width: 100%; flex: 1; display: flex; align-items: flex-end;
+    }
+    .bar-fill {
+      width: 100%; background: var(--red); min-height: 3px;
+      position: relative; transition: height .3s;
+    }
+    .bar-fill.ice { background: var(--ice); }
+    .bar-val {
+      position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+      font-size: 0.58rem; color: var(--t2); white-space: nowrap;
+    }
+    .bar-label { font-size: 0.6rem; color: var(--t4); white-space: nowrap; }
+
+    /* ── Completion bar ─────────────────────────────────────── */
+    .rate-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .rate-bar { flex: 1; height: 4px; background: var(--s4); overflow: hidden; }
+    .rate-fill { height: 100%; background: var(--green); }
+    .rate-val { font-size: 0.72rem; font-weight: 700; color: var(--green); min-width: 36px; text-align: right; }
+
+    /* ── Loading / empty ───────────────────────────────────── */
+    .an-loading { display: flex; align-items: center; gap: 10px; padding: 28px 0; font-size: 0.8rem; color: var(--t3); }
+    .an-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--red); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .an-empty { padding: 32px 20px; text-align: center; font-size: 0.8rem; color: var(--t4); }
+
+    .api-err-banner {
+      padding: 10px 16px; background: rgba(232,0,13,0.05);
+      border: 1px solid rgba(232,0,13,0.2); font-size: 0.76rem;
+      color: var(--red); margin-bottom: 16px;
+    }
+
+    /* ── Subsection header ──────────────────────────────────── */
+    .an-sub { padding: 18px 20px 0; }
+    .an-sub-title {
+      font-size: 0.68rem; font-weight: 900; letter-spacing: 0.1em;
+      color: var(--t3); text-transform: uppercase; margin-bottom: 12px;
+      border-bottom: 1px solid var(--border); padding-bottom: 6px;
+    }
+    .an-sub-body { padding: 0 20px 18px; }
+
+    /* ── Refresh button ─────────────────────────────────────── */
+    .adm-btn-refresh {
+      padding: 5px 12px; border: 1px solid var(--border-2); background: transparent;
+      color: var(--t3); font-family: var(--fp); font-size: 0.7rem; font-weight: 700;
+      cursor: pointer; transition: all .13s;
+    }
+    .adm-btn-refresh:hover { color: var(--t2); border-color: rgba(255,255,255,0.22); }
+
+    @media (max-width: 860px) {
+      .an-section-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">—</span>
+      <a class="adm-topbar-link" href="../admin.html">← Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item active" href="./analytics.html">Analytics</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item active" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ System /</span> <span>Analytics</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Analytics</h1>
+          <p class="adm-page-sub">훈련 · 스파링 · 사용자 집계 지표</p>
+        </div>
+        <button class="adm-btn-refresh" id="btnRefresh" type="button">↺ 새로고침</button>
+      </div>
+
+      <div class="api-err-banner" id="apiBanner" hidden></div>
+
+      <!-- ── Overview KPI ──────────────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">OVERVIEW</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot live">LIVE</span>
+        </div>
+
+        <div class="an-loading" id="ovLoading"><div class="an-spinner"></div><span>집계 로딩 중...</span></div>
+
+        <div id="ovWrap" hidden>
+          <div class="kpi-strip" id="ovKpi"></div>
+
+          <!-- DAU 7d bar chart -->
+          <div style="background:var(--s2);border:1px solid var(--border);padding:18px 20px;margin-top:1px">
+            <div class="an-sub-title" style="border-bottom:none;margin-bottom:14px">일별 활성 사용자 (최근 7일)</div>
+            <div class="bar-chart" id="dauChart"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px" id="dauLabels"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Training + Sparring split ────────────────────── -->
+      <section class="adm-section">
+        <div class="an-section-grid">
+
+          <!-- Training -->
+          <div>
+            <div class="an-sub">
+              <div class="adm-section-header" style="margin-bottom:10px">
+                <span class="adm-section-label">TRAINING</span>
+                <div class="adm-section-line"></div>
+              </div>
+            </div>
+            <div class="an-loading" id="trLoading" style="padding:20px"><div class="an-spinner"></div><span>로딩 중...</span></div>
+            <div id="trWrap" hidden>
+              <div class="an-sub-body" style="padding-top:0">
+                <div class="adm-table-wrap" style="max-height:340px;overflow-y:auto">
+                  <table class="adm-table">
+                    <thead>
+                      <tr><th>레슨 키</th><th>제목</th><th>시도</th><th>통과</th><th>완료율</th></tr>
+                    </thead>
+                    <tbody id="trTbody"></tbody>
+                  </table>
+                </div>
+                <p class="an-empty" id="trEmpty" hidden>훈련 데이터가 없습니다.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sparring KPI -->
+          <div>
+            <div class="an-sub">
+              <div class="adm-section-header" style="margin-bottom:10px">
+                <span class="adm-section-label">SPARRING</span>
+                <div class="adm-section-line"></div>
+              </div>
+            </div>
+            <div class="an-loading" id="spLoading" style="padding:20px"><div class="an-spinner"></div><span>로딩 중...</span></div>
+            <div id="spWrap" hidden>
+              <div class="an-sub-body" style="padding-top:0">
+                <div class="kpi-strip" id="spKpi" style="margin-bottom:12px"></div>
+                <div class="adm-table-wrap" style="max-height:240px;overflow-y:auto">
+                  <table class="adm-table">
+                    <thead>
+                      <tr><th>모드</th><th>세션</th><th>평균 점수</th><th>회피율</th><th>반응속도</th></tr>
+                    </thead>
+                    <tbody id="spTbody"></tbody>
+                  </table>
+                </div>
+                <p class="an-empty" id="spEmpty" hidden>스파링 데이터가 없습니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Users KPI ─────────────────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">USERS</span>
+          <div class="adm-section-line"></div>
+        </div>
+
+        <div class="an-loading" id="usLoading"><div class="an-spinner"></div><span>로딩 중...</span></div>
+
+        <div id="usWrap" hidden>
+          <div class="kpi-strip" id="usKpi" style="margin-bottom:1px"></div>
+
+          <!-- 7d new registrations bar chart -->
+          <div style="background:var(--s2);border:1px solid var(--border);padding:18px 20px;margin-top:1px">
+            <div class="an-sub-title" style="border-bottom:none;margin-bottom:14px">신규 가입 (최근 7일)</div>
+            <div class="bar-chart" id="newUserChart"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    const apiBanner = document.getElementById('apiBanner');
+    function showBanner(msg) { apiBanner.textContent = msg; apiBanner.hidden = false; }
+
+    function fmtNum(n, decimals = 0) {
+      if (n == null) return '—';
+      return Number(n).toFixed(decimals);
+    }
+    function fmtMs(ms) { return ms != null ? Math.round(ms) + ' ms' : '—'; }
+
+    /* ── Bar chart renderer ─────────────────────────────────── */
+    function renderBarChart(container, values, color = '') {
+      const max = Math.max(...values, 1);
+      container.innerHTML = values.map(v => `
+        <div class="bar-item">
+          <div class="bar-col">
+            <div class="bar-fill${color ? ' ' + color : ''}" style="height:${((v / max) * 100).toFixed(0)}%">
+              <span class="bar-val">${v}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function last7Labels() {
+      const labels = [];
+      for (let i = 6; i >= 0; i--) {
+        if (i === 0) { labels.push('오늘'); continue; }
+        labels.push(`-${i}일`);
+      }
+      return labels;
+    }
+
+    /* ── Overview ───────────────────────────────────────────── */
+    async function loadOverview() {
+      const el = { loading: document.getElementById('ovLoading'), wrap: document.getElementById('ovWrap'), kpi: document.getElementById('ovKpi'), chart: document.getElementById('dauChart'), labels: document.getElementById('dauLabels') };
+      el.loading.hidden = false; el.wrap.hidden = true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/analytics/overview`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        el.kpi.innerHTML = [
+          { label: '평균 훈련 점수', val: fmtNum(d.avg_training_score, 1), cls: 'ice' },
+          { label: '평균 회피율', val: fmtNum(d.avg_dodge_rate, 1) + '%', cls: 'green' },
+          { label: '평균 반응속도', val: fmtMs(d.avg_reaction_ms), cls: '' },
+          { label: '튜토리얼 완료율', val: fmtNum(d.tutorial_completion_rate, 1) + '%', cls: 'amber' },
+          { label: '총 훈련 세션', val: (d.total_training_sessions ?? 0).toLocaleString(), cls: '' },
+          { label: '총 스파링 세션', val: (d.total_sparring_sessions ?? 0).toLocaleString(), cls: '' },
+        ].map(k => `
+          <div class="kpi-cell">
+            <span class="kpi-label">${k.label}</span>
+            <span class="kpi-value ${k.cls}">${k.val}</span>
+          </div>
+        `).join('');
+
+        const dau = Array.isArray(d.daily_active_users_7d) ? d.daily_active_users_7d : [];
+        if (dau.length) {
+          renderBarChart(el.chart, dau, 'ice');
+          const lbls = last7Labels();
+          el.labels.innerHTML = lbls.map(l => `<span style="font-size:0.58rem;color:var(--t4);flex:1;text-align:center">${l}</span>`).join('');
+        }
+        el.wrap.hidden = false;
+      } catch (err) {
+        showBanner(`Overview 로드 실패 (${err.message})`);
+      } finally {
+        el.loading.hidden = true;
+      }
+    }
+
+    /* ── Training ───────────────────────────────────────────── */
+    async function loadTraining() {
+      const loading = document.getElementById('trLoading');
+      const wrap    = document.getElementById('trWrap');
+      const tbody   = document.getElementById('trTbody');
+      const empty   = document.getElementById('trEmpty');
+      loading.hidden = false; wrap.hidden = true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/analytics/training`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : (data.lessons ?? data.items ?? []);
+        tbody.innerHTML = '';
+        empty.hidden = rows.length > 0;
+        rows.forEach(r => {
+          const rate = r.completion_rate ?? (r.attempts > 0 ? (r.passed / r.attempts * 100) : 0);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="color:var(--ice);font-size:0.72rem;font-family:Consolas,monospace">${r.lesson_key ?? '—'}</td>
+            <td style="font-weight:700;color:var(--t1)">${r.title ?? '—'}</td>
+            <td style="color:var(--t2)">${(r.attempts ?? 0).toLocaleString()}</td>
+            <td style="color:var(--green)">${(r.passed ?? 0).toLocaleString()}</td>
+            <td>
+              <div class="rate-bar-wrap">
+                <div class="rate-bar"><div class="rate-fill" style="width:${Math.min(rate,100).toFixed(0)}%"></div></div>
+                <span class="rate-val">${fmtNum(rate, 1)}%</span>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        wrap.hidden = false;
+      } catch (err) {
+        showBanner(`훈련 통계 로드 실패 (${err.message})`);
+        document.getElementById('trWrap').hidden = false;
+        document.getElementById('trEmpty').hidden = false;
+      } finally {
+        loading.hidden = true;
+      }
+    }
+
+    /* ── Sparring ───────────────────────────────────────────── */
+    async function loadSparring() {
+      const loading = document.getElementById('spLoading');
+      const wrap    = document.getElementById('spWrap');
+      const kpi     = document.getElementById('spKpi');
+      const tbody   = document.getElementById('spTbody');
+      const empty   = document.getElementById('spEmpty');
+      loading.hidden = false; wrap.hidden = true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/analytics/sparring`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        kpi.innerHTML = [
+          { label: '평균 점수',   val: fmtNum(d.avg_score, 0),      cls: 'ice' },
+          { label: '평균 회피율', val: fmtNum(d.avg_dodge_rate, 1) + '%', cls: 'green' },
+          { label: '평균 반응속도', val: fmtMs(d.avg_reaction_ms),  cls: '' },
+        ].map(k => `
+          <div class="kpi-cell">
+            <span class="kpi-label">${k.label}</span>
+            <span class="kpi-value ${k.cls}">${k.val}</span>
+          </div>
+        `).join('');
+
+        const modes = Array.isArray(d.mode_stats) ? d.mode_stats : [];
+        tbody.innerHTML = '';
+        empty.hidden = modes.length > 0;
+        modes.forEach(m => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="font-weight:700;color:var(--t1);text-transform:capitalize">${m.mode ?? '—'}</td>
+            <td style="color:var(--t2)">${(m.total_sessions ?? 0).toLocaleString()}</td>
+            <td style="color:var(--ice)">${fmtNum(m.avg_score, 0)}</td>
+            <td style="color:var(--green)">${fmtNum(m.avg_dodge_rate, 1)}%</td>
+            <td style="color:var(--t3)">${fmtMs(m.avg_reaction_ms)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        wrap.hidden = false;
+      } catch (err) {
+        showBanner(`스파링 통계 로드 실패 (${err.message})`);
+        document.getElementById('spWrap').hidden = false;
+        document.getElementById('spEmpty').hidden = false;
+      } finally {
+        loading.hidden = true;
+      }
+    }
+
+    /* ── Users ──────────────────────────────────────────────── */
+    async function loadUsers() {
+      const loading = document.getElementById('usLoading');
+      const wrap    = document.getElementById('usWrap');
+      const kpi     = document.getElementById('usKpi');
+      const chart   = document.getElementById('newUserChart');
+      loading.hidden = false; wrap.hidden = true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/analytics/users`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = await res.json();
+
+        kpi.innerHTML = [
+          { label: '전체 사용자',  val: (d.total   ?? 0).toLocaleString(), cls: '' },
+          { label: 'Active',       val: (d.active  ?? 0).toLocaleString(), cls: 'green' },
+          { label: 'Suspended',    val: (d.inactive?? 0).toLocaleString(), cls: 'red' },
+          { label: 'Premium',      val: (d.premium ?? 0).toLocaleString(), cls: 'amber' },
+          { label: 'Admin',        val: (d.admin   ?? 0).toLocaleString(), cls: 'ice' },
+        ].map(k => `
+          <div class="kpi-cell">
+            <span class="kpi-label">${k.label}</span>
+            <span class="kpi-value ${k.cls}">${k.val}</span>
+          </div>
+        `).join('');
+
+        const newUsers = Array.isArray(d.new_last_7d) ? d.new_last_7d : [];
+        if (newUsers.length) renderBarChart(chart, newUsers);
+        wrap.hidden = false;
+      } catch (err) {
+        showBanner(`사용자 통계 로드 실패 (${err.message})`);
+        document.getElementById('usWrap').hidden = false;
+      } finally {
+        loading.hidden = true;
+      }
+    }
+
+    /* ── Init ───────────────────────────────────────────────── */
+    async function loadAll() {
+      apiBanner.hidden = true;
+      await Promise.allSettled([loadOverview(), loadTraining(), loadSparring(), loadUsers()]);
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', loadAll);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      loadAll();
+    });
+  </script>
+</body>
+</html>

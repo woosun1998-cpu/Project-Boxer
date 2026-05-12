@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 샵</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/common.css">
+  <style>
+    :root {
+      --red: #E8000D;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.65);
+      --t3: rgba(255,255,255,0.35);
+      --border: rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.14);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+    }
+    body {
+      background: #000;
+      font-family: var(--fp);
+    }
+    .page {
+      padding-top: 86px;
+    }
+    .bx-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 62px;
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+    .bx-topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 0 28px;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 14px; }
+    .bx-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .bx-brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.3));
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.4);
+      background: rgba(232,0,13,0.06);
+      padding: 3px 9px;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+    .bx-live::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .bx-nav { display: flex; align-items: center; gap: 22px; }
+    .bx-nav a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t3);
+      text-decoration: none;
+      letter-spacing: .03em;
+      transition: color .15s;
+      white-space: nowrap;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav a[aria-current] {
+      color: var(--red);
+      border-bottom: 1px solid var(--red);
+      padding-bottom: 1px;
+    }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t3);
+      background: none;
+      border: 1px solid var(--border-2);
+      padding: 5px 13px;
+      cursor: pointer;
+      border-radius: 2px;
+      letter-spacing: .02em;
+      transition: color .15s, border-color .15s;
+    }
+    .bx-nav button[data-logout-button]:hover {
+      color: var(--t1);
+      border-color: var(--t2);
+    }
+    @media (max-width: 600px) {
+      .bx-nav a:not([aria-current]) { display: none; }
+      .bx-topbar-inner { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page" data-page="shop">
+    <header class="bx-topbar" data-app-header>
+      <div class="bx-topbar-inner">
+        <div class="bx-topbar-left">
+          <a class="bx-brand" href="./dashboard.html" aria-label="AI Coach 홈">
+            <span class="bx-brand-logo"></span>
+          </a>
+          <span class="bx-live">AI Coach</span>
+        </div>
+        <nav class="bx-nav">
+          <a href="./dashboard.html">대시보드</a>
+          <a href="./tutorial.html">튜토리얼</a>
+          <a href="./training.html">훈련</a>
+          <a href="./sparring.html">스파링</a>
+          <a href="./leaderboard.html">랭킹</a>
+          <a href="./boxing-gyms.html">복싱장 찾기</a>
+          <a href="./mypage.html">마이페이지</a>
+          <a href="./shop.html" aria-current="page">샵</a>
+          <button type="button" data-logout-button>로그아웃</button>
+        </nav>
+      </div>
+    </header>
+
+    <section class="layout">
+      <article class="card hero">
+        <span class="badge" data-user-tier-badge>free</span>
+        <h1 data-user-name>사용자</h1>
+        <p data-page-message>프리미엄 콘텐츠와 훈련 보강 아이템을 안내하는 상점 화면입니다.</p>
+        <div class="tile">
+          <h3>이용 안내</h3>
+          <p data-user-tier-text>로그인한 사용자의 등급 정보를 바탕으로 상점 화면이 표시됩니다.</p>
+        </div>
+        <div class="tile api-slot" data-api-shop-slot>
+          샵 API가 연결되면 상품 목록, 가격, 구매 상태를 이 영역에 바인딩합니다.
+        </div>
+      </article>
+
+      <aside class="card">
+        <h2>추천 항목</h2>
+        <div class="stack">
+          <div class="tile"><p>프리미엄 튜토리얼 확장</p></div>
+          <div class="tile"><p>훈련 효율 보강 패키지</p></div>
+          <div class="tile"><p>코칭 피드백 업그레이드</p></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module" src="./js/core/api.js"></script>
+  <script type="module" src="./js/core/auth.js"></script>
+  <script type="module" src="./js/core/ui.js"></script>
+  <script type="module" src="./js/pages/shop.js"></script>
+</body>
+</html>

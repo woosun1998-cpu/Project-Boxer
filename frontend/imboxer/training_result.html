@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 훈련 결과</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:    #ff3e3e;
+      --red-dk: #E8000D;
+      --gold:   #f5c518;
+      --green:  #39D353;
+      --orange: #ff9a3d;
+      --s0: #040404;
+      --s1: #080808;
+      --s2: #0e0e0e;
+      --s3: #151515;
+      --s4: #1c1c1c;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.65);
+      --t3: rgba(255,255,255,0.32);
+      --t4: rgba(255,255,255,0.14);
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.14);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% -8%, rgba(255,62,62,0.13) 0%, transparent 50%),
+        var(--s0);
+      color: var(--t1);
+      font-family: var(--fp);
+    }
+
+    /* ── TOPBAR ─────────────────────────────────────── */
+    .bx-topbar {
+      position: sticky;
+      top: 0;
+      height: 62px;
+      background: rgba(4,4,4,0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      z-index: 100;
+    }
+    .bx-topbar-inner {
+      height: 100%;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 12px; }
+    .bx-brand { display: flex; align-items: center; text-decoration: none; }
+    .bx-brand-logo {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      object-fit: cover;
+      filter: drop-shadow(0 0 8px rgba(255,62,62,0.25));
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border: 1px solid rgba(255,62,62,0.28);
+      background: rgba(255,62,62,0.06);
+      font-family: var(--fp);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      color: var(--red);
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+    .bx-live::before {
+      content: "";
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+    .bx-nav { display: flex; align-items: center; gap: 16px; }
+    .bx-nav a {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--t3);
+      text-decoration: none;
+      letter-spacing: .04em;
+      transition: color .15s;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav a[aria-current] {
+      color: var(--red);
+      border-bottom: 1px solid var(--red);
+      padding-bottom: 1px;
+    }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--t3);
+      background: none;
+      border: 1px solid var(--border-2);
+      padding: 5px 12px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: color .15s;
+    }
+    .bx-nav button[data-logout-button]:hover { color: var(--t1); }
+
+    /* ── PAGE ───────────────────────────────────────── */
+    .rpt-wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* Empty state */
+    .rpt-empty {
+      padding: 56px 0 12px;
+      color: var(--t2);
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .rpt-empty:empty { display: none; }
+
+    /* ── REPORT BANNER ──────────────────────────────── */
+    .rpt-banner {
+      padding: 26px 0 20px;
+      border-bottom: 2px solid rgba(255,62,62,0.2);
+      margin-bottom: 22px;
+    }
+    .rpt-report-tag {
+      display: inline-block;
+      font-family: var(--fm);
+      font-size: 10px;
+      letter-spacing: .22em;
+      color: var(--red);
+      margin-bottom: 10px;
+    }
+    .rpt-lesson-title {
+      font-family: var(--fp);
+      font-size: clamp(24px, 3.2vw, 40px);
+      font-weight: 900;
+      letter-spacing: -.01em;
+      line-height: 1.1;
+      color: var(--t1);
+      margin-bottom: 7px;
+    }
+    .rpt-lesson-goal {
+      font-size: 14px;
+      color: var(--t2);
+      line-height: 1.65;
+    }
+
+    /* ── HERO: VIDEO + SCORE ────────────────────────── */
+    .rpt-hero {
+      display: grid;
+      grid-template-columns: minmax(220px, 300px) minmax(420px, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    /* Video panel */
+    .rpt-video-panel {
+      position: relative;
+      background: #060606;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      aspect-ratio: 2 / 3;
+      width: min(100%, 300px);
+      min-height: 0;
+      justify-self: end;
+    }
+    .rpt-video-panel video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+    .rpt-video-tag {
+      position: absolute;
+      top: 14px; left: 14px;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.78);
+      border: 1px solid rgba(255,62,62,0.35);
+      font-family: var(--fp);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      color: var(--red);
+      text-transform: uppercase;
+      z-index: 2;
+      border-radius: 2px;
+    }
+    .rpt-video-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--t3);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.7;
+      padding: 28px;
+    }
+    .rpt-video-placeholder:not([data-visible]) { display: none; }
+
+    /* Score panel */
+    .rpt-score-panel {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-height: 100%;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 12px;
+    }
+
+    .rpt-grade-score-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Grade badge */
+    .rpt-grade-badge {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .rpt-grade-img {
+      width: clamp(72px, 7vw, 104px);
+      height: clamp(72px, 7vw, 104px);
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 0 14px rgba(247,201,72,0.35));
+    }
+    .rpt-grade-img[src=""] { visibility: hidden; }
+    .rpt-grade-letter {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    /* Score number */
+    .rpt-score-col { flex: 1; min-width: 0; }
+    .rpt-score-label {
+      display: block;
+      font-family: var(--fm);
+      font-size: 10px;
+      letter-spacing: .22em;
+      color: var(--t3);
+      margin-bottom: 4px;
+    }
+    .rpt-score-num {
+      display: block;
+      font-family: var(--fm);
+      font-size: clamp(76px, 8.5vw, 132px);
+      line-height: 0.88;
+      color: var(--gold);
+      text-shadow: 0 0 32px rgba(245,197,24,0.28);
+      letter-spacing: .03em;
+    }
+
+    /* Stat chips */
+    .rpt-chips {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      flex: 0;
+    }
+    .rpt-chip {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 11px 12px;
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .rpt-chip__label {
+      display: block;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      color: var(--t3);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    .rpt-chip__val {
+      display: block;
+      font-family: var(--fm);
+      font-size: clamp(24px, 2.4vw, 34px);
+      letter-spacing: .04em;
+      color: var(--t1);
+      line-height: 1;
+      font-weight: 400;
+    }
+
+    /* ── SECTION LABEL ──────────────────────────────── */
+    .rpt-section-label {
+      display: block;
+      font-family: var(--fp);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--red);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+    .rpt-score-panel .rpt-section-label {
+      font-size: 10px;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      letter-spacing: .1em;
+    }
+
+    /* ── METRICS PANEL ──────────────────────────────── */
+    .rpt-metrics-panel {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .rpt-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .rpt-metric {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 12px 13px;
+      min-height: 82px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .rpt-metric__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 9px;
+    }
+    .rpt-metric__name {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--t2);
+    }
+    .rpt-metric__val {
+      font-family: var(--fm);
+      font-size: 19px;
+      letter-spacing: .03em;
+      color: var(--t1);
+    }
+    .rpt-bar {
+      height: 5px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .rpt-bar div {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--red-dk), var(--red), var(--gold));
+      border-radius: 999px;
+      transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    /* ── BOTTOM: COACH + FEEDBACK ───────────────────── */
+    .rpt-bottom {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+      gap: 10px;
+      margin-top: 2px;
+      margin-bottom: 0;
+    }
+    .rpt-coach-panel,
+    .rpt-feedback-panel {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px;
+      min-height: 150px;
+    }
+    .rpt-coach-text {
+      color: var(--t1);
+      font-size: 13px;
+      line-height: 1.7;
+      font-weight: 500;
+    }
+    .rpt-coach-key {
+      margin-top: 14px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--t4);
+    }
+    .rpt-coach-key span { color: var(--t3); }
+
+    [data-training-result-feedback] {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 196px;
+      overflow: auto;
+    }
+    [data-training-result-feedback] li {
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--red);
+      border-radius: 3px;
+      background: rgba(255,255,255,0.025);
+      color: var(--t2);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    /* ── ACTIONS ────────────────────────────────────── */
+    .rpt-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rpt-btn {
+      font-family: var(--fp);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0;
+      padding: 13px 28px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .rpt-btn:hover { opacity: .82; }
+    .rpt-btn--primary {
+      background: var(--red);
+      border: 1px solid var(--red);
+      color: #fff;
+    }
+    .rpt-btn--ghost {
+      background: none;
+      border: 1px solid var(--border-2);
+      color: var(--t2);
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 900px) {
+      .rpt-hero               { grid-template-columns: minmax(200px, 280px) 1fr; }
+      .rpt-video-panel        { width: min(100%, 280px); margin: 0; }
+      .rpt-score-panel        { min-height: auto; }
+      .rpt-chips              { grid-template-columns: repeat(2, 1fr); }
+      .rpt-metrics-grid       { grid-template-columns: repeat(2, 1fr); }
+      .rpt-bottom             { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .rpt-hero               { grid-template-columns: 1fr; }
+      .rpt-video-panel        { justify-self: center; }
+      .rpt-wrap               { padding-left: 14px; padding-right: 14px; }
+      .rpt-chips              { grid-template-columns: repeat(2, 1fr); }
+      .rpt-score-num          { font-size: 82px; }
+      .rpt-grade-img          { width: 68px; height: 68px; }
+    }
+    @media (max-width: 480px) {
+      .rpt-metrics-grid       { grid-template-columns: repeat(2, 1fr); }
+      .rpt-score-num          { font-size: 68px; }
+      .rpt-chips              { grid-template-columns: 1fr; }
+      .rpt-actions            { flex-direction: column; }
+      .rpt-btn                { text-align: center; }
+    }
+    @media (max-width: 414px) {
+      .rpt-lesson-title       { font-size: 22px; }
+      .bx-nav                 { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bx-topbar" data-app-header>
+    <div class="bx-topbar-inner">
+      <div class="bx-topbar-left">
+        <a class="bx-brand" href="/index.html">
+          <img class="bx-brand-logo" src="./assets/images/dashboard/오버레이 프로필 이미지.png" alt="IM_BOXER">
+        </a>
+        <span class="bx-live">AI Coach</span>
+        <span style="font-size:12px;color:var(--t3);letter-spacing:.03em;" data-user-summary>훈련 결과</span>
+      </div>
+      <nav class="bx-nav">
+        <button type="button" data-logout-button>로그아웃</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="rpt-wrap">
+    <p class="rpt-empty" data-training-result-empty></p>
+
+    <section data-training-result-content>
+      <!-- Report header -->
+      <div class="rpt-banner">
+        <span class="rpt-report-tag">TRAINING REPORT</span>
+        <h1 class="rpt-lesson-title" data-training-result-title>훈련 결과</h1>
+        <p class="rpt-lesson-goal" data-training-result-goal>자세 분석 결과를 확인하세요.</p>
+      </div>
+
+      <!-- Hero: analysis video + score -->
+      <div class="rpt-hero">
+        <div class="rpt-video-panel">
+          <span class="rpt-video-tag">AI 분석 영상</span>
+          <video data-training-result-video autoplay loop muted playsinline></video>
+          <div class="rpt-video-placeholder" data-training-video-placeholder>
+            동작별 분석 영상<br>준비 중입니다
+          </div>
+        </div>
+
+        <div class="rpt-score-panel">
+          <div class="rpt-grade-score-row">
+            <div class="rpt-grade-badge">
+              <img class="rpt-grade-img" data-training-result-grade-img src="" alt="등급 배지">
+              <span class="rpt-grade-letter" data-training-result-grade>—</span>
+            </div>
+            <div class="rpt-score-col">
+              <span class="rpt-score-label">SCORE</span>
+              <span class="rpt-score-num" data-training-result-score>—</span>
+            </div>
+          </div>
+
+          <div class="rpt-chips">
+            <div class="rpt-chip">
+              <span class="rpt-chip__label">정확도</span>
+              <strong class="rpt-chip__val" data-training-result-accuracy>—</strong>
+            </div>
+            <div class="rpt-chip">
+              <span class="rpt-chip__label">체력</span>
+              <strong class="rpt-chip__val" data-training-result-hp>—</strong>
+            </div>
+            <div class="rpt-chip">
+              <span class="rpt-chip__label">MAX COMBO</span>
+              <strong class="rpt-chip__val" data-training-result-combo>—</strong>
+            </div>
+            <div class="rpt-chip">
+              <span class="rpt-chip__label">라운드</span>
+              <strong class="rpt-chip__val" data-training-result-round>—</strong>
+            </div>
+            <div class="rpt-chip">
+              <span class="rpt-chip__label">훈련 시간</span>
+              <strong class="rpt-chip__val" data-training-result-time>—</strong>
+            </div>
+          </div>
+
+          <div class="rpt-bottom">
+            <div class="rpt-coach-panel">
+              <span class="rpt-section-label">AI COACH MESSAGE</span>
+              <p class="rpt-coach-text" data-training-result-coach>코치 메시지가 표시됩니다.</p>
+              <p class="rpt-coach-key">LESSON: <span data-training-result-key>—</span></p>
+            </div>
+            <div class="rpt-feedback-panel">
+              <span class="rpt-section-label">개선 포인트</span>
+              <ul data-training-result-feedback></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Posture metrics -->
+      <div class="rpt-metrics-panel">
+        <span class="rpt-section-label">자세 지표 분석</span>
+        <div class="rpt-metrics-grid">
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">자세</span>
+              <span class="rpt-metric__val" data-metric-value="postureScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="postureScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">가드</span>
+              <span class="rpt-metric__val" data-metric-value="guardScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="guardScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">균형</span>
+              <span class="rpt-metric__val" data-metric-value="balanceScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="balanceScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">반응</span>
+              <span class="rpt-metric__val" data-metric-value="reactionScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="reactionScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">일관성</span>
+              <span class="rpt-metric__val" data-metric-value="consistencyScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="consistencyScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">속도</span>
+              <span class="rpt-metric__val" data-metric-value="speedScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="speedScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">파워</span>
+              <span class="rpt-metric__val" data-metric-value="powerScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="powerScore"></div></div>
+          </div>
+          <div class="rpt-metric">
+            <div class="rpt-metric__head">
+              <span class="rpt-metric__name">복귀</span>
+              <span class="rpt-metric__val" data-metric-value="recoveryScore">--</span>
+            </div>
+            <div class="rpt-bar"><div data-metric-bar="recoveryScore"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="rpt-actions">
+        <button type="button" class="rpt-btn rpt-btn--primary" data-training-result-retry>다시 훈련</button>
+        <button type="button" class="rpt-btn rpt-btn--ghost" data-training-result-list>튜토리얼로</button>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="./js/pages/training-result.js?v=20260512-woosun-guest"></script>
+</body>
+</html>

@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 스파링</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design Tokens ─────────────────────────────── */
+    :root {
+      --red:    #E8000D;
+      --yellow: #FFE500;
+      --green:  #39D353;
+      --blue:   #3D8BFF;
+      --s1: #000000;
+      --s2: #0a0a0a;
+      --s3: #111111;
+      --s4: #1a1a1a;
+      --s5: #222222;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.65);
+      --t3: rgba(255,255,255,0.35);
+      --t4: rgba(255,255,255,0.15);
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.14);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      background: var(--s1);
+      color: var(--t1);
+      font-family: var(--fp);
+      overflow-x: hidden;
+    }
+
+    /* ── Topbar ───────────────────────────────────── */
+    .bx-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 62px;
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      z-index: 100;
+    }
+    .bx-topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 0 28px;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 14px; }
+    .bx-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .bx-brand-logo {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.3));
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--fp);
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.4);
+      background: rgba(232,0,13,0.06);
+      padding: 3px 9px;
+      border-radius: 2px;
+    }
+    .bx-live::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .bx-nav { display: flex; align-items: center; gap: 22px; }
+    .bx-nav a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--t3);
+      text-decoration: none;
+      letter-spacing: .03em;
+      transition: color .15s;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav a[aria-current] {
+      color: var(--red);
+      border-bottom: 1px solid var(--red);
+      padding-bottom: 1px;
+    }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t3);
+      background: none;
+      border: 1px solid var(--border-2);
+      padding: 5px 13px;
+      cursor: pointer;
+      border-radius: 2px;
+      letter-spacing: .02em;
+      transition: color .15s, border-color .15s;
+    }
+    .bx-nav button[data-logout-button]:hover { color: var(--t1); border-color: var(--t2); }
+
+    /* ── Page Wrapper ─────────────────────────────── */
+    .sp-sound-toggle {
+      font-family: var(--fp);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--t3);
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border-2);
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 2px;
+      letter-spacing: .06em;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .sp-sound-toggle[data-sound-enabled="1"] {
+      color: var(--yellow);
+      border-color: rgba(255,229,0,.38);
+      background: rgba(255,229,0,.08);
+    }
+
+    .sp-page {
+      padding-top: 62px;
+      min-height: 100vh;
+    }
+
+    /* ── Hero ─────────────────────────────────────── */
+    .sp-hero {
+      position: relative;
+      padding: 72px 28px 60px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 120% 80% at 50% 110%, rgba(232,0,13,0.12) 0%, transparent 60%),
+        var(--s1);
+    }
+    /* Animated grid lines background */
+    .sp-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 90% 100% at 50% 100%, black 30%, transparent 80%);
+      pointer-events: none;
+    }
+    .sp-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(232,0,13,0.4) 40%, rgba(232,0,13,0.4) 60%, transparent);
+    }
+    .sp-hero-inner {
+      position: relative;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    .sp-hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--fp);
+      font-size: 13px;
+      letter-spacing: .22em;
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.3);
+      background: rgba(232,0,13,0.05);
+      padding: 4px 14px 3px;
+      border-radius: 2px;
+    }
+    .sp-hero-eyebrow::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    .sp-hero-title {
+      font-family: var(--fm);
+      font-size: clamp(72px, 14vw, 128px);
+      letter-spacing: .06em;
+      line-height: .92;
+      color: var(--t1);
+    }
+    .sp-hero-title span { color: var(--red); }
+    .sp-hero-sub {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--t2);
+      letter-spacing: .02em;
+      max-width: 440px;
+      line-height: 1.6;
+    }
+
+    /* User snapshot bar */
+    .sp-user-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid var(--border-2);
+      background: rgba(255,255,255,0.03);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .sp-user-bar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 12px 28px;
+      border-right: 1px solid var(--border);
+    }
+    .sp-user-bar-item:last-child { border-right: none; }
+    .sp-user-bar-label {
+      font-family: var(--fm);
+      font-size: 10px;
+      letter-spacing: .2em;
+      color: var(--t3);
+    }
+    .sp-user-bar-value {
+      font-family: var(--fm);
+      font-size: 24px;
+      letter-spacing: .06em;
+      color: var(--t1);
+      line-height: 1;
+    }
+    [data-my-nickname] {
+      font-family: var(--fp);
+      letter-spacing: .02em;
+      font-weight: 900;
+      color: var(--yellow);
+      text-shadow: 0 0 14px rgba(255,229,0,.28);
+      white-space: nowrap;
+    }
+    [data-my-nickname].is-english {
+      font-family: var(--fm);
+      font-size: 30px;
+      letter-spacing: .08em;
+      color: var(--yellow);
+    }
+    [data-my-nickname].is-korean {
+      font-family: var(--fp);
+      font-size: 24px;
+      letter-spacing: 0;
+      color: #fff06a;
+    }
+    .sp-user-bar-value[data-my-best-score],
+    .sp-user-bar-value[data-my-win-count] {
+      color: var(--yellow);
+    }
+
+    /* ── Mode Section ─────────────────────────────── */
+    .sp-modes-section {
+      padding: 56px 28px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .sp-modes-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .sp-modes-title {
+      font-family: var(--fm);
+      font-size: 32px;
+      letter-spacing: .12em;
+      color: var(--t1);
+    }
+    .sp-modes-hint {
+      font-family: var(--fp);
+      font-size: 13px;
+      color: var(--t3);
+      letter-spacing: .02em;
+    }
+
+    /* Mode cards grid */
+    .sp-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* ── Mode Card ────────────────────────────────── */
+    .sp-mode-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: var(--s3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+    .sp-mode-card:hover {
+      transform: translateY(-3px);
+    }
+    .sp-mode-card[data-mode-card="beginner"]:hover     { border-color: rgba(255,229,0,0.45); }
+    .sp-mode-card[data-mode-card="intermediate"]:hover { border-color: rgba(255,122,0,0.45); }
+    .sp-mode-card[data-mode-card="advanced"]:hover     { border-color: rgba(232,0,13,0.55); }
+    .sp-mode-card[data-selected] {
+      border-color: var(--red);
+      box-shadow: 0 0 0 1px rgba(232,0,13,0.2), 0 8px 32px rgba(232,0,13,0.1);
+    }
+
+    /* Card top band / visual */
+    .sp-card-band {
+      position: relative;
+      height: 154px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      padding: 14px 16px;
+    }
+    .sp-mode-card[data-mode-card="beginner"] .sp-card-band {
+      background:
+        linear-gradient(160deg, rgba(255,229,0,0.09) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 80% at 60% 100%, rgba(255,229,0,0.14) 0%, transparent 70%),
+        var(--s4);
+    }
+    .sp-mode-card[data-mode-card="intermediate"] .sp-card-band {
+      background:
+        linear-gradient(160deg, rgba(255,122,0,0.09) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 80% at 60% 100%, rgba(255,122,0,0.16) 0%, transparent 70%),
+        var(--s4);
+    }
+    .sp-mode-card[data-mode-card="advanced"] .sp-card-band {
+      background:
+        linear-gradient(160deg, rgba(232,0,13,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 80% at 60% 100%, rgba(232,0,13,0.18) 0%, transparent 70%),
+        var(--s4);
+    }
+    /* Decorative SVG boxer in card band */
+    .sp-card-boxer {
+      position: absolute;
+      right: 16px;
+      bottom: 0;
+      width: 130px;
+      height: 160px;
+      opacity: 0.22;
+    }
+    .sp-card-boxer { display: none; }
+    .sp-card-intro-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .72;
+      filter: saturate(.96) contrast(1.04);
+    }
+    .sp-card-band::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.78));
+      pointer-events: none;
+    }
+    .sp-mode-card:hover .sp-card-boxer { opacity: 0.35; transition: opacity .2s; }
+
+    /* Card header row */
+    .sp-card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      z-index: 2;
+    }
+    .sp-card-mode-tag {
+      display: inline-block;
+      font-family: var(--fm);
+      font-size: 11px;
+      letter-spacing: .2em;
+      padding: 2px 8px 1px;
+      border-radius: 2px;
+      margin-bottom: 2px;
+    }
+    .sp-mode-card[data-mode-card="beginner"] .sp-card-mode-tag {
+      color: var(--yellow);
+      border: 1px solid rgba(255,229,0,0.4);
+      background: rgba(255,229,0,0.08);
+    }
+    .sp-mode-card[data-mode-card="intermediate"] .sp-card-mode-tag {
+      color: #FF7A00;
+      border: 1px solid rgba(255,122,0,0.4);
+      background: rgba(255,122,0,0.08);
+    }
+    .sp-mode-card[data-mode-card="advanced"] .sp-card-mode-tag {
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.4);
+      background: rgba(232,0,13,0.08);
+    }
+    .sp-card-name {
+      font-family: var(--fp);
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 0;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .sp-card-tagline {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--t3);
+      letter-spacing: .03em;
+      line-height: 1.4;
+    }
+
+    /* Card body */
+    .sp-card-body {
+      padding: 16px 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .sp-card-desc {
+      font-family: var(--fp);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--t2);
+      line-height: 1.65;
+      letter-spacing: .01em;
+    }
+    .sp-card-desc,
+    .sp-card-perks {
+      display: none;
+    }
+
+    /* Difficulty pips */
+    .sp-card-diff {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sp-card-diff-label {
+      font-family: var(--fp);
+      font-size: 11px;
+      letter-spacing: .16em;
+      color: var(--t3);
+      flex-shrink: 0;
+    }
+    .sp-diff-pips {
+      display: flex;
+      gap: 4px;
+    }
+    .sp-diff-pip {
+      width: 20px;
+      height: 5px;
+      border-radius: 2px;
+      background: var(--s5);
+    }
+    .sp-mode-card[data-mode-card="beginner"]     .sp-diff-pip:nth-child(-n+2) { background: var(--yellow); }
+    .sp-mode-card[data-mode-card="intermediate"] .sp-diff-pip:nth-child(-n+3) { background: #FF7A00; }
+    .sp-mode-card[data-mode-card="advanced"]     .sp-diff-pip:nth-child(-n+5) { background: var(--red); }
+
+    /* Mini stats row */
+    .sp-card-mini-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .sp-mini-stat {
+      background: var(--s4);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sp-mini-stat-label {
+      font-family: var(--fp);
+      font-size: 9px;
+      letter-spacing: .16em;
+      color: var(--t3);
+    }
+    .sp-mini-stat-val {
+      font-family: var(--fm);
+      font-size: 17px;
+      letter-spacing: .04em;
+      color: var(--t1);
+      line-height: 1;
+    }
+
+    /* Perks list */
+    .sp-card-perks {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .sp-perk-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--t2);
+      letter-spacing: .01em;
+    }
+    .sp-perk-icon {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sp-mode-card[data-mode-card="beginner"]     .sp-perk-icon { background: var(--yellow); }
+    .sp-mode-card[data-mode-card="intermediate"] .sp-perk-icon { background: #FF7A00; }
+    .sp-mode-card[data-mode-card="advanced"]     .sp-perk-icon { background: var(--red); }
+
+    /* Mode label badge (추천 / 인기 / CHALLENGE) */
+    .sp-mode-badge-tag {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-family: var(--fp);
+      font-size: 11px;
+      letter-spacing: .18em;
+      padding: 3px 10px 2px;
+      border-radius: 2px;
+      z-index: 3;
+    }
+    .sp-badge-recommend {
+      color: #000;
+      background: var(--yellow);
+    }
+    .sp-badge-popular {
+      color: #000;
+      background: #FF7A00;
+    }
+    .sp-badge-challenge {
+      font-family: var(--fm);
+      color: #000;
+      border: 1px solid var(--red);
+      background: var(--red);
+    }
+
+    /* Card footer */
+    .sp-card-footer {
+      padding: 16px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    /* Best score row */
+    .sp-card-best {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sp-card-best-label {
+      font-family: var(--fp);
+      font-size: 11px;
+      letter-spacing: .14em;
+      color: var(--t3);
+    }
+    .sp-card-best-val {
+      font-family: var(--fm);
+      font-size: 18px;
+      letter-spacing: .04em;
+      color: var(--t2);
+    }
+    .sp-card-best-val[data-mode-best-score]::after { content: 'pts'; font-size: 11px; color: var(--t3); margin-left: 3px; }
+
+    /* Start button */
+    .sp-mode-start-btn {
+      display: block;
+      width: 100%;
+      font-family: var(--fp);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-align: center;
+      text-decoration: none;
+      padding: 13px 0 11px;
+      border-radius: 3px;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    .sp-mode-start-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .sp-mode-card[data-mode-card="beginner"] .sp-mode-start-btn {
+      background: var(--green);
+      color: #000;
+    }
+    .sp-mode-card[data-mode-card="intermediate"] .sp-mode-start-btn {
+      background: #FF7A00;
+      color: #000;
+    }
+    .sp-mode-card[data-mode-card="advanced"] .sp-mode-start-btn {
+      background: var(--red);
+      color: #000;
+    }
+
+    /* ── Leaderboard teaser strip ─────────────────── */
+    .sp-board-strip {
+      padding: 0 28px 72px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .sp-board-card {
+      background: var(--s3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sp-board-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--red);
+    }
+    .sp-board-info { display: flex; flex-direction: column; gap: 4px; }
+    .sp-board-eyebrow {
+      font-family: var(--fp);
+      font-size: 11px;
+      letter-spacing: .2em;
+      color: var(--red);
+    }
+    .sp-board-title {
+      font-family: var(--fm);
+      font-size: 26px;
+      letter-spacing: .08em;
+      color: var(--t1);
+    }
+    .sp-board-sub {
+      font-family: var(--fp);
+      font-size: 13px;
+      color: var(--t3);
+      letter-spacing: .01em;
+    }
+    .sp-board-preview {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .sp-board-rank-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .sp-board-rank-num {
+      font-family: var(--fm);
+      font-size: 28px;
+      letter-spacing: .04em;
+      color: var(--t3);
+    }
+    .sp-board-rank-num.gold   { color: var(--yellow); }
+    .sp-board-rank-num.silver { color: rgba(200,200,200,0.8); }
+    .sp-board-rank-num.bronze { color: rgba(180,120,60,0.9); }
+    .sp-board-rank-name {
+      font-family: var(--fp);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t2);
+      white-space: nowrap;
+    }
+    .sp-board-rank-score {
+      font-family: var(--fp);
+      font-size: 14px;
+      color: var(--t3);
+    }
+    .sp-board-cta {
+      font-family: var(--fp);
+      font-size: 15px;
+      letter-spacing: .1em;
+      color: var(--t1);
+      text-decoration: none;
+      border: 1px solid var(--border-2);
+      padding: 10px 24px 9px;
+      border-radius: 2px;
+      white-space: nowrap;
+      transition: border-color .15s, background .15s;
+      flex-shrink: 0;
+    }
+    .sp-board-cta:hover { border-color: var(--red); background: rgba(232,0,13,0.06); color: var(--red); }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 900px) {
+      .sp-mode-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+      .sp-hero-title { font-size: clamp(56px, 14vw, 90px); }
+      .sp-user-bar { flex-wrap: wrap; }
+      .sp-board-preview { display: none; }
+    }
+    @media (max-width: 600px) {
+      .bx-nav a:not([aria-current]) { display: none; }
+      .sp-hero { padding: 48px 16px 40px; }
+      .sp-modes-section { padding: 40px 16px 60px; }
+      .sp-board-strip { padding: 0 16px 48px; }
+      .sp-user-bar-item { padding: 10px 18px; }
+      .sp-card-mini-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────── -->
+<header class="bx-topbar">
+  <div class="bx-topbar-inner">
+    <div class="bx-topbar-left">
+      <a class="bx-brand" href="./dashboard.html" aria-label="AI Coach 홈">
+        <span class="bx-brand-logo"></span>
+      </a>
+      <span class="bx-live">AI Coach</span>
+    </div>
+    <nav class="bx-nav">
+      <a href="./dashboard.html">대시보드</a>
+      <a href="./tutorial.html">튜토리얼</a>
+      <a href="./training.html">훈련</a>
+      <a href="./sparring.html" aria-current="page">스파링</a>
+      <a href="./leaderboard.html">랭킹</a>
+      <a href="./boxing-gyms.html">복싱장 찾기</a>
+      <a href="./mypage.html">마이페이지</a>
+      <a href="./shop.html">샵</a>
+      <button type="button" class="sp-sound-toggle" data-sound-toggle aria-pressed="true">SOUND ON</button>
+      <button type="button" data-logout-button>로그아웃</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ── Page ───────────────────────────────────────── -->
+<div class="sp-page">
+
+  <!-- ── Hero ─────────────────────────────────────── -->
+  <section class="sp-hero">
+    <div class="sp-hero-inner">
+      <span class="sp-hero-eyebrow">모드 선택</span>
+      <h1 class="sp-hero-title">SPAR<span>RING</span></h1>
+      <p class="sp-hero-sub">
+        모드를 선택하고 링 위에 올라서라.<br>
+        AI 상대와의 실전 스파링이 시작된다.
+      </p>
+
+      <!-- User snapshot -->
+      <div class="sp-user-bar">
+        <div class="sp-user-bar-item">
+          <span class="sp-user-bar-label">TRAINER</span>
+          <span class="sp-user-bar-value" data-my-nickname>—</span>
+        </div>
+        <div class="sp-user-bar-item">
+          <span class="sp-user-bar-label">BEST SCORE</span>
+          <span class="sp-user-bar-value" data-my-best-score>—</span>
+        </div>
+        <div class="sp-user-bar-item">
+          <span class="sp-user-bar-label">WIN</span>
+          <span class="sp-user-bar-value" data-my-win-count>—</span>
+        </div>
+        <div class="sp-user-bar-item">
+          <span class="sp-user-bar-label">MATCHES</span>
+          <span class="sp-user-bar-value" data-my-total-matches>—</span>
+        </div>
+        <div class="sp-user-bar-item">
+          <span class="sp-user-bar-label">GRADE</span>
+          <span class="sp-user-bar-value" data-my-best-grade>—</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Mode Cards ────────────────────────────────── -->
+  <section class="sp-modes-section">
+    <div class="sp-modes-header">
+      <h2 class="sp-modes-title">MODE SELECT</h2>
+      <span class="sp-modes-hint">난이도를 선택하고 게임을 시작하세요</span>
+    </div>
+
+    <div class="sp-mode-grid">
+
+      <!-- ── BEGINNER ─────────────────────────────── -->
+      <article class="sp-mode-card" data-mode-card="beginner">
+        <span class="sp-mode-badge-tag sp-badge-recommend">추천</span>
+        <div class="sp-card-band">
+          <img class="sp-card-intro-img" src="./assets/images/sparring/introdece_biginner.png" alt="초급 스파링 이미지">
+          <svg class="sp-card-boxer" viewBox="0 0 160 220" fill="none" aria-hidden="true">
+            <ellipse cx="80" cy="28" rx="22" ry="24" fill="rgba(255,229,0,0.18)" stroke="rgba(255,229,0,0.5)" stroke-width="1.5"/>
+            <rect x="70" y="50" width="20" height="14" rx="4" fill="rgba(255,229,0,0.14)"/>
+            <path d="M46 64 Q42 98 44 130 L116 130 Q118 98 114 64 Q98 56 80 56 Q62 56 46 64Z" fill="rgba(255,229,0,0.14)" stroke="rgba(255,229,0,0.35)" stroke-width="1"/>
+            <path d="M48 68 Q30 80 26 100 Q22 114 32 126 Q38 132 44 126 Q54 114 56 94 Q60 80 48 68Z" fill="rgba(255,229,0,0.1)" stroke="rgba(255,229,0,0.4)" stroke-width="1.5"/>
+            <ellipse cx="30" cy="128" rx="12" ry="10" fill="rgba(255,229,0,0.45)"/>
+            <path d="M112 68 Q130 80 134 100 Q138 114 128 126 Q122 132 116 126 Q106 114 104 94 Q100 80 112 68Z" fill="rgba(255,229,0,0.1)" stroke="rgba(255,229,0,0.4)" stroke-width="1.5"/>
+            <ellipse cx="130" cy="128" rx="12" ry="10" fill="rgba(255,229,0,0.45)"/>
+            <path d="M52 130 Q48 160 46 186 Q44 200 54 206 Q64 208 68 198 Q72 182 72 160 Q74 144 68 130Z" fill="rgba(255,229,0,0.14)"/>
+            <path d="M90 130 Q94 144 88 160 Q86 182 90 198 Q94 208 104 206 Q114 200 114 186 Q110 160 108 130Z" fill="rgba(255,229,0,0.14)"/>
+          </svg>
+          <div class="sp-card-header">
+            <span class="sp-card-mode-tag">BEGINNER</span>
+            <h3 class="sp-card-name">초급</h3>
+            <p class="sp-card-tagline">가드부터 시작</p>
+          </div>
+        </div>
+
+        <div class="sp-card-body">
+          <p class="sp-card-desc">
+            처음 링에 오르는 당신을 위한 모드.<br>
+            가볍게 피하고, 짧게 치고, 바로 가드로 돌아오기.
+          </p>
+
+          <div class="sp-card-diff">
+            <span class="sp-card-diff-label">DIFFICULTY</span>
+            <div class="sp-diff-pips">
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+            </div>
+          </div>
+
+          <div class="sp-card-mini-stats">
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">ROUND</span>
+              <span class="sp-mini-stat-val">3R</span>
+            </div>
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">TIME</span>
+              <span class="sp-mini-stat-val">2:00</span>
+            </div>
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">XP</span>
+              <span class="sp-mini-stat-val">+50</span>
+            </div>
+          </div>
+
+          <div class="sp-card-perks">
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              AI 공격 속도 낮음
+            </div>
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              HP 감소 완만 — 실수해도 여유 있음
+            </div>
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              단순 패턴 — 적중 시 점수 빠르게 상승
+            </div>
+          </div>
+        </div>
+
+        <div class="sp-card-footer">
+          <div class="sp-card-best">
+            <span class="sp-card-best-label">MY BEST</span>
+            <span class="sp-card-best-val" data-mode-best-score="beginner">—</span>
+          </div>
+          <a class="sp-mode-start-btn"
+             href="./sparring_start.html?mode=beginner"
+             data-mode-start-btn="beginner">
+            게임 시작
+          </a>
+        </div>
+      </article>
+
+      <!-- ── INTERMEDIATE ──────────────────────────── -->
+      <article class="sp-mode-card" data-mode-card="intermediate">
+        <span class="sp-mode-badge-tag sp-badge-popular">인기</span>
+        <div class="sp-card-band">
+          <img class="sp-card-intro-img" src="./assets/images/sparring/introdece_intermediate.png" alt="중급 스파링 이미지">
+          <svg class="sp-card-boxer" viewBox="0 0 160 220" fill="none" aria-hidden="true">
+            <ellipse cx="80" cy="28" rx="22" ry="24" fill="rgba(255,122,0,0.2)" stroke="rgba(255,122,0,0.55)" stroke-width="1.5"/>
+            <rect x="70" y="50" width="20" height="14" rx="4" fill="rgba(255,122,0,0.15)"/>
+            <path d="M46 64 Q42 98 44 130 L116 130 Q118 98 114 64 Q98 56 80 56 Q62 56 46 64Z" fill="rgba(255,122,0,0.15)" stroke="rgba(255,122,0,0.35)" stroke-width="1"/>
+            <path d="M48 68 Q28 78 22 100 Q18 116 30 130 Q36 136 44 130 Q56 118 58 96 Q62 80 48 68Z" fill="rgba(255,122,0,0.12)" stroke="rgba(255,122,0,0.4)" stroke-width="1.5"/>
+            <ellipse cx="26" cy="132" rx="13" ry="11" fill="rgba(255,122,0,0.5)"/>
+            <path d="M112 68 Q132 78 138 100 Q142 116 130 130 Q124 136 116 130 Q104 118 102 96 Q98 80 112 68Z" fill="rgba(255,122,0,0.12)" stroke="rgba(255,122,0,0.4)" stroke-width="1.5"/>
+            <ellipse cx="134" cy="132" rx="13" ry="11" fill="rgba(255,122,0,0.5)"/>
+            <path d="M52 130 Q48 158 46 186 Q44 200 54 208 Q64 210 68 200 Q72 184 72 160 Q74 144 68 130Z" fill="rgba(255,122,0,0.15)"/>
+            <path d="M90 130 Q94 144 88 160 Q86 184 90 200 Q94 210 104 208 Q114 200 114 186 Q110 158 108 130Z" fill="rgba(255,122,0,0.15)"/>
+          </svg>
+          <div class="sp-card-header">
+            <span class="sp-card-mode-tag">INTERMEDIATE</span>
+            <h3 class="sp-card-name">중급</h3>
+            <p class="sp-card-tagline">방어 후 연결</p>
+          </div>
+        </div>
+
+        <div class="sp-card-body">
+          <p class="sp-card-desc">
+            잽, 크로스, 슬립을 섞는 실전형 모드.<br>
+            리듬을 맞추면 점수가 폭발한다.
+          </p>
+
+          <div class="sp-card-diff">
+            <span class="sp-card-diff-label">DIFFICULTY</span>
+            <div class="sp-diff-pips">
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+            </div>
+          </div>
+
+          <div class="sp-card-mini-stats">
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">ROUND</span>
+              <span class="sp-mini-stat-val">5R</span>
+            </div>
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">TIME</span>
+              <span class="sp-mini-stat-val">2:00</span>
+            </div>
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">XP</span>
+              <span class="sp-mini-stat-val">+120</span>
+            </div>
+          </div>
+
+          <div class="sp-card-perks">
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              2~3가지 공격 패턴 조합
+            </div>
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              콤보 보너스 강화 — 연속 적중이 핵심
+            </div>
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              정확도와 회피 타이밍이 점수를 좌우
+            </div>
+          </div>
+        </div>
+
+        <div class="sp-card-footer">
+          <div class="sp-card-best">
+            <span class="sp-card-best-label">MY BEST</span>
+            <span class="sp-card-best-val" data-mode-best-score="intermediate">—</span>
+          </div>
+          <a class="sp-mode-start-btn"
+             href="./sparring_start.html?mode=intermediate"
+             data-mode-start-btn="intermediate">
+            게임 시작
+          </a>
+        </div>
+      </article>
+
+      <!-- ── ADVANCED ───────────────────────────────── -->
+      <article class="sp-mode-card" data-mode-card="advanced">
+        <span class="sp-mode-badge-tag sp-badge-challenge">CHALLENGE</span>
+        <div class="sp-card-band">
+          <img class="sp-card-intro-img" src="./assets/images/sparring/introdece_advanced.png" alt="고급 스파링 이미지">
+          <svg class="sp-card-boxer" viewBox="0 0 160 220" fill="none" aria-hidden="true">
+            <ellipse cx="80" cy="28" rx="22" ry="24" fill="rgba(232,0,13,0.2)" stroke="rgba(232,0,13,0.6)" stroke-width="1.5"/>
+            <rect x="70" y="50" width="20" height="14" rx="4" fill="rgba(232,0,13,0.15)"/>
+            <path d="M46 64 Q42 98 44 130 L116 130 Q118 98 114 64 Q98 56 80 56 Q62 56 46 64Z" fill="rgba(232,0,13,0.18)" stroke="rgba(232,0,13,0.4)" stroke-width="1"/>
+            <!-- Aggressive forward lean -->
+            <path d="M44 68 Q20 76 14 100 Q10 118 24 132 Q32 138 40 132 Q54 118 56 94 Q60 78 44 68Z" fill="rgba(232,0,13,0.14)" stroke="rgba(232,0,13,0.45)" stroke-width="1.5"/>
+            <ellipse cx="18" cy="134" rx="14" ry="12" fill="rgba(232,0,13,0.5)"/>
+            <path d="M116 68 Q140 76 146 100 Q150 118 136 132 Q128 138 120 132 Q106 118 104 94 Q100 78 116 68Z" fill="rgba(232,0,13,0.14)" stroke="rgba(232,0,13,0.45)" stroke-width="1.5"/>
+            <ellipse cx="142" cy="134" rx="14" ry="12" fill="rgba(232,0,13,0.5)"/>
+            <path d="M52 130 Q46 158 44 186 Q42 202 54 210 Q66 212 70 200 Q74 184 74 160 Q76 144 68 130Z" fill="rgba(232,0,13,0.18)"/>
+            <path d="M90 130 Q94 144 86 160 Q86 184 90 200 Q94 212 106 210 Q118 202 116 186 Q114 158 108 130Z" fill="rgba(232,0,13,0.18)"/>
+            <!-- Headband detail -->
+            <rect x="58" y="16" width="44" height="5" rx="2" fill="rgba(232,0,13,0.7)"/>
+          </svg>
+          <div class="sp-card-header">
+            <span class="sp-card-mode-tag">ADVANCED</span>
+            <h3 class="sp-card-name">고급</h3>
+            <p class="sp-card-tagline">짧고 빠르게</p>
+          </div>
+        </div>
+
+        <div class="sp-card-body">
+          <p class="sp-card-desc">
+            실전처럼 몰아치는 챌린지 모드.<br>
+            한 번의 판단이 점수를 좌우한다.
+          </p>
+
+          <div class="sp-card-diff">
+            <span class="sp-card-diff-label">DIFFICULTY</span>
+            <div class="sp-diff-pips">
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+              <div class="sp-diff-pip"></div>
+            </div>
+          </div>
+
+          <div class="sp-card-mini-stats">
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">ROUND</span>
+              <span class="sp-mini-stat-val">5R</span>
+            </div>
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">TIME</span>
+              <span class="sp-mini-stat-val">3:00</span>
+            </div>
+            <div class="sp-mini-stat">
+              <span class="sp-mini-stat-label">XP</span>
+              <span class="sp-mini-stat-val">+250</span>
+            </div>
+          </div>
+
+          <div class="sp-card-perks">
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              페인트 포함 다양한 공격 패턴
+            </div>
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              HP 감소 빠름 — 고콤보만 보상
+            </div>
+            <div class="sp-perk-item">
+              <span class="sp-perk-icon"></span>
+              클리어 시 최대 XP + 리더보드 등록
+            </div>
+          </div>
+        </div>
+
+        <div class="sp-card-footer">
+          <div class="sp-card-best">
+            <span class="sp-card-best-label">MY BEST</span>
+            <span class="sp-card-best-val" data-mode-best-score="advanced">—</span>
+          </div>
+          <a class="sp-mode-start-btn"
+             href="./sparring_start.html?mode=advanced"
+             data-mode-start-btn="advanced">
+            게임 시작
+          </a>
+        </div>
+      </article>
+
+    </div><!-- /sp-mode-grid -->
+  </section>
+
+  <!-- ── Leaderboard Teaser ─────────────────────────── -->
+  <div class="sp-board-strip">
+    <div class="sp-board-card">
+      <div class="sp-board-info">
+        <span class="sp-board-eyebrow">GLOBAL RANKING</span>
+        <h3 class="sp-board-title">LEADERBOARD</h3>
+        <p class="sp-board-sub">전 세계 스파링 랭킹을 확인하고 도전하세요</p>
+      </div>
+
+      <div class="sp-board-preview" data-leaderboard-preview>
+        <div class="sp-board-rank-item">
+          <span class="sp-board-rank-num gold">1ST</span>
+          <span class="sp-board-rank-name" data-top1-name>—</span>
+          <span class="sp-board-rank-score" data-top1-score>—</span>
+        </div>
+        <div class="sp-board-rank-item">
+          <span class="sp-board-rank-num silver">2ND</span>
+          <span class="sp-board-rank-name" data-top2-name>—</span>
+          <span class="sp-board-rank-score" data-top2-score>—</span>
+        </div>
+        <div class="sp-board-rank-item">
+          <span class="sp-board-rank-num bronze">3RD</span>
+          <span class="sp-board-rank-name" data-top3-name>—</span>
+          <span class="sp-board-rank-score" data-top3-score>—</span>
+        </div>
+      </div>
+
+      <a class="sp-board-cta" href="./leaderboard.html">전체 랭킹 보기</a>
+    </div>
+  </div>
+
+</div><!-- /sp-page -->
+
+<script type="module" src="./js/pages/sparring.js?v=20260506-alternating-bgm" defer></script>
+
+</body>
+</html>

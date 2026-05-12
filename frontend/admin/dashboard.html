@@ -1,0 +1,501 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Dashboard</title>
+  <meta http-equiv="refresh" content="0; url=../admin.html">
+  <script>
+    window.location.replace('../admin.html');
+  </script>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    /* ── API Banner ─────────────────────────────────────────── */
+    .api-banner {
+      background: rgba(245,166,35,0.08);
+      border: 1px solid rgba(245,166,35,0.22);
+      color: var(--amber);
+      font-size: 0.76rem; font-weight: 700;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+    }
+    .api-banner[hidden] { display: none; }
+
+    /* ── KPI Strip ──────────────────────────────────────────── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .kpi-card { background: var(--s2); padding: 16px 18px; }
+    .kpi-label {
+      font-size: 0.54rem; font-weight: 900; letter-spacing: 0.12em;
+      color: var(--t4); text-transform: uppercase; margin-bottom: 5px;
+    }
+    .kpi-val {
+      font-family: var(--fm); font-size: 1.7rem;
+      letter-spacing: 0.04em; color: var(--t4); line-height: 1;
+    }
+    .kpi-val.ice { color: var(--ice); }
+    .kpi-val.amber { color: var(--amber); }
+
+    /* ── Module Grid ────────────────────────────────────────── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .module-card {
+      background: var(--s2);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .module-card-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .module-card-title {
+      font-size: 0.82rem; font-weight: 800; color: var(--t2); letter-spacing: 0.02em;
+    }
+    .module-card-desc {
+      font-size: 0.72rem; color: var(--t3); line-height: 1.6; flex: 1;
+    }
+    .module-card-footer { margin-top: 4px; }
+    .module-card.planned { opacity: 0.7; }
+
+    /* ── Quick Actions ──────────────────────────────────────── */
+    .quick-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .quick-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px;
+      border: 1px solid var(--border-2); background: var(--s2);
+      color: var(--t2); font-family: var(--fp); font-size: 0.76rem; font-weight: 700;
+      text-decoration: none; transition: all .13s;
+    }
+    .quick-btn:hover { color: var(--t1); border-color: rgba(255,255,255,0.26); background: var(--s3); }
+    .quick-btn.primary { border-color: rgba(232,0,13,0.35); color: var(--red); }
+    .quick-btn.primary:hover { background: rgba(232,0,13,0.08); border-color: var(--red); }
+    .quick-btn-badge {
+      font-size: 0.5rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 1px 5px; border: 1px solid currentColor; opacity: 0.7;
+    }
+
+    /* ── Recent Activity placeholder ────────────────────────── */
+    .activity-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+    }
+    .activity-row:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border-2); flex-shrink: 0;
+    }
+    .activity-label { color: var(--t3); flex: 1; }
+    .activity-time { font-size: 0.68rem; color: var(--t4); white-space: nowrap; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+      .module-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 720px) {
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+      .module-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">—</span>
+      <a class="adm-topbar-link" href="../admin.html">← Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item active" href="../index.html">Dashboard</a>
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item" href="../admin-dataset.html">AI Dataset</a>
+    <a class="adm-mobile-nav-item" href="./gyms.html">Boxing Gyms</a>
+    <a class="adm-mobile-nav-item" href="./users.html">Users</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Overview /</span> <span>Dashboard</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Admin Dashboard</h1>
+          <p class="adm-page-sub">플랫폼 운영 현황 · 모듈 상태 · 빠른 실행</p>
+        </div>
+        <a class="adm-btn-ghost" href="../admin.html">Admin Hub ↗</a>
+      </div>
+
+      <!-- API 오프라인 배너 -->
+      <div class="api-banner" id="apiBanner" hidden></div>
+
+      <!-- KPI Strip -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">PLATFORM KPIs</span>
+          <div class="adm-section-line"></div>
+          <span id="kpiLastUpdate" style="font-size:0.62rem;color:var(--t4);white-space:nowrap"></span>
+        </div>
+        <div class="kpi-strip">
+          <div class="kpi-card">
+            <div class="kpi-label">총 사용자</div>
+            <div class="kpi-val ice" data-kpi="total_users">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Premium</div>
+            <div class="kpi-val amber" data-kpi="premium_users">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">훈련 기록</div>
+            <div class="kpi-val" data-kpi="total_training">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">스파링 기록</div>
+            <div class="kpi-val" data-kpi="total_sparring">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">평균 회피율</div>
+            <div class="kpi-val" data-kpi="avg_dodge">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">관심 체육관</div>
+            <div class="kpi-val" data-kpi="favorite_gyms">—</div>
+          </div>
+        </div>
+        <p style="font-size:0.7rem;color:var(--t4);margin:8px 0 0">
+          <code style="color:var(--ice);font-size:0.68rem">GET /api/admin/platform/overview</code> 연결됨 — 데이터 없으면 백엔드 구현 후 표시됩니다.
+        </p>
+      </section>
+
+      <!-- Module Status -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">MODULE STATUS</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="module-grid">
+
+          <!-- Sparring Tuning — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Sparring Tuning</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              스파링 모드별 기준값 실시간 조정.<br>
+              Beginner / Intermediate / Advanced 프리셋 지원.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="../sparring_start.html?mode=beginner&admin=1">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Boxing Gym Manager — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Boxing Gym Manager</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              Kakao 복싱장 검색 API 테스트.<br>
+              반경·좌표 조정, 결과 테이블 확인.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="./gyms.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- AI Dataset — LEGACY -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">AI Dataset Manager</span>
+              <span class="adm-status-dot legacy">LEGACY</span>
+            </div>
+            <p class="module-card-desc">
+              영상 업로드 · 클립 생성 · 데이터셋 Export.<br>
+              기존 운영 도구 — 기능 유지.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="../admin-dataset.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Tutorial Manager — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Tutorial Manager</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              튜토리얼 CRUD · Premium 설정 · 활성화/비활성화.<br>
+              <code style="color:var(--ice);font-size:0.7rem">/api/admin/tutorials</code> 연결됨.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="./tutorials.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Media Library — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Media Library</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              영상 · 이미지 · 오디오 · 썸네일 통합 관리.<br>
+              <code style="color:var(--ice);font-size:0.7rem">/api/admin/media</code> 연결됨.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="./media-library.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Sparring Manager — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Sparring Manager</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              스파링 영상 등록 · 수정 · 활성화 관리.<br>
+              <code style="color:var(--ice);font-size:0.7rem">/api/admin/sparring/videos</code> 연결됨.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="./sparring.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Timestamp Editor — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Timestamp Visual Editor</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              스파링 영상 공격 타이밍 마커 시각 편집.<br>
+              <code style="color:var(--ice);font-size:0.7rem">/api/admin/videos/{id}/timestamps</code> 연결됨.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="./timestamp-editor.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Users Manager — LIVE -->
+          <div class="module-card">
+            <div class="module-card-header">
+              <span class="module-card-title">Users Manager</span>
+              <span class="adm-status-dot live">LIVE</span>
+            </div>
+            <p class="module-card-desc">
+              사용자 조회 · tier 변경 · 활성화/비활성화.<br>
+              <code style="color:var(--ice);font-size:0.7rem">/api/admin/users</code> 연결됨.
+            </p>
+            <div class="module-card-footer">
+              <a class="adm-btn-ghost" style="font-size:0.72rem;padding:6px 12px"
+                href="./users.html">열기 →</a>
+            </div>
+          </div>
+
+          <!-- Analytics — PLANNED -->
+          <div class="module-card planned">
+            <div class="module-card-header">
+              <span class="module-card-title">Analytics</span>
+              <span class="adm-status-dot planned">PLANNED</span>
+            </div>
+            <p class="module-card-desc">
+              평균 훈련 점수 · 회피율 · 반응속도 · 완료율 집계.<br>
+              Phase 2 — 집계 API 구현 후 차트 연동.
+            </p>
+            <div class="module-card-footer">
+              <span style="font-size:0.68rem;color:var(--t4);font-weight:700">Phase 2</span>
+            </div>
+          </div>
+
+          <!-- Premium — PLANNED -->
+          <div class="module-card planned">
+            <div class="module-card-header">
+              <span class="module-card-title">Premium Manager</span>
+              <span class="adm-status-dot planned">PLANNED</span>
+            </div>
+            <p class="module-card-desc">
+              Premium 플랜 관리 · 구독 현황 · 결제 이력 조회.<br>
+              결제 시스템 연동 후 활성화.
+            </p>
+            <div class="module-card-footer">
+              <span style="font-size:0.68rem;color:var(--t4);font-weight:700">Phase 3</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Recent Activity -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">RECENT ACTIVITY</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot planned">PHASE 2</span>
+        </div>
+        <div class="adm-panel">
+          <div class="activity-row">
+            <div class="activity-dot"></div>
+            <span class="activity-label" style="color:var(--t4)">활동 로그 API 연결 후 표시됩니다 — <code style="font-size:0.72rem;color:var(--ice)">GET /api/admin/activity</code></span>
+            <span class="activity-time">—</span>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot"></div>
+            <span class="activity-label" style="color:var(--t4)">신규 사용자 가입 · 스파링 기록 · 체육관 저장 등</span>
+            <span class="activity-time">—</span>
+          </div>
+          <div class="activity-row">
+            <div class="activity-dot"></div>
+            <span class="activity-label" style="color:var(--t4)">관리자 액션 (콘텐츠 수정 · 사용자 tier 변경)</span>
+            <span class="activity-time">—</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">QUICK ACTIONS</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="quick-grid">
+          <a class="quick-btn primary"
+            href="../sparring_start.html?mode=beginner&admin=1">
+            Beginner 튜닝
+            <span class="quick-btn-badge">LIVE</span>
+          </a>
+          <a class="quick-btn primary"
+            href="../sparring_start.html?mode=intermediate&admin=1">
+            Intermediate 튜닝
+            <span class="quick-btn-badge">LIVE</span>
+          </a>
+          <a class="quick-btn primary"
+            href="../sparring_start.html?mode=advanced&admin=1">
+            Advanced 튜닝
+            <span class="quick-btn-badge">LIVE</span>
+          </a>
+          <a class="quick-btn" href="../admin-dataset.html">
+            AI Dataset
+            <span class="quick-btn-badge" style="border-color:var(--amber);color:var(--amber)">LEGACY</span>
+          </a>
+          <a class="quick-btn" href="./gyms.html">복싱장 관리</a>
+          <a class="quick-btn" href="./users.html">Users</a>
+          <a class="quick-btn" href="../boxing-gyms.html" target="_blank">복싱장 찾기 (사용자) ↗</a>
+          <a class="quick-btn" href="../index.html" target="_blank">앱 대시보드 ↗</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    async function fetchOverview() {
+      const res = await fetch(`${API_BASE_URL}/api/admin/platform/overview`, {
+        headers: authHeaders()
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    function renderKPIs(metrics) {
+      if (!Array.isArray(metrics)) return;
+      metrics.forEach(({ key, value, unit }) => {
+        const el = document.querySelector(`[data-kpi="${key}"]`);
+        if (!el) return;
+        el.textContent = value != null ? String(value) + (unit ?? '') : '—';
+      });
+    }
+
+    function showBanner(msg) {
+      const banner = document.getElementById('apiBanner');
+      if (banner) { banner.textContent = msg; banner.hidden = false; }
+    }
+
+    async function loadOverview() {
+      try {
+        const data = await fetchOverview();
+        if (data.metrics) renderKPIs(data.metrics);
+        const el = document.getElementById('kpiLastUpdate');
+        if (el) el.textContent = `업데이트: ${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`;
+      } catch (err) {
+        showBanner(`⚠ 플랫폼 API 연결 실패 (${err.message}) — KPI를 불러올 수 없습니다. 나머지 기능은 정상 사용 가능합니다.`);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      loadOverview();
+    });
+  </script>
+</body>
+</html>
+

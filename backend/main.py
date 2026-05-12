@@ -1,4 +1,4 @@
-from contextlib import asynccontextmanager
+﻿from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -7,10 +7,12 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import engine, init_database
-from app.routers import admin, admin_videos, auth, coaching, detect, health, leaderboard, sessions, shop, stats, tutorials, users, videos
+from app.routers import admin, admin_analytics, admin_audio, admin_datasets, admin_media, admin_platform, admin_sparring, admin_timestamps, admin_videos, auth, coaching, detect, health, leaderboard, sessions, shop, stats, tutorials, users, videos
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _FRONTEND_DIR = _PROJECT_ROOT / "frontend"
+_UPLOADS_DIR = _PROJECT_ROOT / "uploads"
+_DATASET_DIR = _PROJECT_ROOT / "dataset"
 
 
 @asynccontextmanager
@@ -49,6 +51,13 @@ app.include_router(tutorials.router, prefix="/api/tutorials", tags=["tutorials"]
 app.include_router(videos.router, prefix="/api/videos", tags=["videos"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(admin_videos.router, prefix="/api/admin", tags=["admin"])
+app.include_router(admin_platform.router, prefix="/api/admin", tags=["admin-platform"])
+app.include_router(admin_sparring.router, prefix="/api/admin", tags=["admin-sparring"])
+app.include_router(admin_timestamps.router, prefix="/api/admin", tags=["admin-timestamps"])
+app.include_router(admin_media.router, prefix="/api/admin", tags=["admin-media"])
+app.include_router(admin_audio.router, prefix="/api/admin", tags=["admin-audio"])
+app.include_router(admin_analytics.router, prefix="/api/admin", tags=["admin-analytics"])
+app.include_router(admin_datasets.router, prefix="/api/admin", tags=["admin-datasets"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
 app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
 app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["leaderboard"])
@@ -57,6 +66,11 @@ app.include_router(coaching.router, prefix="/api/coaching", tags=["coaching"])
 app.include_router(shop.router, prefix="/api/shop", tags=["shop"])
 app.include_router(detect.router, prefix="/api/detect", tags=["detect"])
 
+
+_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+_DATASET_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(_UPLOADS_DIR), html=False), name="uploads")
+app.mount("/dataset", StaticFiles(directory=str(_DATASET_DIR), html=False), name="dataset")
 # API·/docs 등이 먼저 매칭되고, 나머지 경로는 frontend 정적 파일( index.html 등 )로 넘깁니다.
 if _FRONTEND_DIR.is_dir():
     app.mount(
@@ -64,3 +78,4 @@ if _FRONTEND_DIR.is_dir():
         StaticFiles(directory=str(_FRONTEND_DIR), html=True),
         name="frontend",
     )
+

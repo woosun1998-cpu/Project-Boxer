@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 레슨</title>
+
+  <!-- Pretendard Variable (CDN) -->
+  <link rel="stylesheet" as="style" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <!-- Bebas Neue — 숫자/영문 디스플레이 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./css/common.css">
+
+  <style>
+    /* ── Design tokens (tutorial.html와 통일) ─────────────── */
+    :root {
+      --red:    #E8000D;
+      --yellow: #FFE500;
+      --green:  #39D353;
+      --orange: #FF8C00;
+      --s1:     #000000;
+      --s2:     #0e0e0e;
+      --s3:     #161616;
+      --s4:     #1e1e1e;
+      --fp:     'Pretendard Variable', -apple-system, sans-serif;
+      --fm:     'Bebas Neue', monospace;
+
+      /* JS 컬러 스트링 backward compat */
+      --t-red:    #E8000D;
+      --t-yellow: #FFE500;
+      --t-green:  #39D353;
+      --t-orange: #FF8C00;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--s1) !important;
+      font-family: var(--fp);
+      color: #fff;
+    }
+
+    /* ── Page container ─────────────────────────────────── */
+    .tl-page {
+      width: min(1440px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 0 0 80px;
+    }
+
+    /* ── TOPBAR ─────────────────────────────────────────── */
+    .tl-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-wrap: wrap;
+      /* override common.css */
+      background: transparent !important;
+      border-radius: 0 !important;
+      backdrop-filter: none !important;
+      margin-bottom: 0 !important;
+    }
+
+    .tl-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tl-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255,255,255,0.38);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding-right: 16px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      transition: color .15s;
+    }
+    .tl-back:hover { color: #fff; }
+
+    .tl-step-label {
+      font-family: var(--fm);
+      font-size: 0.82rem;
+      letter-spacing: 0.14em;
+      color: var(--red);
+    }
+
+    .tl-lesson-title-strip {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .tl-nav-btns { display: flex; gap: 6px; }
+    .tl-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px; height: 34px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      padding: 0 12px;
+      font-size: 1rem;
+      transition: border-color .15s, color .15s, background .15s;
+      cursor: pointer;
+    }
+    .tl-nav-btn:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: #fff;
+      background: rgba(255,255,255,0.04);
+    }
+    .tl-nav-btn[hidden] { display: none !important; }
+
+    /* ── STEP PROGRESS PIPS ─────────────────────────────── */
+    .tl-step-track {
+      display: flex;
+      gap: 5px;
+      margin: 18px 0 32px;
+    }
+    .tl-step-pip {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.07);
+      transition: background .4s ease;
+    }
+    .tl-step-pip.done   { background: var(--green); }
+    .tl-step-pip.active { background: var(--red); }
+
+    /* JS 연동용 progress fill — 숨김 */
+    .tl-lesson-progress { display: none; }
+
+    /* ── MAIN 2-COLUMN LAYOUT ───────────────────────────── */
+    .tl-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* ── LEFT: STUDY PANEL ──────────────────────────────── */
+    .tl-study {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Section label with red line */
+    .tl-section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.26em;
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .tl-section-label::before {
+      content: '';
+      width: 22px; height: 2px;
+      background: var(--red);
+      flex-shrink: 0;
+    }
+
+    /* 제목 블록:
+       - data-study-title-en (p) → Bebas Neue, 연하게
+       - data-study-title (h1)   → Pretendard 800, 굵게
+       → 두 요소를 형제로 분리해야 JS textContent 덮어쓰기 버그 방지
+    */
+    .tl-title-block { display: flex; flex-direction: column; gap: 6px; }
+
+    .tl-title-en {
+      /* [data-study-title-en] */
+      font-family: var(--fm);
+      font-size: 0.85rem;
+      letter-spacing: 0.32em;
+      color: rgba(255,255,255,0.22);
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .tl-title-ko {
+      /* [data-study-title] */
+      font-family: var(--fp);
+      font-size: clamp(2.4rem, 4.8vw, 4rem);
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      margin: 0;
+    }
+
+    /* Summary */
+    .tl-summary {
+      font-size: 1rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.42);
+      line-height: 1.8;
+      margin: 0;
+      max-width: 540px;
+    }
+
+    /* Key point — 핵심 규칙 박스 */
+    .tl-key-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 20px;
+      border-left: 3px solid var(--red);
+      border-top: 1px solid rgba(232,0,13,0.14);
+      border-right: 1px solid rgba(232,0,13,0.14);
+      border-bottom: 1px solid rgba(232,0,13,0.14);
+      background: rgba(232,0,13,0.05);
+    }
+    .tl-key-point-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 3px; }
+    .tl-key-point-text {
+      font-size: 1rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+    }
+
+    /* ─ Pose comparison ─ */
+    .tl-pose-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .tl-pose-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--s2);
+    }
+
+    .tl-pose-card-header {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: rgba(0,0,0,0.52);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+    }
+    .tl-pose-card[data-type="good"] .tl-pose-card-header {
+      color: var(--green);
+      border-color: rgba(57,211,83,0.18);
+    }
+    .tl-pose-card[data-type="bad"] .tl-pose-card-header {
+      color: #FF5555;
+      border-color: rgba(232,0,13,0.18);
+    }
+
+    .tl-pose-card-body {
+      position: relative;
+      padding: 0 12px;
+      background: #070707;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .tl-pose-media {
+      position: relative;
+      width: min(96%, 300px);
+      aspect-ratio: 1 / 1;
+      height: auto;
+      margin: 14px auto 0;
+      display: block;
+      overflow: hidden;
+      background: #050505;
+    }
+
+    .tl-pose-media img,
+    .tl-pose-media video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+    }
+
+    .tl-pose-hover-shell {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tl-pose-hover-shell img,
+    .tl-pose-hover-shell video {
+      position: absolute;
+      inset: 0;
+    }
+
+    .tl-pose-points {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      list-style: none;
+      margin: 0;
+      padding: 18px 12px 14px;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.50) 24%, rgba(0,0,0,0.90) 100%);
+    }
+    .tl-pose-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.76);
+      line-height: 1.5;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.65);
+    }
+    .tl-pose-point-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .tl-pose-card[data-type="good"] .tl-pose-point-dot { background: var(--green); }
+    .tl-pose-card[data-type="bad"]  .tl-pose-point-dot { background: var(--red); }
+
+    /* ─ Checklist + Score blocks ─ */
+    .tl-blocks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tl-block {
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--s2);
+      padding: 18px 18px;
+    }
+    .tl-block-title {
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      color: rgba(255,255,255,0.24);
+      text-transform: uppercase;
+      margin: 0 0 14px;
+    }
+    .tl-checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .tl-check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.48);
+      line-height: 1.5;
+    }
+    .tl-check-icon {
+      width: 16px; height: 16px;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Score bands */
+    .tl-score-bars { display: flex; flex-direction: column; gap: 7px; }
+    .tl-score-band { display: flex; align-items: center; gap: 9px; }
+    .tl-score-band-fill { height: 3px; border-radius: 1px; }
+    .tl-score-band-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      white-space: nowrap;
+      font-family: var(--fm);
+      letter-spacing: 0.06em;
+    }
+    [data-score-note] {
+      margin: 12px 0 0;
+      font-size: 0.76rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.28);
+      line-height: 1.65;
+    }
+
+    /* ── RIGHT: PRACTICE PANEL (sticky) ────────────────── */
+    .tl-practice {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* AI Coach header */
+    .tl-coach-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--s2);
+    }
+    .tl-coach-id {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--fm);
+      font-size: 0.85rem;
+      letter-spacing: 0.14em;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    .tl-coach-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .tl-coach-status {
+      font-size: 0.74rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.32);
+    }
+
+    /* Camera viewport */
+    .tl-cam-wrap {
+      position: relative;
+      overflow: hidden;
+      background: #060606;
+      border: 1px solid rgba(255,255,255,0.06);
+      aspect-ratio: 4/3;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .tl-cam-wrap[data-active="true"] {
+      border-color: rgba(232,0,13,0.45);
+      box-shadow: 0 0 0 1px rgba(232,0,13,0.1), 0 0 32px rgba(232,0,13,0.08);
+    }
+    .tl-cam-video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scaleX(-1);
+    }
+    .tl-cam-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      transform: scaleX(-1);
+    }
+    .tl-cam-fallback {
+      position: absolute; inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #070707;
+    }
+    .tl-cam-fallback-icon { font-size: 2rem; opacity: .2; }
+    .tl-cam-fallback p {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.26);
+      text-align: center;
+      max-width: 200px;
+      line-height: 1.65;
+    }
+
+    /* Score HUD */
+    .tl-score-panel {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--s2);
+    }
+    .tl-score-donut-wrap {
+      position: relative;
+      width: 92px; height: 92px;
+      flex-shrink: 0;
+    }
+    .tl-score-donut {
+      width: 92px; height: 92px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--donut-color, rgba(255,255,255,0.07)) var(--donut-pct, 0%),
+        rgba(255,255,255,0.05) var(--donut-pct, 0%)
+      );
+    }
+    .tl-score-donut::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
+      background: var(--s2);
+    }
+    .tl-score-number {
+      position: absolute; inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--fm);
+      font-size: 1.8rem;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .tl-score-info { display: flex; flex-direction: column; gap: 5px; }
+    .tl-score-grade {
+      font-family: var(--fp);
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+    }
+    .tl-score-grade[data-grade="perfect"] { color: var(--t-yellow); }
+    .tl-score-grade[data-grade="good"]    { color: var(--t-green); }
+    .tl-score-grade[data-grade="warning"] { color: var(--t-orange); }
+    .tl-score-grade[data-grade="bad"]     { color: var(--t-red); }
+    .tl-score-grade[data-grade="idle"]    { color: rgba(255,255,255,0.2); }
+    .tl-score-meta {
+      font-size: 0.74rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.26);
+    }
+
+    /* Feedback log */
+    .tl-feedback-panel {
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--s2);
+      overflow: hidden;
+    }
+    .tl-feedback-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.22);
+      text-transform: uppercase;
+    }
+    .tl-feedback-body {
+      max-height: 160px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+    .tl-feedback-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.82rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+    }
+    .tl-feedback-item:last-child { border-bottom: none; }
+    .tl-feedback-item[data-tone="success"] { color: var(--green); }
+    .tl-feedback-item[data-tone="danger"]  { color: #FF5555; }
+    .tl-feedback-item[data-tone="warning"] { color: var(--orange); }
+    .tl-feedback-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+    [data-tone="success"] .tl-feedback-dot { background: var(--green); }
+    [data-tone="danger"]  .tl-feedback-dot { background: #FF5555; }
+    [data-tone="warning"] .tl-feedback-dot { background: var(--orange); }
+    .tl-feedback-empty {
+      padding: 14px;
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.18);
+    }
+
+    /* Tip bar */
+    .tl-tip-bar {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      padding: 11px 14px;
+      border-left: 2px solid var(--yellow);
+      border-top: 1px solid rgba(255,229,0,0.1);
+      border-right: 1px solid rgba(255,229,0,0.1);
+      border-bottom: 1px solid rgba(255,229,0,0.1);
+      background: rgba(255,229,0,0.03);
+    }
+    .tl-tip-label {
+      font-family: var(--fm);
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      color: var(--yellow);
+      text-transform: uppercase;
+      white-space: nowrap;
+      padding-top: 1px;
+    }
+    .tl-tip-text {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.65;
+    }
+
+    /* Controls */
+    .tl-controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+    }
+    .tl-btn-practice {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.62);
+      font-family: var(--fp);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .tl-btn-practice:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.16);
+    }
+    .tl-btn-practice[data-active="true"] {
+      background: rgba(232,0,13,0.1);
+      color: var(--red);
+      border-color: rgba(232,0,13,0.25);
+    }
+    .tl-btn-audio {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 18px;
+      border: 1px solid rgba(245,197,24,0.24);
+      background: rgba(245,197,24,0.06);
+      color: var(--yellow);
+      font-family: var(--fp);
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s, color .15s, border-color .15s, transform .15s;
+    }
+    .tl-btn-audio:hover {
+      background: rgba(245,197,24,0.12);
+      border-color: rgba(245,197,24,0.42);
+      transform: translateY(-1px);
+    }
+    .tl-btn-audio[data-playing="true"] {
+      background: rgba(232,0,13,0.1);
+      color: var(--red);
+      border-color: rgba(232,0,13,0.3);
+    }
+    .tl-btn-train {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 24px;
+      background: var(--red);
+      color: #fff;
+      font-family: var(--fp);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 0;
+      cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+      transition: background .15s, transform .15s;
+      white-space: nowrap;
+    }
+    .tl-btn-train:hover { background: #ff1a22; transform: translateY(-1px); }
+
+    /* Coach guide modal */
+    .tl-guide-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 420;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,0.76);
+      backdrop-filter: blur(14px);
+    }
+    .tl-guide-modal[data-open="true"] { display: flex; }
+    .tl-guide-card {
+      position: relative;
+      width: min(380px, calc(100vw - 28px));
+      min-height: min(520px, calc(100vh - 28px));
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(232,0,13,0.34);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(255,255,255,0.12), transparent 23%),
+        radial-gradient(circle at 50% 18%, rgba(232,0,13,0.22), transparent 38%),
+        linear-gradient(180deg, #171717 0%, #0F0F0F 54%, #080808 100%);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 0 46px rgba(232,0,13,0.22), 0 32px 90px rgba(0,0,0,0.72);
+    }
+    .tl-guide-card::before {
+      content: "";
+      position: absolute;
+      inset: -30% -20% auto;
+      height: 58%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.14), transparent 62%);
+      pointer-events: none;
+    }
+    .tl-guide-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(180deg, black 0%, transparent 72%);
+      pointer-events: none;
+    }
+    .tl-guide-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 4;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      background: rgba(0,0,0,0.42);
+      color: rgba(255,255,255,0.7);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .tl-guide-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 22px 0;
+      text-align: center;
+    }
+    .tl-guide-kicker {
+      font-family: var(--fm);
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      text-shadow: 0 0 16px rgba(232,0,13,0.52);
+    }
+    .tl-guide-title {
+      margin: 4px 0 0;
+      font-family: var(--fp);
+      font-size: 1.22rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .tl-guide-coach-wrap {
+      position: relative;
+      z-index: 2;
+      min-height: clamp(96px, 22vh, 132px);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 6px 28px 0;
+    }
+    .tl-guide-coach-glow {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 78%;
+      background:
+        radial-gradient(ellipse at center, rgba(232,0,13,0.18), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,0.05), transparent 72%);
+      filter: blur(10px);
+      pointer-events: none;
+    }
+    .tl-guide-video-frame {
+      position: relative;
+      z-index: 1;
+      width: min(66vw, 220px);
+      aspect-ratio: 768 / 1168;
+      min-height: 0;
+      margin: 0 auto;
+      overflow: hidden;
+      background: #050505;
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 8%, black 78%, transparent 100%);
+      mask-image: linear-gradient(180deg, transparent 0%, black 8%, black 78%, transparent 100%);
+    }
+    .tl-guide-coach {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+      border: 0;
+      outline: 0;
+      filter: saturate(1.08) contrast(1.04);
+    }
+    .tl-guide-bubble {
+      position: relative;
+      z-index: 3;
+      margin: 0 18px 16px;
+      padding: 16px 16px 14px;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 18px;
+      background: rgba(12,12,12,0.9);
+      box-shadow: 0 0 24px rgba(232,0,13,0.12) inset;
+    }
+    .tl-guide-bubble::before {
+      content: "";
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translateX(-50%) rotate(45deg);
+      background: rgba(12,12,12,0.9);
+      border-left: 1px solid rgba(255,255,255,0.09);
+      border-top: 1px solid rgba(255,255,255,0.09);
+    }
+    .tl-guide-script {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.72;
+      color: rgba(255,255,255,0.86);
+      word-break: keep-all;
+    }
+    .tl-guide-script-line {
+      display: block;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: tlScriptIn .42s ease forwards;
+    }
+    .tl-guide-script-line:nth-child(2) { animation-delay: .08s; }
+    .tl-guide-script-line:nth-child(3) { animation-delay: .16s; }
+    .tl-guide-script-line:nth-child(4) { animation-delay: .24s; }
+    .tl-guide-script-line:nth-child(5) { animation-delay: .32s; }
+    .tl-guide-script-line:nth-child(6) { animation-delay: .40s; }
+    @keyframes tlScriptIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tl-guide-actions {
+      position: relative;
+      z-index: 3;
+      margin-top: auto;
+      padding: 0 18px 18px;
+    }
+    .tl-guide-play {
+      width: 100%;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--red);
+      color: #fff;
+      font-family: var(--fp);
+      font-size: 0.94rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(232,0,13,0.32);
+    }
+    .tl-guide-play::before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 11px solid currentColor;
+    }
+    .tl-guide-play[data-playing="true"]::before {
+      width: 12px;
+      height: 14px;
+      border: 0;
+      background: linear-gradient(90deg, currentColor 0 35%, transparent 35% 65%, currentColor 65% 100%);
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .tl-layout { grid-template-columns: 1fr; }
+      .tl-practice { position: static; }
+    }
+    @media (max-width: 680px) {
+      .tl-topbar      { flex-wrap: wrap; gap: 10px; }
+      .tl-title-ko    { font-size: clamp(2rem, 10vw, 3rem); }
+      .tl-pose-compare,
+      .tl-blocks      { grid-template-columns: 1fr; }
+      .tl-controls    { grid-template-columns: 1fr; }
+      .tl-guide-card   { min-height: min(520px, calc(100vh - 20px)); border-radius: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page tl-page" data-page="tutorial-lesson">
+
+    <!-- ── Topbar ──────────────────────────────────────── -->
+    <header class="tl-topbar">
+      <div class="tl-topbar-left">
+        <span class="tl-step-label" data-step-label>STEP 01 / 06</span>
+        <span class="tl-lesson-title-strip" data-lesson-title-strip>기본 가드</span>
+      </div>
+      <div class="tl-nav-btns">
+        <button class="tl-nav-btn" type="button" data-logout-button>로그아웃</button>
+      </div>
+    </header>
+
+    <!-- ── Step progress pips ─────────────────────────── -->
+    <div class="tl-step-track" id="js-step-track"></div>
+    <!-- JS 연동용 hidden fill (tutorial-lesson.js가 width를 설정) -->
+    <div class="tl-lesson-progress">
+      <div class="tl-lesson-progress-fill" data-lesson-progress style="width:16.6%"></div>
+    </div>
+
+    <!-- ── Main layout ────────────────────────────────── -->
+    <div class="tl-layout">
+
+      <!-- ── LEFT: Study panel ──────────────────────── -->
+      <aside class="tl-study">
+        <span class="tl-section-label">동작 이해</span>
+
+        <!--
+          제목 블록:
+          [data-study-title-en] ← JS가 lesson.titleEn을 주입
+          [data-study-title]    ← JS가 lesson.title을 주입
+          → 형제 요소로 분리해야 각각 textContent 주입이 충돌 없이 작동
+        -->
+        <div class="tl-title-block">
+          <p class="tl-title-en" data-study-title-en>GUARD STANCE</p>
+          <h1 class="tl-title-ko" data-study-title>기본 가드</h1>
+        </div>
+
+        <p class="tl-summary" data-study-summary>
+          양손을 얼굴 가까이 두고 턱, 어깨, 중심을 안정적으로 유지하는 출발 자세.
+        </p>
+
+        <!-- 핵심 규칙 -->
+        <div class="tl-key-point">
+          <span class="tl-key-point-icon">🥊</span>
+          <span class="tl-key-point-text" data-key-point>양 주먹을 턱 높이에, 팔꿈치는 갈비뼈 쪽으로</span>
+        </div>
+
+        <!-- 자세 비교 -->
+        <div>
+          <span class="tl-section-label">자세 비교</span>
+          <div class="tl-pose-compare">
+            <div class="tl-pose-card" data-type="good">
+              <div class="tl-pose-card-header"><span>✓</span> 올바른 자세</div>
+              <div class="tl-pose-card-body">
+                <div class="tl-pose-media" data-good-pose-media>
+                  <img class="tl-pose-img" data-good-pose-img
+                    src="./assets/poses/basic-guard-good.svg" alt="올바른 자세">
+                </div>
+                <ul class="tl-pose-points" data-good-points></ul>
+              </div>
+            </div>
+            <div class="tl-pose-card" data-type="bad">
+              <div class="tl-pose-card-header"><span>✗</span> 흔한 실수</div>
+              <div class="tl-pose-card-body">
+                <div class="tl-pose-media" data-bad-pose-media>
+                  <img class="tl-pose-img" data-bad-pose-img
+                    src="./assets/poses/basic-guard-bad.svg" alt="흔한 실수">
+                </div>
+                <ul class="tl-pose-points" data-bad-points></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 체크리스트 + 점수 해석 -->
+        <div class="tl-blocks">
+          <div class="tl-block">
+            <h3 class="tl-block-title">훈련 전 체크</h3>
+            <div class="tl-checklist" data-check-list></div>
+          </div>
+          <div class="tl-block">
+            <h3 class="tl-block-title">점수 해석</h3>
+            <div class="tl-score-bars">
+              <div class="tl-score-band">
+                <div class="tl-score-band-fill" style="width:44px;background:#FFE500"></div>
+                <span class="tl-score-band-label" style="color:#FFE500">90+&nbsp;&nbsp;PERFECT</span>
+              </div>
+              <div class="tl-score-band">
+                <div class="tl-score-band-fill" style="width:36px;background:#39D353"></div>
+                <span class="tl-score-band-label" style="color:#39D353">70–89 GOOD</span>
+              </div>
+              <div class="tl-score-band">
+                <div class="tl-score-band-fill" style="width:28px;background:#FF8C00"></div>
+                <span class="tl-score-band-label" style="color:#FF8C00">50–69 보통</span>
+              </div>
+              <div class="tl-score-band">
+                <div class="tl-score-band-fill" style="width:18px;background:#E8000D"></div>
+                <span class="tl-score-band-label" style="color:#E8000D">~49&nbsp;&nbsp;&nbsp;개선</span>
+              </div>
+            </div>
+            <p data-score-note></p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ── RIGHT: Practice panel ───────────────────── -->
+      <div class="tl-practice">
+
+        <!-- AI Coach status -->
+        <div class="tl-coach-header">
+          <div class="tl-coach-id">
+            <span class="tl-coach-dot"></span>
+            AI COACH
+          </div>
+          <span class="tl-coach-status" data-webcam-status>카메라 연결 대기</span>
+        </div>
+
+        <!-- 웹캠 뷰포트 -->
+        <div class="tl-cam-wrap" id="cam-wrap">
+          <video class="tl-cam-video" data-webcam-video autoplay playsinline muted></video>
+          <canvas class="tl-cam-canvas" data-pose-overlay></canvas>
+          <div class="tl-cam-fallback" data-webcam-fallback>
+            <span class="tl-cam-fallback-icon">📷</span>
+            <p>아래 버튼으로 카메라를 연결하면<br>AI가 자세를 분석합니다.<br>localhost와 카메라 권한을 허용해 주세요.</p>
+          </div>
+        </div>
+
+        <!-- 점수 HUD -->
+        <div class="tl-score-panel">
+          <div class="tl-score-donut-wrap">
+            <div class="tl-score-donut" data-score-donut
+              style="--donut-pct:0%;--donut-color:rgba(255,255,255,0.07)"></div>
+            <div class="tl-score-number" data-score-number>—</div>
+          </div>
+          <div class="tl-score-info">
+            <span class="tl-score-grade" data-grade="idle" data-score-grade>대기 중</span>
+            <span class="tl-score-meta" data-score-meta>카메라 연결 후 분석이 시작됩니다</span>
+          </div>
+        </div>
+
+        <!-- 실시간 피드백 -->
+        <div class="tl-feedback-panel">
+          <div class="tl-feedback-header">⚡ 실시간 피드백</div>
+          <div class="tl-feedback-body" data-feedback-list>
+            <div class="tl-feedback-empty">훈련이 시작되면 피드백이 여기에 표시됩니다.</div>
+          </div>
+        </div>
+
+        <!-- Tip -->
+        <div class="tl-tip-bar" data-tip-bar>
+          <span class="tl-tip-label">TIP</span>
+          <span class="tl-tip-text" data-tip-text>
+            캘리브레이션을 먼저 완료하면 Threshold가 훈련에 그대로 적용됩니다.
+          </span>
+        </div>
+
+        <!-- 컨트롤 -->
+        <div class="tl-controls">
+          <button type="button" class="tl-btn-practice" data-cam-toggle>
+            📷 카메라 연결
+          </button>
+          <button type="button" class="tl-btn-audio" data-guide-audio-toggle data-playing="false">
+            ▶ 가이드 재생
+          </button>
+          <a class="tl-btn-train" data-train-link href="./training_session.html?lesson_key=basic-guard">
+            훈련 시작 →
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <div class="tl-guide-modal" data-guide-modal aria-hidden="true">
+    <section class="tl-guide-card" role="dialog" aria-modal="true" aria-labelledby="guide-modal-title">
+      <button type="button" class="tl-guide-close" data-guide-modal-close aria-label="닫기">×</button>
+      <div class="tl-guide-top">
+        <span class="tl-guide-kicker">THE DRAGON</span>
+        <h2 class="tl-guide-title" id="guide-modal-title" data-guide-modal-title>기본 자세 코칭</h2>
+      </div>
+      <div class="tl-guide-coach-wrap">
+        <div class="tl-guide-coach-glow"></div>
+        <div class="tl-guide-video-frame">
+          <video class="tl-guide-coach" data-guide-video src="./assets/videos/tutorials/tutorial_guide.mp4?v=20260508-h264-video" muted loop playsinline autoplay preload="auto" aria-label="THE DRAGON 복싱 가이드 영상">
+            <source src="./assets/videos/tutorials/tutorial_guide.mp4?v=20260508-h264-video" type="video/mp4">
+          </video>
+        </div>
+      </div>
+      <div class="tl-guide-bubble">
+        <p class="tl-guide-script" data-guide-modal-script></p>
+      </div>
+      <div class="tl-guide-actions">
+        <button type="button" class="tl-guide-play" data-guide-modal-audio-toggle data-playing="false">음성 재생</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ── UI Script: step pips + cam glow ───────────────── -->
+  <script>
+    (function () {
+      const KEYS   = ["basic-guard","jab","cross","left-hook","slip","uppercut"];
+      const PREFIX = "im_boxer_lesson_score_";
+
+      function isDone(k) {
+        try {
+          const v = Number(localStorage.getItem(PREFIX + k));
+          return Number.isFinite(v) && v >= 70;
+        } catch { return false; }
+      }
+
+      function getCurrentKey() {
+        const p = new URLSearchParams(location.search);
+        const key = p.get("lesson") || p.get("lessonKey") || p.get("lesson_key") || "basic-guard";
+        if (key === "guard" || key === "beginner-basic-guard") return "basic-guard";
+        if (key === "hook") return "left-hook";
+        return key;
+      }
+
+      function getTrainingSessionUrl() {
+        return `./training_session.html?lesson_key=${encodeURIComponent(getCurrentKey())}`;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        /* Step pips */
+        const track = document.getElementById("js-step-track");
+        if (track) {
+          const cur = getCurrentKey();
+          track.innerHTML = KEYS.map(k => {
+            let cls = "tl-step-pip";
+            if (k === cur)    cls += " active";
+            else if (isDone(k)) cls += " done";
+            return `<div class="${cls}" title="${k}"></div>`;
+          }).join("");
+        }
+
+        /* Camera wrap 활성 glow:
+           tutorial-lesson.js가 camToggle.dataset.active를 바꾸면 MutationObserver가 감지 */
+        const toggle = document.querySelector("[data-cam-toggle]");
+        const wrap   = document.getElementById("cam-wrap");
+        if (toggle && wrap) {
+          new MutationObserver(() => {
+            wrap.dataset.active = (toggle.dataset.active === "true") ? "true" : "false";
+          }).observe(toggle, { attributes: true, attributeFilter: ["data-active"] });
+        }
+
+        const trainLink = document.querySelector("[data-train-link]");
+        if (trainLink) {
+          trainLink.href = getTrainingSessionUrl();
+          trainLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            window.location.href = getTrainingSessionUrl();
+          }, { capture: true });
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    window.IM_BOXER_MEDIA_PIPE_MODEL_URL = "./assets/models/pose_landmarker_full.task";
+    window.IM_BOXER_MEDIA_PIPE_WASM_URL = "./vendor/tasks-vision/wasm";
+    window.IM_BOXER_MEDIA_PIPE_IMPORT_CANDIDATES = [
+      "./vendor/tasks-vision/vision_bundle.mjs"
+    ];
+  </script>
+
+  <script type="module" src="./js/pages/tutorial-lesson.js?v=20260512-local-vendor-path"></script>
+</body>
+</html>

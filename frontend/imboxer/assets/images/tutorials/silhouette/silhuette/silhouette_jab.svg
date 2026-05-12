@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 400 500" height="500" width="400">
+  <path fill="#111111" d="M210 80 Q170 45 135 85 Q145 160 175 185 Q150 250 175 310 Q165 400 195 440 Q240 455 265 410 Q280 290 310 265"></path>
+  
+  <path stroke-linecap="round" stroke-width="48" stroke="#111111" fill="none" d="M175 185 Q220 175 315 175"></path>
+  
+  <path stroke-linecap="round" stroke-width="45" stroke="#111111" fill="none" d="M255 160 Q290 155 305 195"></path>
+  
+  <line marker-end="url(#arrow)" stroke-dasharray="12,6" stroke-width="6" stroke="#FF1E1E" y2="175" x2="325" y1="185" x1="175"></line>
+  <defs>
+    <marker orient="auto" refY="3" refX="8" markerHeight="10" markerWidth="10" id="arrow">
+      <path fill="#FF1E1E" d="M0,0 L0,6 L9,3 Z"></path>
+    </marker>
+  </defs>
+</svg>
