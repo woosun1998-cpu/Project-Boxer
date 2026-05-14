@@ -449,7 +449,7 @@
             <img
               crossorigin="anonymous"
               referrerpolicy="no-referrer"
-              src="https://lh3.googleusercontent.com/d/1oZRuK0m5U4XlcIYBVtyrsUc1_wjdj-yt=w2000"
+              src="./image/cache/1oZRuK0m5U4XlcIYBVtyrsUc1_wjdj-yt.png"
               class="shell-image-img"
               alt="유저 HP 바"
             />
@@ -471,7 +471,7 @@
             <img
               crossorigin="anonymous"
               referrerpolicy="no-referrer"
-              src="https://lh3.googleusercontent.com/d/1q07oGsEEJQUwlli15pov7ZHFj9A4xWA9=w2000"
+              src="./image/cache/1q07oGsEEJQUwlli15pov7ZHFj9A4xWA9.png"
               class="shell-image-img"
               alt="CPU HP 바"
             />
@@ -488,6 +488,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script> -->
     <script src="js/config/boxer-video-local.js"></script>
+    <script src="js/sparring/cpuAttacksData.js"></script>
     <script src="js/sparring/realtimeAnalysis.js"></script>
     <script>
       // 무엇: documentURI만 사용 / 왜: window.location 할당·치환 제거 요청
@@ -529,6 +530,7 @@
       };
 
       const coachVideo = document.getElementById("coachVideo");
+      const syncHelperEl = document.getElementById("syncHelper");
 
       function bindCoachVideoFallbackOnce() {
         if (coachVideo.dataset.fallbackBound === "1") return;
@@ -581,55 +583,124 @@
       let lastUserHitAt = 0;
       let ended = false;
 
-      let jabScript = [
-        { time: 11.5, action: "video_jab", damage: 10, handled: false },
-        { time: 13.0, action: "video_hook", damage: 20, handled: false },
-        { time: 15.5, action: "video_open", handled: false },
-        { time: 18.5, action: "video_jab", damage: 10, handled: false },
-        { time: 21.0, action: "video_hook", damage: 20, handled: false },
-        { time: 24.0, action: "video_open", handled: false },
-        { time: 28.0, action: "video_jab", damage: 10, handled: false },
-        { time: 30.0, action: "video_jab", damage: 10, handled: false },
-        { time: 34.0, action: "video_hook", damage: 20, handled: false },
-        { time: 38.0, action: "video_open", handled: false },
-      ];
+      /** 무엇: 연속 프레임 중복 피해 방지 / 왜: 동일 펀치가 짧은 간격으로 여러 번 깎이는 현상 차단 */
+      let lastAttackTriggeredAt = 0;
 
-      function resetJabScript() {
-        jabScript = jabScript.map((step) => ({ ...step, handled: false }));
+      /**
+       * 무엇: URL level에 맞는 원본 배열을 BOXER_CPU_ATTACKS에서 직접 조회
+       * 왜: pro(복싱프로.mp4 583라인 기반 풀데이터)까지 4단계 모두 다이렉트 매핑 / 누락 시 beginner 폴백
+       */
+      function getCpuAttackSourceArray() {
+        const B = window.BOXER_CPU_ATTACKS || {};
+        const arr = B[level];
+        if (Array.isArray(arr) && arr.length) return arr;
+        // pro/advanced 비어있으면 beginner 폴백 (안전망)
+        if (typeof console !== "undefined" && console.warn) {
+          console.warn(
+            `[sparring] BOXER_CPU_ATTACKS.${level} 없음/빈배열 → beginner 폴백`,
+          );
+        }
+        return Array.isArray(B.beginner) && B.beginner.length ? B.beginner : [];
       }
 
-      function evaluateScriptStep(step) {
-        if (step.action === "video_jab" || step.action === "video_hook") {
-          const attackType = step.action === "video_jab" ? "잽" : "훅";
-          const damage = step.damage;
-          if (!isUserDodging && !isUserGuarding) {
-            hitUser(damage);
-            feedbackText.textContent = `코치 ${attackType} 공격! 방어 실패 (-${damage} HP)`;
-          } else {
-            feedbackText.textContent = `코치 ${attackType} 공격! 방어 성공!`;
-          }
+      /** 무엇: 런타임 타격 큐 (handled 포함) / 왜: 영상 루프·시크 시 원본과 동기 재구성 */
+      let CPU_ATTACKS = [];
+
+      /**
+       * 무엇: window.BOXER_CPU_ATTACKS[level] 최신 스냅샷을 다이렉트 복사하여 CPU_ATTACKS에 매핑
+       * 왜: 사용자 요청 매핑 구조 — beginner/intermediate/advanced/pro 모두 동일 경로로 즉시 동기화
+       *     원본 객체에 이미 .handled 가 있더라도 매번 false 로 초기화해 라운드 간 누수 방지
+       */
+      function rebuildCpuAttacksFromLevel() {
+        const source =
+          (window.BOXER_CPU_ATTACKS && window.BOXER_CPU_ATTACKS[level]) ||
+          (window.BOXER_CPU_ATTACKS && window.BOXER_CPU_ATTACKS.beginner) ||
+          [];
+        CPU_ATTACKS = (Array.isArray(source) && source.length
+          ? source
+          : getCpuAttackSourceArray()
+        ).map((atk) => ({
+          time: atk.time,
+          type: atk.type,
+          handled: false,
+        }));
+        if (typeof console !== "undefined" && console.info) {
+          console.info(
+            `[sparring] level=${level} CPU_ATTACKS=${CPU_ATTACKS.length}건 매핑 완료`,
+          );
+        }
+      }
+      rebuildCpuAttacksFromLevel();
+
+      function resetCpuAttacks() {
+        lastAttackTriggeredAt = 0;
+        rebuildCpuAttacksFromLevel();
+      }
+
+      /** 무엇: 타입별 HP 데미지 / 왜: 잽·훅·어퍼·바디 등 차등 */
+      function damageForCpuAttackType(type) {
+        const t = String(type || "").toLowerCase();
+        if (t === "jab") return 10;
+        if (t === "cross") return 12;
+        if (t === "hook") return 18;
+        if (t === "uppercut") return 22;
+        if (t === "body_shot") return 15;
+        if (t === "overhand") return 18;
+        return 10;
+      }
+
+      /** 무엇: 피드백용 한글 타격명 */
+      function cpuAttackTypeKo(type) {
+        const t = String(type || "").toLowerCase();
+        if (t === "jab") return "잽";
+        if (t === "cross") return "크로스";
+        if (t === "hook") return "훅";
+        if (t === "uppercut") return "어퍼컷";
+        if (t === "body_shot") return "바디샷";
+        if (t === "overhand") return "오버핸드";
+        return t || "공격";
+      }
+
+      /**
+       * 무엇: 가드·회피 절대 우선 → hitUser 없음 / 왜: 방어 성공 시 데미지 0
+       * 피격 시에만 hitUser (화면 흔들림·HP 차감)
+       */
+      function evaluateCpuAttack(step) {
+        const label = cpuAttackTypeKo(step.type);
+        if (isUserGuarding) {
+          feedbackText.textContent = `GUARD! 코치 ${label} — 데미지 무효`;
           return;
         }
-        if (step.action === "video_open") {
-          if (isUserAttackingJAB || isUserAttackingCROSS) {
-            hitEnemy(10);
-            feedbackText.textContent = "빈틈 포착! 카운터 적중!";
-          } else {
-            feedbackText.textContent = "빈틈이 있었지만 반격이 늦었습니다.";
-          }
+        if (isUserDodging) {
+          feedbackText.textContent = `MISS! 코치 ${label} — 데미지 무효`;
+          return;
         }
+        const damage = damageForCpuAttackType(step.type);
+        hitUser(damage);
       }
+
+      /**
+       * 무엇: 타점 직후 180ms 윈도우 + 350ms 쿨다운 / 왜: 선입력 제거·프레임 중복 피격 방지
+       * (motionTrajectoryLoop RAF에서만 호출)
+       */
+      const CPU_ATTACK_HIT_WINDOW_SEC = 0.18;
 
       function handleVideoTimeline() {
         if (!gameStarted || ended) return;
         const now = coachVideo.currentTime || 0;
-        const syncHelper = document.getElementById("syncHelper");
-        if (syncHelper) syncHelper.textContent = now.toFixed(2) + "s";
-        if (now < lastVideoTime) resetJabScript();
-        for (const step of jabScript) {
-          if (!step.handled && now >= step.time) {
+        if (syncHelperEl) syncHelperEl.textContent = now.toFixed(2) + "s";
+        if (now < lastVideoTime) resetCpuAttacks();
+        const ts = Date.now();
+        for (const step of CPU_ATTACKS) {
+          if (
+            !step.handled &&
+            now >= step.time &&
+            now <= step.time + CPU_ATTACK_HIT_WINDOW_SEC &&
+            ts - lastAttackTriggeredAt > 350
+          ) {
             step.handled = true;
-            evaluateScriptStep(step);
+            lastAttackTriggeredAt = ts;
+            evaluateCpuAttack(step);
           }
         }
         lastVideoTime = now;
@@ -856,7 +927,10 @@
       window.addEventListener("resize", resizeCanvases);
 
       // 무엇: 영상에서 픽셀 변화량으로 주먹 잔상을 생성 / 왜: 외부 모델 없이도 궤적 효과를 경량으로 구현하기 위해
+      // 무엇: 매 프레임 handleVideoTimeline 호출 / 왜: timeupdate(저주기) 대신 RAF로 타격·syncHelper 동기(~60FPS)
       function motionTrajectoryLoop() {
+        handleVideoTimeline();
+
         if (!gameStarted || ended || coachVideo.readyState < 2) {
           requestAnimationFrame(motionTrajectoryLoop);
           return;
@@ -931,6 +1005,21 @@
           document.getElementById("cpuName").style.display = "none";
           survivalBox.style.display = "block";
         }
+        // 무엇: 데이터 누락 사전 감지 / 왜: pro 데이터가 없거나 매핑 실패 시 무피해 게임 방지
+        if (!CPU_ATTACKS.length) {
+          feedbackText.textContent = `[경고] '${level}' 난이도 공격 데이터가 비어 있습니다. cpuAttacksData.js를 확인하세요.`;
+        }
+        // 무엇: 시각적 로드 검증 로그 / 왜: F12 콘솔에서 난이도 매핑·타격 총량을 즉시 확인 (4난이도 전수 검증용)
+        console.log(
+          "%c🥊 [BOXER 아레나 엔진] 난이도 로드 완료",
+          "color: #00ffcc; font-size: 14px; font-weight: bold;",
+        );
+        console.log(
+          `현재 타겟 레벨: ${level} | 연동된 타격 패턴 총량: ${CPU_ATTACKS.length}개`,
+        );
+        console.log(
+          `영상 소스: ${levelConfig[level].src} | 재생속도: ${levelConfig[level].rate}x`,
+        );
         coachVideo.dataset.usedFallback = "0";
         coachVideo.src = levelConfig[level].src;
         coachVideo.playbackRate = levelConfig[level].rate;
@@ -948,8 +1037,7 @@
             "영상 재생 실패: 파일 경로를 확인해 주세요.";
         }
         lastVideoTime = 0;
-        resetJabScript();
-        coachVideo.addEventListener("timeupdate", handleVideoTimeline);
+        resetCpuAttacks();
         motionTrajectoryLoop();
       }
 
