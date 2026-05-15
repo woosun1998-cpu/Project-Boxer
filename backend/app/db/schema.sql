@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) NOT NULL UNIQUE,
   email VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  tier ENUM('free', 'premium') DEFAULT 'free',
+  tier ENUM('free', 'premium', 'admin') DEFAULT 'free',
   coins INT DEFAULT 0,
   injury_type VARCHAR(100),
   skill_level ENUM('beginner', 'intermediate', 'advanced') DEFAULT 'beginner',

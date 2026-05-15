@@ -21,6 +21,7 @@ class AttackVideo(Base):
     duration_sec: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
     thumbnail_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_premium: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=False),
         server_default=func.now(),

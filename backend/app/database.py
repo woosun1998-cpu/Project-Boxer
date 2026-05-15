@@ -1,4 +1,4 @@
-from collections.abc import AsyncGenerator
+﻿from collections.abc import AsyncGenerator
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
 
 import pymysql
@@ -98,6 +98,28 @@ async def _ensure_schema_migrations(conn) -> None:
             return
         await conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN {ddl}"))
 
+    # Admin platform: user manager fields.
+    await _add_column_if_missing("users", "level", "`level` INT NOT NULL DEFAULT 1")
+    await _add_column_if_missing("users", "is_active", "`is_active` BOOLEAN NOT NULL DEFAULT TRUE")
+    await _add_column_if_missing("users", "last_login_at", "`last_login_at` DATETIME NULL")
+
+    # Admin platform: tutorial manager fields copied from IM_BOXER.
+    await _add_column_if_missing("boxing_tutorials", "lesson_key", "`lesson_key` VARCHAR(100) NULL")
+    await _add_column_if_missing("boxing_tutorials", "subtitle", "`subtitle` VARCHAR(255) NULL")
+    await _add_column_if_missing("boxing_tutorials", "category", "`category` VARCHAR(50) NOT NULL DEFAULT 'basic'")
+    await _add_column_if_missing("boxing_tutorials", "difficulty", "`difficulty` VARCHAR(30) NOT NULL DEFAULT 'beginner'")
+    await _add_column_if_missing("boxing_tutorials", "guide_mp3_url", "`guide_mp3_url` VARCHAR(255) NULL")
+    await _add_column_if_missing("boxing_tutorials", "silhouette_url", "`silhouette_url` VARCHAR(255) NULL")
+    await _add_column_if_missing("boxing_tutorials", "coach_tip", "`coach_tip` TEXT NULL")
+    await _add_column_if_missing("boxing_tutorials", "is_active", "`is_active` BOOLEAN NOT NULL DEFAULT TRUE")
+    await _add_column_if_missing("boxing_tutorials", "updated_at", "`updated_at` DATETIME NULL")
+    # users tier additions: allow admin accounts for admin.html access.
+    await conn.execute(
+        text(
+            "ALTER TABLE `users` "
+            "MODIFY COLUMN `tier` ENUM('free', 'premium', 'admin') NOT NULL DEFAULT 'free'"
+        )
+    )
     # round_results additions (already used by frontend scoring)
     await _add_column_if_missing("round_results", "attack_type", "`attack_type` VARCHAR(30) NULL")
     await _add_column_if_missing("round_results", "dodge_direction", "`dodge_direction` VARCHAR(30) NULL")
@@ -114,6 +136,8 @@ async def _ensure_schema_migrations(conn) -> None:
     await _add_column_if_missing("attack_timestamps", "min_displacement", "`min_displacement` FLOAT NULL")
     await _add_column_if_missing("attack_timestamps", "attack_type", "`attack_type` VARCHAR(30) NULL")
     await _add_column_if_missing("attack_timestamps", "dodge_window_ms", "`dodge_window_ms` INT NOT NULL DEFAULT 300")
+
+    await _add_column_if_missing("attack_videos", "is_active", "`is_active` BOOLEAN NOT NULL DEFAULT TRUE")
 
     # attack_videos difficulty: 기존 3단계와 신규 4단계를 모두 허용한다.
     await conn.execute(
@@ -134,3 +158,4 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
+

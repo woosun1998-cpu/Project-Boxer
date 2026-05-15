@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Tutorial Manager</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+
+    .tut-filter-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .tut-filter-btn {
+      padding: 5px 13px;
+      border: 1px solid var(--border-2); background: transparent;
+      color: var(--t3); font-family: var(--fp); font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; transition: all .12s;
+    }
+    .tut-filter-btn.active { border-color: var(--red); color: var(--red); background: rgba(232,0,13,0.06); }
+    .tut-filter-btn:hover:not(.active) { color: var(--t2); }
+    .tut-search { flex: 1; max-width: 240px; }
+
+    #btnNew {
+      font-family: var(--fp);
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    #tutorialSection .adm-table th {
+      color: rgba(255,255,255,0.68);
+      background: #1b1b1b;
+    }
+    #tutorialSection .adm-table td {
+      color: rgba(255,255,255,0.76);
+    }
+    .tut-index,
+    .tut-date,
+    .tut-muted {
+      color: rgba(255,255,255,0.56) !important;
+      font-weight: 800;
+    }
+
+    .tut-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 7px; font-size: 0.54rem; font-weight: 900;
+      letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--border);
+    }
+    .tut-badge.st-active   { border-color: rgba(57,211,83,0.3); color: #39D353; }
+    .tut-badge.st-inactive { border-color: var(--border); color: var(--t4); }
+    .tut-badge.st-premium  { border-color: rgba(245,166,35,0.3); color: var(--amber); }
+    .tut-badge.cat-attack  { border-color: rgba(232,0,13,0.25); color: var(--red); }
+    .tut-badge.cat-defense { border-color: rgba(0,194,255,0.25); color: var(--ice); }
+    .tut-badge.cat-other   { border-color: var(--border-2); color: var(--t3); }
+    .tut-badge.diff-beginner     { border-color: rgba(57,211,83,0.25); color: #39D353; }
+    .tut-badge.diff-intermediate { border-color: rgba(245,166,35,0.25); color: var(--amber); }
+    .tut-badge.diff-advanced     { border-color: rgba(232,0,13,0.25); color: var(--red); }
+    .tut-badge.diff-pro          { border-color: rgba(0,194,255,0.25); color: var(--ice); }
+
+    .tut-row { cursor: pointer; }
+    .tut-row:hover td { background: rgba(255,255,255,0.03); }
+
+    .adm-loading {
+      display: flex; align-items: center; gap: 10px;
+      padding: 40px 0; font-size: 0.8rem; color: var(--t3);
+    }
+    .adm-spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--red);
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .tut-empty {
+      padding: 48px 24px; text-align: center; font-size: 0.82rem; color: var(--t4);
+    }
+    .plan-list { margin: 0; padding: 0 0 0 20px; }
+    .plan-list li { font-size: 0.82rem; color: var(--t2); line-height: 1.9; }
+    .plan-list li code { color: var(--ice); font-size: 0.78rem; background: rgba(0,194,255,0.07); padding: 1px 5px; }
+
+    #tutDrawer .adm-drawer-header {
+      background:
+        linear-gradient(90deg, rgba(232,0,13,0.18), rgba(0,194,255,0.08)),
+        #242424;
+      border-bottom-color: rgba(255,255,255,0.18);
+    }
+    #tutDrawer .adm-drawer-title {
+      font-family: var(--fp);
+      font-weight: 900;
+      letter-spacing: 0;
+      color: #fff;
+    }
+    .tut-url-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+    .tut-url-tools {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .tut-url-tool {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.72);
+      font-family: var(--fp);
+      font-size: 0.66rem;
+      font-weight: 800;
+      padding: 4px 7px;
+      cursor: pointer;
+    }
+    .tut-url-tool:hover {
+      color: #fff;
+      border-color: rgba(0,194,255,0.45);
+      background: rgba(0,194,255,0.08);
+    }
+    .tut-url-open {
+      min-width: 48px;
+      justify-content: center;
+      padding-inline: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">—</span>
+      <a class="adm-topbar-link" href="../admin.html">← Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item active" href="./tutorials.html">Tutorial Manager</a>
+    <a class="adm-mobile-nav-item" href="../admin-dataset.html">AI Dataset</a>
+    <a class="adm-mobile-nav-item" href="./gyms.html">Boxing Gyms</a>
+  </div>
+
+  <div class="adm-shell">
+
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item active" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge">예정</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge">예정</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Content /</span> <span>Tutorial Manager</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Tutorial Manager</h1>
+          <p class="adm-page-sub">튜토리얼 목록 관리 · 활성화/비활성화 · 순서 편집</p>
+        </div>
+        <button class="adm-btn-primary" id="btnNew" type="button">+ 새 튜토리얼</button>
+      </div>
+
+      <!-- API 미연결 안내 -->
+      <section id="apiOfflineSection" hidden>
+        <div class="adm-planned-card">
+          <div class="adm-planned-icon" style="color:var(--amber)">EDIT</div>
+          <p class="adm-planned-title">Tutorial Manager — API 연결 대기 중</p>
+          <p class="adm-planned-desc">
+            백엔드 <code style="color:var(--ice);font-size:0.78rem">GET /api/admin/tutorials</code> API 구현 후 자동으로 활성화됩니다.<br>
+            Codex Phase A-1 작업 완료 후 이 화면이 연결됩니다.
+          </p>
+          <ul class="plan-list" style="text-align:left;display:inline-block;margin-bottom:18px">
+            <li>튜토리얼 CRUD: 생성 · 수정 · 삭제</li>
+            <li>활성화/비활성화 토글 (<code>is_active</code>)</li>
+            <li>필터: 전체 / 활성 / 비활성 / Premium</li>
+            <li>Detail Drawer: 모든 필드 인라인 편집</li>
+          </ul>
+          <br>
+          <a class="adm-btn-ghost" href="../admin.html">← Overview로 돌아가기</a>
+        </div>
+      </section>
+
+      <!-- 튜토리얼 테이블 -->
+      <section id="tutorialSection">
+        <div class="adm-section-header">
+          <span class="adm-section-label">TUTORIALS</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot live">LIVE</span>
+        </div>
+
+        <div class="tut-filter-bar">
+          <button class="tut-filter-btn active" data-filter="all">전체</button>
+          <button class="tut-filter-btn" data-filter="active">활성</button>
+          <button class="tut-filter-btn" data-filter="inactive">비활성</button>
+          <button class="tut-filter-btn" data-filter="premium">Premium</button>
+          <input class="adm-input tut-search" id="tutSearch" type="text" placeholder="검색 (제목 · lesson_key)">
+        </div>
+
+        <div class="adm-loading" id="tutLoading">
+          <div class="adm-spinner"></div>
+          <span>튜토리얼 로딩 중...</span>
+        </div>
+
+        <div id="tutTableWrap" hidden>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Lesson Key</th>
+                  <th>제목</th>
+                  <th>카테고리</th>
+                  <th>난이도</th>
+                  <th>Premium</th>
+                  <th>Active</th>
+                  <th>Updated</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tutTbody"></tbody>
+            </table>
+          </div>
+          <p class="tut-empty" id="tutEmpty" hidden>조건에 맞는 튜토리얼이 없습니다.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Drawer overlay -->
+  <div class="adm-drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- Detail Drawer -->
+  <div class="adm-drawer" id="tutDrawer" role="dialog" aria-modal="true">
+    <div class="adm-drawer-header">
+      <h2 class="adm-drawer-title" id="drawerTitle">새 튜토리얼</h2>
+      <button class="adm-drawer-close" id="drawerClose" type="button" aria-label="닫기">✕</button>
+    </div>
+    <div class="adm-drawer-body">
+      <input type="hidden" id="drawerTutId">
+
+      <div class="adm-field">
+        <label class="adm-field-label" for="dLessonKey">Lesson Key</label>
+        <input class="adm-input" id="dLessonKey" type="text" placeholder="예: jab" style="width:100%">
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dTitle">제목</label>
+        <input class="adm-input" id="dTitle" type="text" placeholder="예: 잽 기초" style="width:100%">
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dSubtitle">서브타이틀</label>
+        <input class="adm-input" id="dSubtitle" type="text" placeholder="예: 복싱의 시작" style="width:100%">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="adm-field">
+          <label class="adm-field-label" for="dCategory">카테고리</label>
+          <select class="adm-select" id="dCategory">
+            <option value="attack">attack</option>
+            <option value="defense">defense</option>
+            <option value="footwork">footwork</option>
+            <option value="combo">combo</option>
+            <option value="basic">basic</option>
+          </select>
+        </div>
+        <div class="adm-field">
+          <label class="adm-field-label" for="dDifficulty">난이도</label>
+          <select class="adm-select" id="dDifficulty">
+            <option value="beginner">beginner</option>
+            <option value="intermediate">intermediate</option>
+            <option value="advanced">advanced</option>
+            <option value="pro">pro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="adm-field">
+        <label class="adm-field-label" for="dOrderSeq">순서 (order_sequence)</label>
+        <input class="adm-input" id="dOrderSeq" type="number" min="1" placeholder="1" style="width:100%">
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dVideoUrl">Video URL</label>
+        <div class="tut-url-row">
+          <input class="adm-input" id="dVideoUrl" type="text" placeholder="./assets/videos/tutorials/jab.mp4" style="width:100%" data-url-input>
+          <a class="adm-btn-ghost tut-url-open" data-url-open="dVideoUrl" href="#" target="_blank" rel="noopener">열기</a>
+        </div>
+        <div class="tut-url-tools" data-url-tools="dVideoUrl"></div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dMp3Url">Guide MP3 URL</label>
+        <div class="tut-url-row">
+          <input class="adm-input" id="dMp3Url" type="text" placeholder="./assets/sounds/training_guide/guide_jab.mp3" style="width:100%" data-url-input>
+          <a class="adm-btn-ghost tut-url-open" data-url-open="dMp3Url" href="#" target="_blank" rel="noopener">열기</a>
+        </div>
+        <div class="tut-url-tools" data-url-tools="dMp3Url"></div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dThumbUrl">Thumbnail URL</label>
+        <div class="tut-url-row">
+          <input class="adm-input" id="dThumbUrl" type="text" placeholder="./assets/images/tutorials/jab.jpg" style="width:100%" data-url-input>
+          <a class="adm-btn-ghost tut-url-open" data-url-open="dThumbUrl" href="#" target="_blank" rel="noopener">열기</a>
+        </div>
+        <div class="tut-url-tools" data-url-tools="dThumbUrl"></div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dSilUrl">Silhouette URL</label>
+        <div class="tut-url-row">
+          <input class="adm-input" id="dSilUrl" type="text" placeholder="./assets/images/tutorials/silhouette/jab.svg" style="width:100%" data-url-input>
+          <a class="adm-btn-ghost tut-url-open" data-url-open="dSilUrl" href="#" target="_blank" rel="noopener">열기</a>
+        </div>
+        <div class="tut-url-tools" data-url-tools="dSilUrl"></div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dCoachTip">Coach Tip</label>
+        <textarea class="adm-textarea" id="dCoachTip" placeholder="코치 팁 입력..."></textarea>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label" for="dDescription">Description</label>
+        <textarea class="adm-textarea" id="dDescription" placeholder="설명 입력..."></textarea>
+      </div>
+
+      <div class="adm-toggle-row">
+        <span class="adm-toggle-label">Premium 전용</span>
+        <label class="adm-toggle">
+          <input type="checkbox" id="dIsPremium">
+          <span class="adm-toggle-track"><span class="adm-toggle-thumb"></span></span>
+        </label>
+      </div>
+      <div class="adm-toggle-row" style="border-bottom:none">
+        <span class="adm-toggle-label">활성화 (is_active)</span>
+        <label class="adm-toggle">
+          <input type="checkbox" id="dIsActive" checked>
+          <span class="adm-toggle-track"><span class="adm-toggle-thumb"></span></span>
+        </label>
+      </div>
+    </div>
+    <div class="adm-drawer-footer">
+      <button class="adm-btn-primary" id="drawerSave" type="button">저장</button>
+      <button class="adm-btn-ghost" id="drawerToggle" type="button" hidden>비활성화</button>
+      <div style="flex:1"></div>
+      <button class="adm-btn-ghost" id="drawerDelete" type="button"
+        hidden style="border-color:rgba(232,0,13,0.3);color:rgba(232,0,13,0.7)">삭제</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    // ── State ──────────────────────────────────────────────────
+    let tutorials = [];
+    let currentFilter = 'all';
+    let searchTerm = '';
+    let editingId = null;
+
+    // ── DOM refs ───────────────────────────────────────────────
+    const tutSection     = document.getElementById('tutorialSection');
+    const offlineSection = document.getElementById('apiOfflineSection');
+    const tutLoading     = document.getElementById('tutLoading');
+    const tutTableWrap   = document.getElementById('tutTableWrap');
+    const tutTbody       = document.getElementById('tutTbody');
+    const tutEmpty       = document.getElementById('tutEmpty');
+    const tutSearch      = document.getElementById('tutSearch');
+
+    const drawer         = document.getElementById('tutDrawer');
+    const drawerOverlay  = document.getElementById('drawerOverlay');
+    const drawerTitle    = document.getElementById('drawerTitle');
+    const drawerClose    = document.getElementById('drawerClose');
+    const drawerSave     = document.getElementById('drawerSave');
+    const drawerToggle   = document.getElementById('drawerToggle');
+    const drawerDelete   = document.getElementById('drawerDelete');
+
+    const dId        = document.getElementById('drawerTutId');
+    const dLessonKey = document.getElementById('dLessonKey');
+    const dTitle_    = document.getElementById('dTitle');
+    const dSubtitle  = document.getElementById('dSubtitle');
+    const dCategory  = document.getElementById('dCategory');
+    const dDiff      = document.getElementById('dDifficulty');
+    const dVideoUrl  = document.getElementById('dVideoUrl');
+    const dMp3Url    = document.getElementById('dMp3Url');
+    const dThumbUrl  = document.getElementById('dThumbUrl');
+    const dSilUrl    = document.getElementById('dSilUrl');
+    const dOrderSeq  = document.getElementById('dOrderSeq');
+    const dCoachTip  = document.getElementById('dCoachTip');
+    const dDesc      = document.getElementById('dDescription');
+    const dIsPremium = document.getElementById('dIsPremium');
+    const dIsActive  = document.getElementById('dIsActive');
+
+    // ── API ────────────────────────────────────────────────────
+    async function loadTutorials() {
+      tutLoading.hidden = false;
+      tutTableWrap.hidden = true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/tutorials`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        tutorials = Array.isArray(data) ? data : (data.items ?? []);
+        offlineSection.hidden = true;
+        renderTable();
+      } catch {
+        document.getElementById('tutorialSection').hidden = true;
+        offlineSection.hidden = false;
+      } finally {
+        tutLoading.hidden = true;
+      }
+    }
+
+    async function saveTutorial() {
+      const body = {
+        lesson_key:     dLessonKey.value.trim(),
+        title:          dTitle_.value.trim(),
+        subtitle:       dSubtitle.value.trim(),
+        category:       dCategory.value,
+        difficulty:     dDiff.value,
+        video_url:      dVideoUrl.value.trim(),
+        guide_mp3_url:  dMp3Url.value.trim(),
+        thumbnail_url:  dThumbUrl.value.trim(),
+        silhouette_url: dSilUrl.value.trim(),
+        order_sequence: Number(dOrderSeq.value) || 1,
+        coach_tip:      dCoachTip.value.trim(),
+        description:    dDesc.value.trim(),
+        is_premium:     dIsPremium.checked,
+        is_active:      dIsActive.checked,
+      };
+      if (!body.lesson_key || !body.title) {
+        alert('Lesson Key와 제목은 꼭 입력해야 합니다.');
+        return;
+      }
+      drawerSave.disabled = true;
+      try {
+        const url = editingId
+          ? `${API_BASE_URL}/api/admin/tutorials/${editingId}`
+          : `${API_BASE_URL}/api/admin/tutorials`;
+        const res = await fetch(url, {
+          method: editingId ? 'PUT' : 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        await loadTutorials();
+      } catch (err) {
+        alert(`저장 오류: ${err.message}`);
+      } finally {
+        drawerSave.disabled = false;
+      }
+    }
+
+    async function toggleActive(id) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/tutorials/${id}/toggle`, {
+          method: 'PATCH', headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        await loadTutorials();
+      } catch (err) {
+        alert(`토글 오류: ${err.message}`);
+      }
+    }
+
+    async function deleteTutorial(id) {
+      if (!confirm('이 튜토리얼을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/tutorials/${id}`, {
+          method: 'DELETE', headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        await loadTutorials();
+      } catch (err) {
+        alert(`삭제 오류: ${err.message}`);
+      }
+    }
+
+    // ── Filtering ──────────────────────────────────────────────
+    function filtered() {
+      return tutorials.filter(t => {
+        if (currentFilter === 'active'   && !t.is_active)  return false;
+        if (currentFilter === 'inactive' &&  t.is_active)  return false;
+        if (currentFilter === 'premium'  && !t.is_premium) return false;
+        if (searchTerm) {
+          const q = searchTerm.toLowerCase();
+          if (!t.title?.toLowerCase().includes(q) && !t.lesson_key?.toLowerCase().includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function catClass(c) {
+      return { attack: 'cat-attack', defense: 'cat-defense' }[c] ?? 'cat-other';
+    }
+    function diffClass(d) {
+      return `diff-${d}` ?? '';
+    }
+    function fmtDate(s) {
+      return s ? String(s).slice(0, 10) : '—';
+    }
+
+    function apiAssetUrl(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      if (raw.startsWith('/')) return `${API_BASE_URL}${raw}`;
+      if (raw.startsWith('./')) return `../${raw.slice(2)}`;
+      return raw;
+    }
+
+    function updateUrlOpenLinks() {
+      document.querySelectorAll('[data-url-open]').forEach(link => {
+        const input = document.getElementById(link.dataset.urlOpen);
+        const href = apiAssetUrl(input?.value);
+        if (href) {
+          link.href = href;
+          link.removeAttribute('aria-disabled');
+          link.style.opacity = '1';
+          link.style.pointerEvents = '';
+        } else {
+          link.href = '#';
+          link.setAttribute('aria-disabled', 'true');
+          link.style.opacity = '.42';
+          link.style.pointerEvents = 'none';
+        }
+      });
+    }
+
+    function setUrlPrefix(inputId, prefix) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const current = input.value.trim();
+      const fileName = current.split('/').pop() || '';
+      input.value = `${prefix}${fileName}`;
+      input.focus();
+      updateUrlOpenLinks();
+    }
+
+    function installUrlTools() {
+      const toolSets = {
+        dVideoUrl: [
+          ['업로드 영상', '/uploads/media/'],
+          ['튜토리얼 영상', './assets/videos/tutorials/'],
+          ['미디어 라이브러리', './media-library.html'],
+        ],
+        dMp3Url: [
+          ['업로드 오디오', '/uploads/audio/'],
+          ['가이드 음성', './assets/sounds/training_guide/'],
+          ['오디오 관리', './audio.html'],
+        ],
+        dThumbUrl: [
+          ['업로드 이미지', '/uploads/media/'],
+          ['튜토리얼 이미지', './assets/images/tutorials/'],
+          ['미디어 라이브러리', './media-library.html'],
+        ],
+        dSilUrl: [
+          ['업로드 실루엣', '/uploads/media/'],
+          ['실루엣 폴더', './assets/images/tutorials/silhouette/'],
+          ['미디어 라이브러리', './media-library.html'],
+        ],
+      };
+
+      Object.entries(toolSets).forEach(([inputId, tools]) => {
+        const slot = document.querySelector(`[data-url-tools="${inputId}"]`);
+        if (!slot) return;
+        slot.innerHTML = tools.map(([label, prefix]) => (
+          prefix.endsWith('.html')
+            ? `<a class="tut-url-tool" href="${prefix}">${label}</a>`
+            : `<button class="tut-url-tool" type="button" data-url-prefix="${inputId}" data-prefix="${prefix}">${label}</button>`
+        )).join('');
+      });
+
+      document.querySelectorAll('[data-url-prefix]').forEach(button => {
+        button.addEventListener('click', () => setUrlPrefix(button.dataset.urlPrefix, button.dataset.prefix || ''));
+      });
+      document.querySelectorAll('[data-url-input]').forEach(input => {
+        input.addEventListener('input', updateUrlOpenLinks);
+      });
+      updateUrlOpenLinks();
+    }
+
+    // ── Render ─────────────────────────────────────────────────
+    function renderTable() {
+      const rows = filtered();
+      tutTbody.innerHTML = '';
+      tutEmpty.hidden = rows.length > 0;
+      rows.forEach((t, i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'tut-row';
+        tr.innerHTML = `
+          <td class="tut-index">${i + 1}</td>
+          <td style="font-family:var(--fm);letter-spacing:0.06em;color:var(--ice)">${t.lesson_key ?? '—'}</td>
+          <td style="font-weight:700;color:var(--t1);max-width:180px;overflow:hidden;text-overflow:ellipsis">${t.title ?? '—'}</td>
+          <td><span class="tut-badge ${catClass(t.category)}">${t.category ?? '—'}</span></td>
+          <td><span class="tut-badge ${diffClass(t.difficulty)}">${t.difficulty ?? '—'}</span></td>
+          <td>${t.is_premium ? '<span class="tut-badge st-premium">PREMIUM</span>' : '<span class="tut-muted">FREE</span>'}</td>
+          <td>${t.is_active
+            ? '<span class="tut-badge st-active">ON</span>'
+            : '<span class="tut-badge st-inactive">OFF</span>'}</td>
+          <td class="tut-date">${fmtDate(t.updated_at)}</td>
+          <td><button class="adm-btn-ghost" style="font-size:0.68rem;padding:4px 8px">편집</button></td>
+        `;
+        tr.addEventListener('click', () => openDrawer(t));
+        tutTbody.appendChild(tr);
+      });
+      tutTableWrap.hidden = false;
+    }
+
+    // ── Drawer ─────────────────────────────────────────────────
+    function openDrawer(tut) {
+      if (tut) {
+        editingId = tut.id;
+        drawerTitle.textContent = tut.title || 'Edit Tutorial';
+        dId.value        = tut.id;
+        dLessonKey.value = tut.lesson_key   ?? '';
+        dTitle_.value    = tut.title        ?? '';
+        dSubtitle.value  = tut.subtitle     ?? '';
+        dCategory.value  = tut.category     ?? 'attack';
+        dDiff.value      = tut.difficulty   ?? 'beginner';
+        dVideoUrl.value  = tut.video_url    ?? '';
+        dMp3Url.value    = tut.guide_mp3_url ?? '';
+        dThumbUrl.value  = tut.thumbnail_url ?? '';
+        dSilUrl.value    = tut.silhouette_url ?? '';
+        dOrderSeq.value  = tut.order_sequence ?? 1;
+        dCoachTip.value  = tut.coach_tip    ?? '';
+        dDesc.value      = tut.description  ?? '';
+        dIsPremium.checked = !!tut.is_premium;
+        dIsActive.checked  = !!tut.is_active;
+        drawerToggle.textContent = tut.is_active ? '비활성화' : '활성화';
+        drawerToggle.hidden = false;
+        drawerDelete.hidden = false;
+      } else {
+        editingId = null;
+        drawerTitle.textContent = '새 튜토리얼';
+        dId.value = '';
+        dLessonKey.value = ''; dTitle_.value = ''; dSubtitle.value = '';
+        dCategory.value = 'attack'; dDiff.value = 'beginner';
+        dVideoUrl.value = ''; dMp3Url.value = ''; dThumbUrl.value = ''; dSilUrl.value = '';
+        dOrderSeq.value = ''; dCoachTip.value = ''; dDesc.value = '';
+        dIsPremium.checked = false; dIsActive.checked = true;
+        drawerToggle.hidden = true;
+        drawerDelete.hidden = true;
+      }
+      drawer.classList.add('open');
+      drawerOverlay.classList.add('open');
+      updateUrlOpenLinks();
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+    }
+
+    // ── Events ─────────────────────────────────────────────────
+    document.getElementById('btnNew')?.addEventListener('click', () => openDrawer(null));
+    drawerClose.addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+
+    drawerSave.addEventListener('click', saveTutorial);
+
+    drawerToggle.addEventListener('click', () => {
+      const id = Number(dId.value);
+      if (id) toggleActive(id);
+    });
+
+    drawerDelete.addEventListener('click', () => {
+      const id = Number(dId.value);
+      if (id) deleteTutorial(id);
+    });
+
+    document.querySelectorAll('.tut-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tut-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderTable();
+      });
+    });
+
+    tutSearch?.addEventListener('input', e => {
+      searchTerm = e.target.value.trim();
+      renderTable();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+
+    // ── Init ───────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      installUrlTools();
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      loadTutorials();
+    });
+  </script>
+
+</body>
+</html>

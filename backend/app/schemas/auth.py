@@ -19,6 +19,8 @@ class AuthPayload(BaseModel):
     username: str
     token: str
     tier: str
+    role: str = "user"
+    is_admin: bool = False
 
 
 class AuthResponse(BaseModel):
@@ -34,6 +36,8 @@ class UserRead(BaseModel):
     username: str
     email: EmailStr
     tier: str
+    role: str = "user"
+    is_admin: bool = False
     coins: int
     injury_type: str | None = None
     skill_level: str

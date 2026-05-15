@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Timestamp Editor</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+
+    .ts-wrapper { border: 1px solid var(--border); }
+
+    /* Video selector bar */
+    .ts-video-bar {
+      padding: 10px 14px; background: var(--s2); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .ts-bar-label { font-size: 0.58rem; font-weight: 900; letter-spacing: 0.12em; color: var(--t4); text-transform: uppercase; white-space: nowrap; }
+    .ts-marker-info { font-size: 0.72rem; color: var(--t3); white-space: nowrap; }
+    .ts-marker-info strong { color: var(--ice); }
+
+    /* Video player */
+    .ts-video-wrap { background: #000; min-height: 180px; position: relative; }
+    #videoEl { width: 100%; max-height: 340px; display: block; object-fit: contain; }
+    .ts-placeholder {
+      height: 220px; display: flex; align-items: center; justify-content: center;
+      font-family: var(--fm); font-size: 1.3rem; letter-spacing: 0.1em; color: var(--t4);
+    }
+
+    /* Timeline */
+    .ts-timeline {
+      height: 46px; background: var(--s3); border-top: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 14px; gap: 10px;
+    }
+    .ts-timeline-lbl { font-size: 0.56rem; color: var(--t4); font-weight: 900; white-space: nowrap; }
+    .ts-track {
+      flex: 1; height: 4px; background: var(--border-2); position: relative;
+      cursor: pointer; margin: 0 4px;
+    }
+    .ts-track::after { content: ''; position: absolute; inset: -10px 0; }
+    .ts-playhead {
+      position: absolute; top: -9px; width: 2px; height: 22px;
+      background: rgba(255,255,255,0.45); pointer-events: none; transition: left .08s linear;
+    }
+    .ts-dot {
+      position: absolute; top: -6px; width: 12px; height: 12px;
+      background: var(--red); border-radius: 50%; transform: translateX(-50%);
+      cursor: pointer; z-index: 2; border: 2px solid rgba(0,0,0,0.6);
+      transition: transform .1s, background .12s;
+    }
+    .ts-dot:hover { transform: translateX(-50%) scale(1.35); }
+    .ts-dot.sel { background: var(--ice); box-shadow: 0 0 5px var(--ice); }
+    .ts-time { font-size: 0.62rem; color: var(--t4); white-space: nowrap; font-family: monospace; letter-spacing: 0.02em; }
+
+    /* Controls */
+    .ts-controls {
+      display: flex; align-items: center; gap: 6px; padding: 9px 14px;
+      border-top: 1px solid var(--border); background: var(--s2); flex-wrap: wrap;
+    }
+    .ts-btn {
+      padding: 5px 11px; border: 1px solid var(--border-2); background: transparent;
+      color: var(--t3); font-family: var(--fp); font-size: 0.7rem; font-weight: 700;
+      cursor: pointer; transition: all .12s;
+    }
+    .ts-btn:hover:not(:disabled) { color: var(--t1); border-color: rgba(255,255,255,0.25); }
+    .ts-btn.spd.sel { border-color: var(--ice); color: var(--ice); background: rgba(0,194,255,0.07); }
+    .ts-btn.add { border-color: rgba(232,0,13,0.35); color: rgba(232,0,13,0.8); }
+    .ts-btn.add:hover { border-color: var(--red); color: var(--red); background: rgba(232,0,13,0.05); }
+    .ts-divider { width: 1px; height: 18px; background: var(--border-2); margin: 0 2px; }
+
+    /* Bottom split */
+    .ts-bottom {
+      display: grid; grid-template-columns: 1fr 340px;
+      border-top: 1px solid var(--border); min-height: 240px;
+    }
+    .ts-mlist { border-right: 1px solid var(--border); overflow-y: auto; max-height: 300px; }
+    .ts-mlist-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+    .ts-mlist-table th, .ts-mlist-table td {
+      padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap;
+    }
+    .ts-mlist-table th { font-size: 0.56rem; font-weight: 900; letter-spacing: 0.1em; color: var(--t4); background: var(--s3); text-transform: uppercase; }
+    .ts-mlist-table td { color: var(--t3); }
+    .ts-mlist-row { cursor: pointer; }
+    .ts-mlist-row:hover td { background: rgba(255,255,255,0.025); }
+    .ts-mlist-row.sel td { background: rgba(0,194,255,0.05); color: var(--t1); }
+
+    /* Inspector */
+    .ts-insp {
+      padding: 14px 16px; background: var(--s2); overflow-y: auto; max-height: 300px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .ts-insp-hdr { font-size: 0.58rem; font-weight: 900; letter-spacing: 0.12em; color: var(--t4); text-transform: uppercase; margin-bottom: 10px; }
+    .ts-insp-time { font-family: var(--fm); font-size: 1.5rem; color: var(--ice); letter-spacing: 0.06em; margin-bottom: 12px; line-height: 1; }
+    .ts-insp-empty { font-size: 0.78rem; color: var(--t4); padding: 24px 0; }
+
+    .api-err-banner { padding: 9px 14px; background: rgba(232,0,13,0.05); border: 1px solid rgba(232,0,13,0.2); font-size: 0.76rem; color: var(--red); margin-bottom: 12px; }
+    .adm-loading { display: flex; align-items: center; gap: 10px; padding: 20px 0; font-size: 0.8rem; color: var(--t3); }
+    .adm-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--red); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 860px) {
+      .ts-bottom { grid-template-columns: 1fr; }
+      .ts-mlist { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">—</span>
+      <a class="adm-topbar-link" href="../admin.html">← Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item" href="./sparring.html">Sparring</a>
+    <a class="adm-mobile-nav-item active" href="./timestamp-editor.html">Timestamp Editor</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item active" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Content /</span> <span>Timestamp Editor</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Timestamp Visual Editor</h1>
+          <p class="adm-page-sub">스파링 영상 공격 타이밍 마커 편집 · M키로 마커 추가</p>
+        </div>
+        <a class="adm-btn-ghost" href="./sparring.html">← 영상 목록</a>
+      </div>
+
+      <div class="api-err-banner" id="apiBanner" hidden></div>
+
+      <!-- Editor -->
+      <div class="ts-wrapper">
+
+        <!-- Video selector -->
+        <div class="ts-video-bar">
+          <span class="ts-bar-label">영상</span>
+          <select class="adm-select" id="videoSelect" style="max-width:320px;flex:1">
+            <option value="">-- 영상을 선택하세요 --</option>
+          </select>
+          <span class="ts-marker-info">마커: <strong id="markerCount">0</strong>개</span>
+          <div style="flex:1"></div>
+          <div class="adm-loading" id="videoLoading" style="padding:0">
+            <div class="adm-spinner"></div>
+          </div>
+        </div>
+
+        <!-- Video -->
+        <div class="ts-video-wrap">
+          <video id="videoEl" hidden preload="metadata"></video>
+          <div id="videoPlaceholder" class="ts-placeholder">영상을 선택하세요</div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="ts-timeline">
+          <span class="ts-timeline-lbl">TIMELINE</span>
+          <div class="ts-track" id="timelineTrack">
+            <div class="ts-playhead" id="playhead" style="left:0%"></div>
+          </div>
+          <span class="ts-time" id="timeDisplay">0:00.000 / 0:00.000</span>
+        </div>
+
+        <!-- Controls -->
+        <div class="ts-controls">
+          <button class="ts-btn" id="btnPlay">▶</button>
+          <button class="ts-btn" id="btnPrevFrame">‹‹ -1f</button>
+          <button class="ts-btn" id="btnNextFrame">+1f ››</button>
+          <div class="ts-divider"></div>
+          <button class="ts-btn spd" data-speed="0.5">0.5x</button>
+          <button class="ts-btn spd sel" data-speed="1">1x</button>
+          <button class="ts-btn spd" data-speed="2">2x</button>
+          <div style="flex:1"></div>
+          <button class="ts-btn add" id="btnAddMarker">M + 마커 추가</button>
+        </div>
+
+        <!-- Bottom: list + inspector -->
+        <div class="ts-bottom">
+
+          <!-- Marker list -->
+          <div class="ts-mlist">
+            <table class="ts-mlist-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Time</th><th>Type</th><th>Move</th><th>Window</th>
+                </tr>
+              </thead>
+              <tbody id="markerTbody">
+                <tr><td colspan="5" style="text-align:center;color:var(--t4);padding:20px">영상을 선택하세요</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Inspector -->
+          <div class="ts-insp">
+            <p class="ts-insp-hdr">MARKER INSPECTOR</p>
+            <p class="ts-insp-empty" id="inspEmpty">마커를 선택하거나<br>M키로 현재 시점에 추가하세요</p>
+            <div id="inspForm" hidden>
+              <p class="ts-insp-time" id="inspTime">0:00.000</p>
+
+              <div class="adm-field">
+                <label class="adm-field-label" for="iPreset">Difficulty Preset 적용</label>
+                <select class="adm-select" id="iPreset">
+                  <option value="">-- 프리셋 선택 --</option>
+                  <option value="beginner">beginner (650ms / 0.22)</option>
+                  <option value="intermediate">intermediate (450ms / 0.18)</option>
+                  <option value="advanced">advanced (300ms / 0.15)</option>
+                  <option value="pro">pro (200ms / 0.12)</option>
+                </select>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="adm-field">
+                  <label class="adm-field-label" for="iAttackType">attack_type</label>
+                  <select class="adm-select" id="iAttackType">
+                    <option value="jab">jab</option>
+                    <option value="cross">cross</option>
+                    <option value="hook">hook</option>
+                    <option value="uppercut">uppercut</option>
+                    <option value="mixed">mixed</option>
+                  </select>
+                </div>
+                <div class="adm-field">
+                  <label class="adm-field-label" for="iRequiredMove">required_move</label>
+                  <select class="adm-select" id="iRequiredMove">
+                    <option value="slip_left">slip_left</option>
+                    <option value="slip_right">slip_right</option>
+                    <option value="duck">duck</option>
+                    <option value="lean_back">lean_back</option>
+                    <option value="step_out">step_out</option>
+                    <option value="auto">auto</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="adm-field">
+                <label class="adm-field-label" for="iTargetZone">target_zone</label>
+                <select class="adm-select" id="iTargetZone">
+                  <option value="head">head</option>
+                  <option value="left_head">left_head</option>
+                  <option value="right_head">right_head</option>
+                  <option value="body">body</option>
+                </select>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div class="adm-field">
+                  <label class="adm-field-label" for="iDodgeWindow">dodge_window_ms</label>
+                  <input class="adm-input" id="iDodgeWindow" type="number" min="50" max="2000" style="width:100%">
+                </div>
+                <div class="adm-field">
+                  <label class="adm-field-label" for="iHitboxRadius">hitbox_radius</label>
+                  <input class="adm-input" id="iHitboxRadius" type="number" min="0.05" max="1.0" step="0.01" style="width:100%">
+                </div>
+                <div class="adm-field">
+                  <label class="adm-field-label" for="iImpactDelay">impact_delay_ms</label>
+                  <input class="adm-input" id="iImpactDelay" type="number" min="0" max="2000" style="width:100%">
+                </div>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:6px">
+                <button class="adm-btn-primary" id="btnSaveMarker" type="button">저장</button>
+                <div style="flex:1"></div>
+                <button class="adm-btn-ghost" id="btnDeleteMarker" type="button"
+                  style="border-color:rgba(232,0,13,0.3);color:rgba(232,0,13,0.7)">삭제</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /ts-bottom -->
+      </div><!-- /ts-wrapper -->
+
+      <p style="font-size:0.68rem;color:var(--t4);margin-top:10px">
+        단축키: <kbd style="background:var(--s3);padding:1px 5px;border:1px solid var(--border-2)">M</kbd> 마커 추가 &nbsp;·&nbsp;
+        <kbd style="background:var(--s3);padding:1px 5px;border:1px solid var(--border-2)">Space</kbd> 재생/정지 &nbsp;·&nbsp;
+        <kbd style="background:var(--s3);padding:1px 5px;border:1px solid var(--border-2)">← →</kbd> 1프레임 이동
+      </p>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    const FPS = 30;
+
+    let videos = [];
+    let currentVideoId = null;
+    let markers = [];
+    let selectedId = null;
+
+    // DOM
+    const videoEl       = document.getElementById('videoEl');
+    const videoPlaceholder = document.getElementById('videoPlaceholder');
+    const videoSelect   = document.getElementById('videoSelect');
+    const videoLoading  = document.getElementById('videoLoading');
+    const timelineTrack = document.getElementById('timelineTrack');
+    const playhead      = document.getElementById('playhead');
+    const timeDisplay   = document.getElementById('timeDisplay');
+    const markerTbody   = document.getElementById('markerTbody');
+    const markerCount   = document.getElementById('markerCount');
+    const inspEmpty     = document.getElementById('inspEmpty');
+    const inspForm      = document.getElementById('inspForm');
+    const apiBanner     = document.getElementById('apiBanner');
+    const btnPlay       = document.getElementById('btnPlay');
+
+    function showBanner(msg) { apiBanner.textContent = msg; apiBanner.hidden = false; }
+    function clearBanner()   { apiBanner.hidden = true; }
+
+    function fmtTime(s) {
+      if (!isFinite(s) || s == null) return '0:00.000';
+      const m   = Math.floor(s / 60);
+      const sec = String(Math.floor(s % 60)).padStart(2, '0');
+      const ms  = String(Math.round((s % 1) * 1000)).padStart(3, '0');
+      return `${m}:${sec}.${ms}`;
+    }
+
+    function resolveVideoUrl(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      if (raw.startsWith('/uploads/') || raw.startsWith('/dataset/')) return `${API_BASE_URL}${raw}`;
+      if (raw.startsWith('/assets/')) return `..${raw}`;
+      if (raw.startsWith('./')) return `../${raw.slice(2)}`;
+      return raw;
+    }
+
+    // ── Load video list ────────────────────────────────────────
+    async function loadVideos() {
+      videoLoading.hidden = false;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/sparring/videos`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        videos = Array.isArray(data) ? data : (data.items ?? data.videos ?? []);
+        videoSelect.innerHTML = '<option value="">-- 영상을 선택하세요 --</option>';
+        videos.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.id;
+          opt.textContent = `[${v.difficulty}] ${v.title}`;
+          videoSelect.appendChild(opt);
+        });
+        clearBanner();
+        // auto-select from query string
+        const qid = new URLSearchParams(location.search).get('video_id');
+        if (qid) {
+          videoSelect.value = qid;
+          selectVideo(Number(qid));
+        }
+      } catch (err) {
+        showBanner(`영상 목록 로드 실패: ${err.message}`);
+      } finally {
+        videoLoading.hidden = true;
+      }
+    }
+
+    async function selectVideo(id) {
+      currentVideoId = id;
+      selectedId = null;
+      showInspector(null);
+      const v = videos.find(v => v.id === id);
+      if (!v) return;
+      videoEl.src = resolveVideoUrl(v.video_url);
+      videoEl.load();
+      videoPlaceholder.hidden = true;
+      videoEl.hidden = false;
+      await loadMarkers(id);
+    }
+
+    // ── Load markers ───────────────────────────────────────────
+    async function loadMarkers(videoId) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/videos/${videoId}/timestamps`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        markers = (Array.isArray(data) ? data : (data.items ?? data.markers ?? []));
+        markers.sort((a, b) => a.impact_time - b.impact_time);
+        clearBanner();
+      } catch (err) {
+        showBanner(`마커 로드 실패: ${err.message}`);
+        markers = [];
+      }
+      renderMarkerTable();
+      renderTimeline();
+      markerCount.textContent = markers.length;
+    }
+
+    // ── Add marker ─────────────────────────────────────────────
+    async function addMarker() {
+      if (!currentVideoId) { showBanner('먼저 영상을 선택하세요.'); return; }
+      const time = isFinite(videoEl.currentTime) ? videoEl.currentTime : 0;
+      const body = {
+        impact_time:      Math.round(time * 1000) / 1000,
+        attack_type:      'jab',
+        required_move:    'slip_right',
+        target_zone:      'head',
+        dodge_window_ms:  650,
+        hitbox_radius:    0.22,
+        impact_delay_ms:  0,
+      };
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/videos/${currentVideoId}/timestamps`, {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const m = await res.json();
+        markers.push(m);
+        markers.sort((a, b) => a.impact_time - b.impact_time);
+        renderMarkerTable();
+        renderTimeline();
+        markerCount.textContent = markers.length;
+        selectMarker(m.id);
+      } catch (err) {
+        showBanner(`마커 추가 실패: ${err.message}`);
+      }
+    }
+
+    // ── Save marker ────────────────────────────────────────────
+    async function saveMarker(id) {
+      const btn = document.getElementById('btnSaveMarker');
+      btn.disabled = true;
+      const body = {
+        attack_type:      document.getElementById('iAttackType').value,
+        required_move:    document.getElementById('iRequiredMove').value,
+        target_zone:      document.getElementById('iTargetZone').value,
+        dodge_window_ms:  Number(document.getElementById('iDodgeWindow').value),
+        hitbox_radius:    Number(document.getElementById('iHitboxRadius').value),
+        impact_delay_ms:  Number(document.getElementById('iImpactDelay').value),
+      };
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/timestamps/${id}`, {
+          method: 'PUT',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const updated = await res.json();
+        const idx = markers.findIndex(m => m.id === id);
+        if (idx >= 0) markers[idx] = { ...markers[idx], ...updated };
+        renderMarkerTable();
+        renderTimeline();
+        btn.textContent = '저장됨 ✓';
+        setTimeout(() => { btn.textContent = '저장'; btn.disabled = false; }, 1200);
+      } catch (err) {
+        btn.disabled = false;
+        showBanner(`마커 저장 실패: ${err.message}`);
+      }
+    }
+
+    // ── Delete marker ──────────────────────────────────────────
+    async function deleteMarker(id) {
+      if (!confirm('이 마커를 삭제하시겠습니까?')) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/timestamps/${id}`, {
+          method: 'DELETE', headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        markers = markers.filter(m => m.id !== id);
+        selectedId = null;
+        renderMarkerTable();
+        renderTimeline();
+        markerCount.textContent = markers.length;
+        showInspector(null);
+      } catch (err) {
+        showBanner(`마커 삭제 실패: ${err.message}`);
+      }
+    }
+
+    // ── Render marker table ────────────────────────────────────
+    function renderMarkerTable() {
+      markerTbody.innerHTML = '';
+      if (!markers.length) {
+        markerTbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--t4);padding:18px 10px">마커가 없습니다. M키로 추가하세요.</td></tr>`;
+        return;
+      }
+      markers.forEach((m, i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'ts-mlist-row' + (m.id === selectedId ? ' sel' : '');
+        tr.dataset.mid = m.id;
+        tr.innerHTML = `
+          <td style="color:var(--t4)">${i + 1}</td>
+          <td style="font-family:monospace;color:var(--ice);font-size:0.78rem">${fmtTime(m.impact_time)}</td>
+          <td style="font-weight:700;color:var(--t1)">${m.attack_type}</td>
+          <td style="font-size:0.7rem">${m.required_move}</td>
+          <td style="font-size:0.7rem;color:var(--t4)">${m.dodge_window_ms}ms</td>
+        `;
+        tr.addEventListener('click', () => {
+          selectMarker(m.id);
+          if (isFinite(m.impact_time)) videoEl.currentTime = m.impact_time;
+        });
+        markerTbody.appendChild(tr);
+      });
+    }
+
+    // ── Render timeline dots ───────────────────────────────────
+    function renderTimeline() {
+      timelineTrack.querySelectorAll('.ts-dot').forEach(d => d.remove());
+      const dur = videoEl.duration;
+      if (!isFinite(dur) || dur <= 0) return;
+      markers.forEach(m => {
+        const dot = document.createElement('div');
+        dot.className = 'ts-dot' + (m.id === selectedId ? ' sel' : '');
+        dot.style.left = `${(m.impact_time / dur) * 100}%`;
+        dot.title = `${fmtTime(m.impact_time)} · ${m.attack_type}`;
+        dot.addEventListener('click', e => {
+          e.stopPropagation();
+          selectMarker(m.id);
+          videoEl.currentTime = m.impact_time;
+        });
+        timelineTrack.appendChild(dot);
+      });
+    }
+
+    // ── Select & inspect marker ────────────────────────────────
+    function selectMarker(id) {
+      selectedId = id;
+      const m = markers.find(m => m.id === id);
+      showInspector(m);
+      document.querySelectorAll('.ts-mlist-row').forEach(r => {
+        r.classList.toggle('sel', Number(r.dataset.mid) === id);
+      });
+      renderTimeline();
+    }
+
+    function showInspector(m) {
+      if (!m) { inspEmpty.hidden = false; inspForm.hidden = true; return; }
+      inspEmpty.hidden = true;
+      inspForm.hidden = false;
+      document.getElementById('inspTime').textContent              = fmtTime(m.impact_time);
+      document.getElementById('iAttackType').value                 = m.attack_type    ?? 'jab';
+      document.getElementById('iRequiredMove').value               = m.required_move  ?? 'slip_right';
+      document.getElementById('iTargetZone').value                 = m.target_zone    ?? 'head';
+      document.getElementById('iDodgeWindow').value                = m.dodge_window_ms ?? 650;
+      document.getElementById('iHitboxRadius').value               = m.hitbox_radius  ?? 0.22;
+      document.getElementById('iImpactDelay').value                = m.impact_delay_ms ?? 0;
+      document.getElementById('iPreset').value                     = '';
+      document.getElementById('btnSaveMarker').dataset.mid         = m.id;
+      document.getElementById('btnDeleteMarker').dataset.mid       = m.id;
+      document.getElementById('btnSaveMarker').textContent         = '저장';
+      document.getElementById('btnSaveMarker').disabled            = false;
+    }
+
+    // ── Video controls ─────────────────────────────────────────
+    function setSpeed(s) {
+      videoEl.playbackRate = s;
+      document.querySelectorAll('.ts-btn.spd').forEach(b => {
+        b.classList.toggle('sel', Number(b.dataset.speed) === s);
+      });
+    }
+
+    btnPlay.addEventListener('click', () => {
+      videoEl.paused ? videoEl.play() : videoEl.pause();
+    });
+    videoEl.addEventListener('play',  () => { btnPlay.textContent = '⏸'; });
+    videoEl.addEventListener('pause', () => { btnPlay.textContent = '▶'; });
+
+    document.getElementById('btnPrevFrame').addEventListener('click', () => {
+      videoEl.pause();
+      videoEl.currentTime = Math.max(0, videoEl.currentTime - 1 / FPS);
+    });
+    document.getElementById('btnNextFrame').addEventListener('click', () => {
+      videoEl.pause();
+      videoEl.currentTime = Math.min(videoEl.duration || 0, videoEl.currentTime + 1 / FPS);
+    });
+
+    document.querySelectorAll('.ts-btn.spd').forEach(b => {
+      b.addEventListener('click', () => setSpeed(Number(b.dataset.speed)));
+    });
+
+    document.getElementById('btnAddMarker').addEventListener('click', addMarker);
+
+    // Timeline click → seek
+    timelineTrack.addEventListener('click', e => {
+      if (!isFinite(videoEl.duration)) return;
+      const rect = timelineTrack.getBoundingClientRect();
+      videoEl.currentTime = ((e.clientX - rect.left) / rect.width) * videoEl.duration;
+    });
+
+    // timeupdate
+    videoEl.addEventListener('timeupdate', () => {
+      const p = isFinite(videoEl.duration) && videoEl.duration > 0
+        ? (videoEl.currentTime / videoEl.duration) * 100 : 0;
+      playhead.style.left = `${p}%`;
+      timeDisplay.textContent = `${fmtTime(videoEl.currentTime)} / ${fmtTime(videoEl.duration)}`;
+    });
+
+    videoEl.addEventListener('loadedmetadata', () => {
+      renderTimeline();
+      timeDisplay.textContent = `0:00.000 / ${fmtTime(videoEl.duration)}`;
+    });
+
+    videoSelect.addEventListener('change', () => {
+      const id = Number(videoSelect.value);
+      if (id) selectVideo(id);
+    });
+
+    // Difficulty preset
+    document.getElementById('iPreset').addEventListener('change', async function() {
+      if (!this.value) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/timestamps/presets/${this.value}`, { headers: authHeaders() });
+        if (!res.ok) return;
+        const p = await res.json();
+        document.getElementById('iDodgeWindow').value  = p.dodge_window_ms;
+        document.getElementById('iHitboxRadius').value = p.hitbox_radius;
+      } catch { /* silent */ }
+    });
+
+    document.getElementById('btnSaveMarker').addEventListener('click', () => {
+      const id = Number(document.getElementById('btnSaveMarker').dataset.mid);
+      if (id) saveMarker(id);
+    });
+    document.getElementById('btnDeleteMarker').addEventListener('click', () => {
+      const id = Number(document.getElementById('btnDeleteMarker').dataset.mid);
+      if (id) deleteMarker(id);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', e => {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); addMarker(); }
+      if (e.key === ' ')           { e.preventDefault(); videoEl.paused ? videoEl.play() : videoEl.pause(); }
+      if (e.key === 'ArrowLeft')   { e.preventDefault(); videoEl.pause(); videoEl.currentTime = Math.max(0, videoEl.currentTime - 1/FPS); }
+      if (e.key === 'ArrowRight')  { e.preventDefault(); videoEl.pause(); videoEl.currentTime = Math.min(videoEl.duration||0, videoEl.currentTime + 1/FPS); }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      loadVideos();
+    });
+  </script>
+</body>
+</html>

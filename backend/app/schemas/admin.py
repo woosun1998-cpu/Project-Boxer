@@ -22,7 +22,7 @@ class AdminTutorialResponse(BaseModel):
 
 
 class AdminUserTierUpdateRequest(BaseModel):
-    tier: str = Field(pattern="^(free|premium)$")
+    tier: str = Field(pattern="^(free|premium|admin)$")
 
 
 class AdminUserResponse(BaseModel):

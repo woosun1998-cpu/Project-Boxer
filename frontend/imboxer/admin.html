@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | Admin Hub</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design tokens ──────────────────────────────────────────────── */
+    :root {
+      --red:    #E8000D;
+      --ice:    #00c2ff;
+      --amber:  #f5a623;
+      --s0:     #000000;
+      --s1:     #080808;
+      --s2:     #0e0e0e;
+      --s3:     #161616;
+      --s4:     #1e1e1e;
+      --s5:     #242424;
+      --t1:     #ffffff;
+      --t2:     rgba(255,255,255,0.62);
+      --t3:     rgba(255,255,255,0.30);
+      --t4:     rgba(255,255,255,0.12);
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.13);
+      --fp: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+      --topbar-h: 54px;
+      --sidebar-w: 216px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body {
+      margin: 0;
+      background: var(--s0);
+      font-family: var(--fp);
+      color: var(--t1);
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── ENTRY INTRO ──────────────────────────────────────────────── */
+    .adm-entry-intro {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      background: #000;
+      overflow: hidden;
+      pointer-events: none;
+      animation: adm-intro-shell 2.35s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    .adm-entry-intro::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.55)),
+        radial-gradient(ellipse at center, rgba(232,0,13,.12), rgba(0,0,0,.72) 70%),
+        url("./assets/images/admin/boxer_admin.jpg") center / cover no-repeat;
+      transform: scale(1.035);
+      opacity: 0;
+      filter: saturate(.96) contrast(1.08);
+      animation: adm-intro-image 2.35s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    .adm-entry-intro::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent),
+        repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0 1px, transparent 1px 5px);
+      mix-blend-mode: screen;
+      opacity: 0;
+      animation: adm-intro-sheen 2.35s ease forwards;
+    }
+    .adm-entry-mark {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      color: #fff;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: adm-intro-mark 2.1s ease forwards;
+    }
+    .adm-entry-mark strong {
+      font-family: var(--fm);
+      font-size: clamp(34px, 7vw, 76px);
+      letter-spacing: .18em;
+      line-height: .92;
+      text-shadow: 0 0 30px rgba(0,0,0,.72);
+    }
+    .adm-entry-mark span {
+      font-size: .64rem;
+      font-weight: 900;
+      letter-spacing: .28em;
+      color: rgba(255,255,255,.74);
+      text-transform: uppercase;
+    }
+    @keyframes adm-intro-shell {
+      0%, 78% { opacity: 1; visibility: visible; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    @keyframes adm-intro-image {
+      0% { opacity: 0; transform: scale(1.065); }
+      18%, 62% { opacity: 1; transform: scale(1.025); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+    @keyframes adm-intro-mark {
+      0%, 12% { opacity: 0; transform: translateY(8px); }
+      28%, 60% { opacity: 1; transform: translateY(0); }
+      86%, 100% { opacity: 0; transform: translateY(-6px); }
+    }
+    @keyframes adm-intro-sheen {
+      0%, 18% { opacity: 0; transform: translateX(-20%); }
+      42% { opacity: .36; transform: translateX(18%); }
+      72%, 100% { opacity: 0; transform: translateX(34%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .adm-entry-intro { animation-duration: .45s; }
+      .adm-entry-intro::before,
+      .adm-entry-intro::after,
+      .adm-entry-mark { animation-duration: .45s; }
+    }
+
+    /* ── TOPBAR ─────────────────────────────────────────────────────── */
+    .adm-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      height: var(--topbar-h);
+      background: rgba(0,0,0,0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+    .adm-topbar-left { display: flex; align-items: center; gap: 12px; }
+    .adm-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-family: var(--fm);
+      font-size: 1rem;
+      letter-spacing: 0.14em;
+      color: var(--t1);
+      white-space: nowrap;
+    }
+    .adm-brand em {
+      font-style: normal;
+      color: var(--red);
+    }
+    .adm-brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/로고.png") center / contain no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.28));
+    }
+    .adm-brand-icon {
+      min-width: 30px;
+      letter-spacing: 0;
+    }
+    .adm-env-badge {
+      font-size: 0.52rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      padding: 2px 7px;
+      border: 1px solid rgba(245,166,35,0.35);
+      color: var(--amber);
+      background: rgba(245,166,35,0.07);
+      text-transform: uppercase;
+    }
+    .adm-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .adm-admin-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--t3);
+      letter-spacing: 0.04em;
+    }
+    .adm-admin-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--t2);
+    }
+    .adm-btn-logout {
+      font-family: var(--fp);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: rgba(232,0,13,0.7);
+      border: 1px solid rgba(232,0,13,0.22);
+      background: transparent;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: color .14s, border-color .14s;
+    }
+    .adm-btn-logout:hover { color: var(--red); border-color: var(--red); }
+    .adm-topbar-dash {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--t3);
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      transition: color .14s, border-color .14s;
+    }
+    .adm-topbar-dash:hover { color: var(--t2); border-color: var(--border-2); }
+
+    /* ── SHELL ──────────────────────────────────────────────────────── */
+    .adm-shell {
+      display: flex;
+      padding-top: var(--topbar-h);
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ────────────────────────────────────────────────────── */
+    .adm-sidebar {
+      position: fixed;
+      top: var(--topbar-h);
+      left: 0;
+      width: var(--sidebar-w);
+      height: calc(100vh - var(--topbar-h));
+      overflow-y: auto;
+      background: var(--s1);
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .adm-sidebar::-webkit-scrollbar { width: 4px; }
+    .adm-sidebar::-webkit-scrollbar-track { background: transparent; }
+    .adm-sidebar::-webkit-scrollbar-thumb { background: var(--border-2); }
+
+    .adm-nav-group { padding: 18px 0 6px; }
+    .adm-nav-group + .adm-nav-group { border-top: 1px solid var(--border); }
+    .adm-nav-section-label {
+      padding: 0 16px 6px;
+      font-size: 0.52rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      color: var(--t4);
+      text-transform: uppercase;
+    }
+    .adm-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--t3);
+      letter-spacing: 0.02em;
+      transition: color .13s, background .13s;
+      cursor: pointer;
+    }
+    .adm-nav-item:hover { color: var(--t2); background: rgba(255,255,255,0.03); }
+    .adm-nav-item.active {
+      color: var(--t1);
+      background: rgba(255,255,255,0.05);
+      border-left: 2px solid var(--red);
+      padding-left: 14px;
+    }
+    .adm-nav-badge {
+      font-size: 0.5rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      padding: 1px 5px;
+      border: 1px solid var(--border-2);
+      color: var(--t4);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .adm-nav-badge.live {
+      border-color: rgba(0,194,255,0.3);
+      color: var(--ice);
+    }
+    .adm-nav-badge.legacy {
+      border-color: rgba(245,166,35,0.3);
+      color: var(--amber);
+    }
+
+    /* Mobile nav strip (hidden on desktop) */
+    .adm-mobile-nav {
+      display: none;
+      overflow-x: auto;
+      gap: 0;
+      background: var(--s1);
+      border-bottom: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    .adm-mobile-nav::-webkit-scrollbar { display: none; }
+    .adm-mobile-nav-item {
+      flex-shrink: 0;
+      padding: 12px 16px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--t3);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color .13s, border-color .13s;
+    }
+    .adm-mobile-nav-item:hover { color: var(--t2); }
+    .adm-mobile-nav-item.active { color: var(--t1); border-bottom-color: var(--red); }
+
+    /* ── MAIN CONTENT ───────────────────────────────────────────────── */
+    .adm-main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      padding: 28px 32px 80px;
+      min-width: 0;
+    }
+
+    /* Breadcrumb */
+    .adm-breadcrumb {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--t4);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .adm-breadcrumb span { color: var(--t3); }
+
+    /* Page header */
+    .adm-page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .adm-page-title {
+      font-family: var(--fm);
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      letter-spacing: 0.06em;
+      color: var(--t1);
+      line-height: 1;
+      margin: 0 0 4px;
+    }
+    .adm-page-sub {
+      font-size: 0.8rem;
+      color: var(--t3);
+      margin: 0;
+      font-weight: 600;
+    }
+    .adm-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    /* ── KPI STRIP ──────────────────────────────────────────────────── */
+    .adm-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .adm-section-label {
+      font-size: 0.6rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      color: var(--t4);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .adm-section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .adm-section { margin-bottom: 36px; }
+
+    .adm-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .adm-kpi-card {
+      background: var(--s2);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .adm-kpi-label {
+      font-size: 0.54rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      color: var(--t4);
+      text-transform: uppercase;
+    }
+    .adm-kpi-value {
+      font-family: var(--fm);
+      font-size: 1.8rem;
+      letter-spacing: 0.04em;
+      color: var(--t1);
+      line-height: 1;
+    }
+    .adm-kpi-value.ice { color: var(--ice); }
+    .adm-kpi-value.red { color: var(--red); }
+    .adm-kpi-unit {
+      font-size: 0.64rem;
+      color: var(--t3);
+      font-weight: 600;
+    }
+    .adm-kpi-loading { color: var(--t4); }
+
+    /* ── MODULE GRID ────────────────────────────────────────────────── */
+    .adm-module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .adm-module-card {
+      background: var(--s2);
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+      transition: background .15s;
+      border-top: 2px solid transparent;
+    }
+    .adm-module-card:hover { background: var(--s3); }
+    .adm-module-card.status-live { border-top-color: var(--ice); }
+    .adm-module-card.status-legacy { border-top-color: var(--amber); }
+    .adm-module-card.status-planned { border-top-color: var(--border); opacity: 0.65; }
+
+    .adm-module-status {
+      font-size: 0.52rem;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .adm-module-status.live  { color: var(--ice); }
+    .adm-module-status.legacy { color: var(--amber); }
+    .adm-module-status.planned { color: var(--t4); }
+
+    .adm-module-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--t1);
+      margin: 0 0 8px;
+      line-height: 1.2;
+    }
+    .adm-module-desc {
+      font-size: 0.8rem;
+      color: var(--t2);
+      line-height: 1.6;
+      flex: 1;
+      margin: 0 0 16px;
+    }
+    .adm-module-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .adm-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      background: var(--red);
+      border: none;
+      color: #fff;
+      font-family: var(--fp);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background .14s;
+      text-decoration: none;
+    }
+    .adm-btn-primary:hover { background: #bf000b; }
+    .adm-btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 12px;
+      border: 1px solid var(--border-2);
+      background: transparent;
+      color: var(--t2);
+      font-family: var(--fp);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color .13s, border-color .13s, background .13s;
+      text-decoration: none;
+    }
+    .adm-btn-ghost:hover {
+      color: var(--t1);
+      border-color: rgba(255,255,255,0.26);
+      background: rgba(255,255,255,0.04);
+    }
+    .adm-module-card.status-planned .adm-btn-primary,
+    .adm-module-card.status-planned .adm-btn-ghost {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ── QUICK ACTIONS ──────────────────────────────────────────────── */
+    .adm-quick-grid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .adm-quick-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border: 1px solid var(--border-2);
+      background: transparent;
+      color: var(--t2);
+      font-family: var(--fp);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all .13s;
+      text-decoration: none;
+    }
+    .adm-quick-btn:hover {
+      color: var(--t1);
+      border-color: rgba(255,255,255,0.26);
+      background: rgba(255,255,255,0.04);
+    }
+    .adm-quick-btn.red {
+      border-color: rgba(232,0,13,0.28);
+      color: rgba(232,0,13,0.8);
+    }
+    .adm-quick-btn.red:hover {
+      color: var(--red);
+      background: rgba(232,0,13,0.06);
+      border-color: var(--red);
+    }
+    .adm-quick-btn.ice {
+      border-color: rgba(0,194,255,0.28);
+      color: rgba(0,194,255,0.8);
+    }
+    .adm-quick-btn.ice:hover {
+      color: var(--ice);
+      background: rgba(0,194,255,0.06);
+      border-color: var(--ice);
+    }
+    .adm-inline-select {
+      min-height: 32px;
+      padding: 7px 12px;
+      background: var(--s3);
+      border: 1px solid var(--border-2);
+      color: var(--t1);
+      font-family: var(--fp);
+      font-size: 0.74rem;
+      font-weight: 700;
+      outline: none;
+    }
+    .adm-nav-action-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      padding: 4px 16px 8px;
+    }
+    .adm-nav-action-row .adm-inline-select,
+    .adm-nav-action-row .adm-btn-ghost {
+      min-width: 0;
+      width: 100%;
+      font-size: 0.7rem;
+      padding: 6px 8px;
+    }
+
+    /* ── API STATUS BANNER ──────────────────────────────────────────── */
+    .adm-api-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border: 1px solid rgba(245,166,35,0.25);
+      background: rgba(245,166,35,0.05);
+      font-size: 0.78rem;
+      color: var(--amber);
+      margin-bottom: 20px;
+    }
+    .adm-api-banner.visible { display: flex; }
+    .adm-api-banner-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
+    }
+
+    /* ── REFERENCE SECTION (collapsible) ────────────────────────────── */
+    .adm-reference { margin-top: 40px; }
+    .adm-details {
+      border: 1px solid var(--border);
+      background: var(--s2);
+    }
+    .adm-details + .adm-details { margin-top: 1px; }
+    .adm-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      list-style: none;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--t2);
+      user-select: none;
+      transition: color .13s;
+    }
+    .adm-summary::-webkit-details-marker { display: none; }
+    .adm-summary:hover { color: var(--t1); }
+    .adm-summary::before {
+      content: '▶';
+      font-size: 0.5rem;
+      color: var(--t4);
+      transition: transform .15s;
+    }
+    details[open] .adm-summary::before { transform: rotate(90deg); }
+    .adm-details-body { padding: 0 18px 18px; }
+
+    /* Tables */
+    .adm-table-wrap {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    .adm-table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .adm-table th,
+    .adm-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap;
+    }
+    .adm-table th {
+      font-size: 0.62rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--t3);
+      background: var(--s3);
+    }
+    .adm-table td { color: var(--t2); }
+    .adm-table tr:last-child td { border-bottom: none; }
+    .adm-table td:first-child { font-weight: 700; color: var(--t1); }
+    .adm-table-note {
+      font-size: 0.76rem;
+      color: var(--t3);
+      line-height: 1.7;
+      margin: 10px 0 0;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .adm-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .adm-module-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .adm-sidebar { display: none; }
+      .adm-mobile-nav { display: flex; }
+      .adm-main { margin-left: 0; padding: 20px 20px 64px; }
+      .adm-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .adm-module-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .adm-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .adm-page-header { flex-direction: column; }
+      .adm-topbar { padding: 0 14px; }
+    }
+  </style>
+</head>
+
+<body data-page="admin">
+
+  <div class="adm-entry-intro" aria-hidden="true">
+    <div class="adm-entry-mark">
+      <strong>ADMIN HUB</strong>
+      <span>IM_BOXER Control Room</span>
+    </div>
+  </div>
+
+  <!-- ── TOPBAR ──────────────────────────────────────────────────── -->
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand adm-brand-icon" href="./dashboard.html" aria-label="Dashboard"><span class="adm-brand-logo" aria-hidden="true"></span></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span class="adm-admin-name" data-user-name>—</span>
+      <a class="adm-topbar-dash" href="./dashboard.html">Dashboard</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <!-- ── MOBILE NAV ─────────────────────────────────────────────── -->
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item active" href="./admin.html">Overview</a>
+    <a class="adm-mobile-nav-item" href="./admin/tutorials.html">튜토리얼</a>
+    <a class="adm-mobile-nav-item" href="./admin/users.html">Users</a>
+    <a class="adm-mobile-nav-item" href="./admin/gyms.html">복싱장</a>
+    <a class="adm-mobile-nav-item" href="./admin-dataset.html">AI Dataset</a>
+  </div>
+
+  <!-- ── SHELL ───────────────────────────────────────────────────── -->
+  <div class="adm-shell">
+
+    <!-- ── SIDEBAR ───────────────────────────────────────────────── -->
+    <aside class="adm-sidebar" aria-label="관리자 네비게이션">
+
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item active" href="./admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./admin/tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./admin/sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <div class="adm-nav-action-row">
+          <select class="adm-inline-select" id="navSparringMode" aria-label="Sparring tuning mode">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <button class="adm-btn-ghost" id="navOpenSparringMode" type="button">Open</button>
+        </div>
+        <a class="adm-nav-item" href="./admin/timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./admin/audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="./admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./admin/media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./admin/users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./admin/premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./admin/gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./admin/analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./admin/settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+
+    </aside>
+
+    <!-- ── MAIN ───────────────────────────────────────────────────── -->
+    <main class="adm-main" id="admMain">
+
+      <!-- Breadcrumb -->
+      <div class="adm-breadcrumb">Admin <span>/ Overview</span></div>
+
+      <!-- API 오프라인 배너 -->
+      <div class="adm-api-banner" id="apiBanner" role="alert">
+        <span class="adm-api-banner-dot"></span>
+        <span id="apiBannerMsg">Overview API 연결 실패 — 정적 데이터를 표시합니다. 백엔드 서버를 확인하세요.</span>
+      </div>
+
+      <!-- Page header -->
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Operation Overview</h1>
+          <p class="adm-page-sub" data-user-summary>IM_BOXER 관리자 허브</p>
+        </div>
+        <div class="adm-header-meta">
+          <span style="font-size:0.68rem;color:var(--t4);font-weight:700;letter-spacing:0.06em;" id="lastUpdatedLabel"></span>
+        </div>
+      </div>
+
+      <!-- ── KPI STRIP ──────────────────────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">KPI</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="adm-kpi-grid" id="kpiGrid">
+          <!-- JS가 채우거나, 아래 기본값이 표시됨 -->
+          <div class="adm-kpi-card">
+            <span class="adm-kpi-label">총 사용자</span>
+            <span class="adm-kpi-value adm-kpi-loading" data-kpi="total_users">—</span>
+            <span class="adm-kpi-unit">명</span>
+          </div>
+          <div class="adm-kpi-card">
+            <span class="adm-kpi-label">훈련 기록</span>
+            <span class="adm-kpi-value" data-kpi="total_training">—</span>
+            <span class="adm-kpi-unit">건</span>
+          </div>
+          <div class="adm-kpi-card">
+            <span class="adm-kpi-label">스파링 기록</span>
+            <span class="adm-kpi-value" data-kpi="total_sparring">—</span>
+            <span class="adm-kpi-unit">건</span>
+          </div>
+          <div class="adm-kpi-card">
+            <span class="adm-kpi-label">평균 회피율</span>
+            <span class="adm-kpi-value ice" data-kpi="avg_dodge">—</span>
+            <span class="adm-kpi-unit">%</span>
+          </div>
+          <div class="adm-kpi-card">
+            <span class="adm-kpi-label">관심 체육관 저장</span>
+            <span class="adm-kpi-value" data-kpi="favorite_gyms">—</span>
+            <span class="adm-kpi-unit">건</span>
+          </div>
+          <div class="adm-kpi-card">
+            <span class="adm-kpi-label">활성 튜토리얼</span>
+            <span class="adm-kpi-value ice" data-kpi="active_tutorials">—</span>
+            <span class="adm-kpi-unit">개</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── MODULE GRID ─────────────────────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">LIVE MODULES</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="adm-module-grid" id="moduleGrid">
+
+          <!-- 1. 스파링 관리자 튜닝 — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">스파링 관리자 튜닝</h3>
+            <p class="adm-module-desc">실제 경기 화면에서 난이도별 라운드, AI 공격 간격, 점수 배율을 실시간으로 조정합니다. localStorage에 저장됩니다.</p>
+            <div class="adm-module-actions">
+              <select class="adm-inline-select" id="moduleSparringMode" aria-label="Sparring tuning mode">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+              <button class="adm-btn-primary" id="moduleOpenSparringMode" type="button">튜닝 열기</button>
+            </div>
+          </div>
+
+          <!-- 2. AI Dataset Manager — Legacy -->
+          <div class="adm-module-card status-legacy">
+            <span class="adm-module-status legacy">◆ LEGACY</span>
+            <h3 class="adm-module-title">AI Dataset Manager</h3>
+            <p class="adm-module-desc">동영상 프레임 추출, 구간 MP4 생성, 데이터셋 라벨링 도구. 기존 관리자 콘솔이 Admin Platform에 편입되었습니다.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin-dataset.html">콘솔 열기</a>
+            </div>
+          </div>
+
+          <!-- 3. Boxing Gym Manager — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Boxing Gym Manager</h3>
+            <p class="adm-module-desc">Kakao 복싱장 검색 API 테스트, 관심 체육관 통계 확인. 사용자별 저장 내역과 검색 로그를 관리합니다.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/gyms.html">체육관 관리</a>
+            </div>
+          </div>
+
+          <!-- 4. Tutorial Manager — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Tutorial Manager</h3>
+            <p class="adm-module-desc">튜토리얼 CRUD · 활성화/비활성화 · Premium 설정. Admin Tutorial CRUD API 연결됨.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/tutorials.html">튜토리얼 관리</a>
+            </div>
+          </div>
+
+          <!-- 5. Media Library — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Media Library</h3>
+            <p class="adm-module-desc">영상 · 이미지 · 오디오 · 썸네일 · 실루엣 통합 관리. 업로드 · URL 복사 · 미리보기 · 삭제 지원.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/media-library.html">미디어 관리</a>
+              <a class="adm-btn-ghost" href="./admin/media-library.html?type=video&category=tutorial">튜토리얼 영상</a>
+              <a class="adm-btn-ghost" href="./admin/media-library.html?type=video&category=training">훈련 영상</a>
+              <a class="adm-btn-ghost" href="./admin/media-library.html?type=video&category=sparring">스파링 영상</a>
+            </div>
+          </div>
+
+          <!-- 6. Users Manager — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Users Manager</h3>
+            <p class="adm-module-desc">사용자 조회 · tier 변경 · 활성화/비활성화. Admin Users API 연결됨.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/users.html">사용자 관리</a>
+            </div>
+          </div>
+
+          <!-- 7. Sparring Manager — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Sparring Manager</h3>
+            <p class="adm-module-desc">스파링 영상 등록 · 수정 · 활성화 관리. 각 영상의 타임스탬프(공격 마커)를 Timestamp Editor로 편집합니다.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/sparring.html">스파링 영상 관리</a>
+              <a class="adm-btn-ghost" href="./admin/timestamp-editor.html">Timestamp Editor</a>
+            </div>
+          </div>
+
+          <!-- 8. Audio Manager — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Audio Manager</h3>
+            <p class="adm-module-desc">BGM · SFX · 음성 가이드 · UI 사운드 파일 업로드 · 인라인 미리듣기 · 카테고리 관리.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/audio.html">오디오 관리</a>
+              <a class="adm-btn-ghost" href="./admin/media-library.html?type=audio&category=voice_guide">가이드 음성</a>
+              <a class="adm-btn-ghost" href="./admin/media-library.html?type=audio&category=bgm">BGM 모음</a>
+            </div>
+          </div>
+
+          <!-- 9. Analytics — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Analytics</h3>
+            <p class="adm-module-desc">훈련 · 스파링 · 사용자 집계 지표. 완료율 테이블, 모드별 통계, DAU 차트.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/analytics.html">Analytics 열기</a>
+            </div>
+          </div>
+
+          <!-- 10. Premium Manager — Live -->
+          <div class="adm-module-card status-live">
+            <span class="adm-module-status live">● LIVE</span>
+            <h3 class="adm-module-title">Premium Manager</h3>
+            <p class="adm-module-desc">Premium 사용자 조회 · 수동 부여 · 회수 · Premium 콘텐츠 목록.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-primary" href="./admin/premium.html">Premium 관리</a>
+            </div>
+          </div>
+
+          <!-- 11. Settings — Preview -->
+          <div class="adm-module-card">
+            <span class="adm-module-status" style="color:var(--ice);font-size:0.54rem;font-weight:900;letter-spacing:0.1em">◐ PREVIEW</span>
+            <h3 class="adm-module-title">Settings</h3>
+            <p class="adm-module-desc">시스템 환경 · 모듈 현황 · API 상태 · 운영 체크리스트. 설정 저장은 Phase D 예정.</p>
+            <div class="adm-module-actions">
+              <a class="adm-btn-ghost" href="./admin/settings.html">Settings 열기</a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── QUICK ACTIONS ──────────────────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">QUICK ACTIONS</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="adm-quick-grid">
+          <a class="adm-quick-btn red" href="./sparring_start.html?mode=pro&admin=1">Pro Tuning</a>
+          <a class="adm-quick-btn ice" href="./calibration.html">Calibration</a>
+          <a class="adm-quick-btn red" href="./sparring_start.html?mode=beginner&admin=1">⚡ Beginner 튜닝</a>
+          <a class="adm-quick-btn red" href="./sparring_start.html?mode=intermediate&admin=1">⚡ Intermediate 튜닝</a>
+          <a class="adm-quick-btn red" href="./sparring_start.html?mode=advanced&admin=1">⚡ Advanced 튜닝</a>
+          <a class="adm-quick-btn" href="./admin-dataset.html">📁 AI Dataset</a>
+          <a class="adm-quick-btn ice" href="./admin/gyms.html">📍 복싱장 관리</a>
+          <a class="adm-quick-btn" href="./admin/users.html">👤 Users</a>
+          <a class="adm-quick-btn" href="./admin/media-library.html">🗂 Media Library</a>
+          <a class="adm-quick-btn" href="./admin/sparring.html">🥊 Sparring Manager</a>
+          <a class="adm-quick-btn" href="./admin/timestamp-editor.html">⏱ Timestamp Editor</a>
+          <a class="adm-quick-btn" href="./admin/analytics.html">📊 Analytics</a>
+          <a class="adm-quick-btn" href="./admin/premium.html">⭐ Premium</a>
+          <a class="adm-quick-btn" href="./admin/audio.html">🎵 Audio</a>
+          <a class="adm-quick-btn" href="./dashboard.html">🏠 Dashboard</a>
+        </div>
+      </section>
+
+      <!-- ── REFERENCE TABLES (collapsible) ────────────────────── -->
+      <section class="adm-reference">
+        <div class="adm-section-header" style="margin-bottom:8px">
+          <span class="adm-section-label">SPARRING BASELINE REFERENCE</span>
+          <div class="adm-section-line"></div>
+        </div>
+
+        <details class="adm-details" id="sparringBaseline">
+          <summary class="adm-summary">스파링 모드 기준값</summary>
+          <div class="adm-details-body">
+            <p class="adm-table-note">튜닝 화면에서 SAVE를 누른 값은 브라우저 localStorage에 저장됩니다. 이 표는 코드에 정의된 기본값입니다.</p>
+            <div class="adm-table-wrap">
+              <table class="adm-table" id="sparring-baseline">
+                <thead>
+                  <tr>
+                    <th>Mode</th><th>Rounds</th><th>Round sec</th><th>AI interval</th>
+                    <th>AI damage</th><th>Opponent HP</th><th>Score x</th>
+                    <th>Win score</th><th>Combo gap</th><th>Attack win</th><th>Defense win</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>beginner</td><td>3</td><td>120</td><td>3600ms</td>
+                    <td>7</td><td>85</td><td>1.00</td><td>2400</td><td>920ms</td><td>1100ms</td><td>950ms</td>
+                  </tr>
+                  <tr>
+                    <td>intermediate</td><td>5</td><td>120</td><td>2900ms</td>
+                    <td>10</td><td>100</td><td>1.25</td><td>4600</td><td>820ms</td><td>980ms</td><td>840ms</td>
+                  </tr>
+                  <tr>
+                    <td>advanced</td><td>5</td><td>180</td><td>2200ms</td>
+                    <td>14</td><td>100</td><td>1.60</td><td>6800</td><td>680ms</td><td>820ms</td><td>720ms</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="adm-details">
+          <summary class="adm-summary">AI 공격 cue point</summary>
+          <div class="adm-details-body">
+            <p class="adm-table-note">impactDelayMs: 타격 판정 시점 / defenseWindowMs: 회피·가드 유효 시간 / telegraphLeadMs: 공격 예고 선행 시간</p>
+            <div class="adm-table-wrap">
+              <table class="adm-table">
+                <thead>
+                  <tr><th>Mode</th><th>Attack</th><th>impactDelayMs</th><th>defenseWindowMs</th><th>telegraphLeadMs</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>beginner</td><td>jab</td><td>760</td><td>260</td><td>280</td></tr>
+                  <tr><td>beginner</td><td>cross</td><td>820</td><td>250</td><td>320</td></tr>
+                  <tr><td>beginner</td><td>hook</td><td>860</td><td>240</td><td>340</td></tr>
+                  <tr><td>intermediate</td><td>jab</td><td>680</td><td>230</td><td>240</td></tr>
+                  <tr><td>intermediate</td><td>cross</td><td>740</td><td>220</td><td>280</td></tr>
+                  <tr><td>intermediate</td><td>hook</td><td>790</td><td>210</td><td>300</td></tr>
+                  <tr><td>advanced</td><td>jab</td><td>610</td><td>190</td><td>210</td></tr>
+                  <tr><td>advanced</td><td>cross</td><td>660</td><td>180</td><td>230</td></tr>
+                  <tr><td>advanced</td><td>hook</td><td>720</td><td>180</td><td>250</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="adm-details">
+          <summary class="adm-summary">Pose 인식 기준값</summary>
+          <div class="adm-details-body">
+            <p class="adm-table-note">스파링 튜닝 화면에서 <code style="color:var(--ice);font-size:0.75rem">Alt + Shift + A</code>로 패널을 열고 닫을 수 있습니다.</p>
+            <div class="adm-table-wrap">
+              <table class="adm-table">
+                <thead>
+                  <tr><th>minConfidence</th><th>actionCooldownMs</th><th>blockThreshold</th><th>analysisIntervalMs</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>0.48</td><td>520</td><td>68</td><td>110</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+      </section>
+
+    </main>
+  </div><!-- /adm-shell -->
+
+  <script type="module" src="./js/pages/admin.js"></script>
+  <script>
+    function openSparringTuningFromSelect(selectId) {
+      const select = document.getElementById(selectId);
+      const mode = select?.value || 'beginner';
+      window.location.href = `./sparring_start.html?mode=${encodeURIComponent(mode)}&admin=1`;
+    }
+    document.getElementById('navOpenSparringMode')?.addEventListener('click', () => openSparringTuningFromSelect('navSparringMode'));
+    document.getElementById('moduleOpenSparringMode')?.addEventListener('click', () => openSparringTuningFromSelect('moduleSparringMode'));
+  </script>
+
+</body>
+</html>

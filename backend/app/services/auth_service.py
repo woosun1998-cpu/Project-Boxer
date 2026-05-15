@@ -32,6 +32,8 @@ class AuthService:
             username=user.username,
             token=token,
             tier=user.tier,
+            role=user.role,
+            is_admin=user.is_admin,
         )
 
     async def login(self, db: AsyncSession, payload: LoginRequest) -> AuthPayload:
@@ -46,4 +48,6 @@ class AuthService:
             username=user.username,
             token=token,
             tier=user.tier,
+            role=user.role,
+            is_admin=user.is_admin,
         )

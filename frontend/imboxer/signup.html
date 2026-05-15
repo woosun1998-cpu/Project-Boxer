@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | Sign Up</title>
+
+  <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --red: #E8000D;
+      --yellow: #FFE500;
+      --green: #39D353;
+      --s1: #000000;
+      --s2: #0e0e0e;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.64);
+      --t3: rgba(255,255,255,0.34);
+      --border: rgba(255,255,255,0.08);
+      --border-2: rgba(255,255,255,0.16);
+      --danger: #ff6b6b;
+      --success: #39D353;
+      --fp: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+      --fm: 'Bebas Neue', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      min-height: 100svh;
+      margin: 0;
+      background: #000;
+      color: var(--t1);
+      font-family: var(--fp);
+      overflow-x: hidden;
+    }
+
+    .page {
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: minmax(400px, 460px) minmax(0, 1fr);
+      background:
+        linear-gradient(270deg, rgba(0,0,0,0.84), rgba(0,0,0,0.55)),
+        url('./assets/images/boading/boxing_gym1.jpg') center/cover no-repeat;
+    }
+
+    .left {
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      padding: 28px;
+      border-right: 1px solid var(--border);
+      background: rgba(0,0,0,0.88);
+    }
+
+    .signup-card {
+      width: 100%;
+      border: 1px solid var(--border-2);
+      background: rgba(14,14,14,0.88);
+      box-shadow: 0 28px 70px rgba(0,0,0,0.5);
+      padding: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      width: fit-content;
+      margin-bottom: 34px;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.3));
+    }
+
+    .card-top {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+
+    .form-title {
+      margin: 0;
+      font-family: var(--fm);
+      font-size: 2.55rem;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      font-weight: 400;
+    }
+
+    .form-sub {
+      margin: 8px 0 0;
+      color: var(--t2);
+      font-size: 0.88rem;
+      line-height: 1.62;
+      word-break: keep-all;
+    }
+
+    .login-link {
+      flex-shrink: 0;
+      color: var(--red);
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--t2);
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: rgba(255,255,255,0.035);
+      color: var(--t1);
+      font: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    input::placeholder { color: rgba(255,255,255,0.22); }
+    input:focus {
+      border-color: rgba(232,0,13,0.78);
+      box-shadow: 0 0 0 3px rgba(232,0,13,0.14);
+    }
+
+    .msg {
+      min-height: 22px;
+      margin-top: 12px;
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+    .msg[data-state="error"] { color: var(--danger); }
+    .msg[data-state="success"] { color: var(--success); }
+
+    .btn-submit {
+      width: 100%;
+      min-height: 46px;
+      margin-top: 12px;
+      border: 1px solid var(--red);
+      border-radius: 0;
+      background: var(--red);
+      color: #fff;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 14px 34px rgba(232,0,13,0.24);
+      transition: transform .15s ease, background .15s ease, opacity .15s ease;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #ff111f;
+    }
+    .btn-submit:disabled {
+      opacity: .52;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .form-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .form-links a {
+      color: var(--t3);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .form-links a:hover { color: var(--t1); }
+
+    .right {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 44px 38px;
+    }
+
+    .intro {
+      max-width: 620px;
+      margin-top: auto;
+      margin-bottom: auto;
+      animation: fadeUp .65s ease both;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--red);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 30px;
+      height: 2px;
+      background: var(--red);
+    }
+
+    .intro h1 {
+      margin: 20px 0 18px;
+      font-family: var(--fm);
+      font-size: clamp(3.8rem, 7vw, 7.4rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      font-weight: 400;
+    }
+
+    .intro h1 em {
+      color: var(--red);
+      font-style: normal;
+    }
+
+    .intro p {
+      max-width: 45ch;
+      margin: 0;
+      color: var(--t2);
+      font-size: 0.98rem;
+      line-height: 1.78;
+      word-break: keep-all;
+    }
+
+    .checklist {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: min(760px, 100%);
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.52);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .check-item {
+      min-height: 86px;
+      padding: 15px;
+      border-right: 1px solid var(--border);
+    }
+    .check-item:last-child { border-right: 0; }
+    .check-item strong {
+      display: block;
+      color: var(--yellow);
+      font-family: var(--fm);
+      font-size: 1.55rem;
+      line-height: 1;
+      font-weight: 400;
+    }
+    .check-item span {
+      display: block;
+      margin-top: 8px;
+      color: var(--t2);
+      font-size: 0.74rem;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 980px) {
+      .page { grid-template-columns: 1fr; }
+      .left {
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .right {
+        min-height: auto;
+        gap: 56px;
+        padding: 28px 24px 30px;
+      }
+      .checklist { grid-template-columns: repeat(2, 1fr); }
+      .check-item:nth-child(2) { border-right: 0; }
+      .check-item:nth-child(1),
+      .check-item:nth-child(2) { border-bottom: 1px solid var(--border); }
+    }
+
+    @media (max-width: 540px) {
+      .left { padding: 14px; }
+      .signup-card { padding: 24px 20px; }
+      .brand { margin-bottom: 26px; }
+      .card-top { display: block; }
+      .login-link { display: inline-block; margin-top: 12px; }
+      .right { padding: 22px 18px 24px; gap: 44px; }
+      .intro h1 { font-size: clamp(3.2rem, 16vw, 5rem); }
+      .checklist { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="left" aria-label="회원가입 폼">
+      <div class="signup-card">
+        <a class="brand" href="./splash.html">
+          <span class="brand-logo" aria-hidden="true"></span>
+        </a>
+
+        <div class="card-top">
+          <div>
+            <h2 class="form-title">SIGN UP</h2>
+            <p class="form-sub">이름, 이메일, 비밀번호를 입력하고 첫 라운드를 시작하세요.</p>
+          </div>
+          <a class="login-link" href="./login.html">로그인</a>
+        </div>
+
+        <form id="signupForm" data-signup-form novalidate>
+          <div class="field-group">
+            <label for="signupUsername">
+              사용자 이름
+              <input id="signupUsername" name="username" type="text" autocomplete="username" data-username placeholder="닉네임 또는 이름" required>
+            </label>
+            <label for="signupEmail">
+              이메일
+              <input id="signupEmail" name="email" type="email" autocomplete="email" data-email placeholder="이메일 주소" required>
+            </label>
+            <label for="signupPassword">
+              비밀번호
+              <input id="signupPassword" name="password" type="password" autocomplete="new-password" data-password placeholder="비밀번호" required>
+            </label>
+          </div>
+
+          <div class="msg" data-form-message aria-live="polite"></div>
+
+          <button type="submit" class="btn-submit">회원가입</button>
+        </form>
+
+        <div class="form-links">
+          <a href="./login.html">이미 계정이 있나요?</a>
+          <a href="./index.html">서비스 소개 보기</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="right" aria-label="회원가입 안내">
+      <div class="intro">
+        <div class="eyebrow">Join IM_BOXER</div>
+        <h1>START<br><em>YOUR ROUND</em></h1>
+        <p>
+          가입 후 바로 튜토리얼부터 훈련, 스파링, 성장 기록까지 이어지는 복싱 루틴을 경험할 수 있습니다.
+        </p>
+      </div>
+
+      <div class="checklist" aria-label="회원가입 후 이용 가능 기능">
+        <div class="check-item"><strong>01</strong><span>튜토리얼 무료 제공</span></div>
+        <div class="check-item"><strong>02</strong><span>반복 훈련 루틴</span></div>
+        <div class="check-item"><strong>03</strong><span>스파링 연습</span></div>
+        <div class="check-item"><strong>04</strong><span>훈련 결과 기록</span></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/pages/signup.js"></script>
+</body>
+</html>

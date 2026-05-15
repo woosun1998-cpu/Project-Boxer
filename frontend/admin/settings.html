@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Settings</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+
+    /* ── Settings card ───────────────────────────────────────── */
+    .cfg-card {
+      background: var(--s2); border: 1px solid var(--border);
+      margin-bottom: 1px;
+    }
+    .cfg-card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .cfg-card-title {
+      font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em;
+      color: var(--t2); text-transform: uppercase;
+    }
+    .cfg-card-body { padding: 0; }
+
+    /* ── Row ────────────────────────────────────────────────── */
+    .cfg-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+    .cfg-row:last-child { border-bottom: none; }
+    .cfg-row-left { display: flex; flex-direction: column; gap: 3px; }
+    .cfg-row-label { font-size: 0.76rem; font-weight: 700; color: var(--t1); }
+    .cfg-row-desc  { font-size: 0.68rem; color: var(--t3); line-height: 1.5; }
+    .cfg-row-value {
+      font-family: Consolas, monospace; font-size: 0.72rem;
+      color: var(--ice); background: var(--s3); border: 1px solid var(--border);
+      padding: 4px 10px; white-space: nowrap; max-width: 260px;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ── Status indicator ────────────────────────────────────── */
+    .cfg-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.68rem; font-weight: 700;
+    }
+    .cfg-status::before {
+      content: ''; display: inline-block;
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+    .cfg-status.ok     { color: var(--green); }
+    .cfg-status.ok::before   { background: var(--green); box-shadow: 0 0 4px var(--green); }
+    .cfg-status.warn   { color: var(--amber); }
+    .cfg-status.warn::before { background: var(--amber); }
+    .cfg-status.off    { color: var(--t4); }
+    .cfg-status.off::before  { background: var(--t4); }
+    .cfg-status.preview{ color: var(--ice); }
+    .cfg-status.preview::before { background: var(--ice); box-shadow: 0 0 4px var(--ice); }
+
+    /* ── Checklist ───────────────────────────────────────────── */
+    .cfg-check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; border-bottom: 1px solid var(--border);
+    }
+    .cfg-check-item:last-child { border-bottom: none; }
+    .cfg-check-icon { font-size: 0.76rem; width: 16px; text-align: center; }
+    .cfg-check-label { font-size: 0.76rem; font-weight: 700; color: var(--t1); flex: 1; }
+    .cfg-check-badge {
+      font-size: 0.54rem; font-weight: 900; letter-spacing: 0.1em;
+      padding: 2px 7px; border: 1px solid; text-transform: uppercase;
+    }
+    .cfg-check-badge.live    { color: var(--green);  border-color: rgba(57,211,83,0.3); }
+    .cfg-check-badge.live2   { color: var(--ice);    border-color: rgba(0,194,255,0.3); }
+    .cfg-check-badge.preview { color: var(--ice);    border-color: rgba(0,194,255,0.25); }
+    .cfg-check-badge.legacy  { color: var(--amber);  border-color: rgba(245,166,35,0.3); }
+    .cfg-check-badge.planned { color: var(--t4);     border-color: var(--border); }
+
+    /* ── Preview banner ──────────────────────────────────────── */
+    .preview-banner {
+      padding: 10px 18px; background: rgba(0,194,255,0.04);
+      border: 1px solid rgba(0,194,255,0.15); font-size: 0.76rem;
+      color: var(--ice); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Phase badge ─────────────────────────────────────────── */
+    .phase-badge {
+      font-size: 0.54rem; font-weight: 900; letter-spacing: 0.12em;
+      padding: 2px 8px; border: 1px solid rgba(0,194,255,0.25);
+      color: var(--ice); text-transform: uppercase; margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">—</span>
+      <a class="adm-topbar-link" href="../admin.html">← Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item" href="./analytics.html">Analytics</a>
+    <a class="adm-mobile-nav-item active" href="./settings.html">Settings</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item active" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ System /</span> <span>Settings</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">System Settings <span class="phase-badge">PREVIEW</span></h1>
+          <p class="adm-page-sub">시스템 환경 · 모듈 현황 · 운영 체크리스트</p>
+        </div>
+      </div>
+
+      <div class="preview-banner">
+        <span>ℹ</span>
+        <span>현재 Settings API가 구현되지 않아 읽기 전용 상태입니다. 실제 설정 저장은 Phase D에서 활성화됩니다.</span>
+      </div>
+
+      <!-- ── Environment ────────────────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">SYSTEM ENVIRONMENT</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-body" id="envInfo">
+            <div class="cfg-row">
+              <div class="cfg-row-left">
+                <span class="cfg-row-label">API Base URL</span>
+                <span class="cfg-row-desc">백엔드 FastAPI 서버 주소</span>
+              </div>
+              <span class="cfg-row-value" id="cfgApiUrl">—</span>
+            </div>
+            <div class="cfg-row">
+              <div class="cfg-row-left">
+                <span class="cfg-row-label">Environment</span>
+                <span class="cfg-row-desc">현재 실행 환경</span>
+              </div>
+              <span class="cfg-row-value" id="cfgEnv">—</span>
+            </div>
+            <div class="cfg-row">
+              <div class="cfg-row-left">
+                <span class="cfg-row-label">관리자 계정</span>
+                <span class="cfg-row-desc">현재 로그인된 관리자</span>
+              </div>
+              <span class="cfg-row-value" id="cfgAdmin">—</span>
+            </div>
+            <div class="cfg-row">
+              <div class="cfg-row-left">
+                <span class="cfg-row-label">Backend API 상태</span>
+                <span class="cfg-row-desc">FastAPI 서버 연결 여부</span>
+              </div>
+              <span class="cfg-status off" id="cfgApiStatus">확인 중...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Module status checklist ───────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">ADMIN MODULE 현황</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-header">
+            <span class="cfg-card-title">CONTENT</span>
+          </div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Tutorial Manager</span>
+              <a class="cfg-check-badge live" href="./tutorials.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Sparring Manager</span>
+              <a class="cfg-check-badge live" href="./sparring.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Sparring Tuning</span>
+              <a class="cfg-check-badge live" href="../sparring_start.html?mode=beginner&admin=1">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Timestamp Editor</span>
+              <a class="cfg-check-badge live" href="./timestamp-editor.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Audio Manager</span>
+              <a class="cfg-check-badge live" href="./audio.html">LIVE →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-card">
+          <div class="cfg-card-header">
+            <span class="cfg-card-title">MEDIA</span>
+          </div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">◆</span>
+              <span class="cfg-check-label">AI Dataset Manager</span>
+              <a class="cfg-check-badge legacy" href="../admin-dataset.html">LEGACY →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Media Library</span>
+              <a class="cfg-check-badge live" href="./media-library.html">LIVE →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-card">
+          <div class="cfg-card-header">
+            <span class="cfg-card-title">BUSINESS</span>
+          </div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Users Manager</span>
+              <a class="cfg-check-badge live" href="./users.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Premium Manager</span>
+              <a class="cfg-check-badge live" href="./premium.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Boxing Gyms</span>
+              <a class="cfg-check-badge live" href="./gyms.html">LIVE →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-card">
+          <div class="cfg-card-header">
+            <span class="cfg-card-title">SYSTEM</span>
+          </div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Admin Dashboard</span>
+              <a class="cfg-check-badge live" href="../index.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">Analytics</span>
+              <a class="cfg-check-badge live" href="./analytics.html">LIVE →</a>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">◐</span>
+              <span class="cfg-check-label">Settings</span>
+              <span class="cfg-check-badge preview">PREVIEW</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Backend API checklist ──────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">BACKEND API 현황</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-header"><span class="cfg-card-title">Phase A — 기반 API</span></div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET /api/admin/platform/overview</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/POST/PUT/DELETE /api/admin/tutorials</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/PATCH/DELETE /api/admin/users</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/POST/DELETE /api/admin/media</span><span class="cfg-check-badge live2">LIVE</span></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-header"><span class="cfg-card-title">Phase B — 에디터 API</span></div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/POST /api/admin/videos/{id}/timestamps</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">PUT/DELETE /api/admin/timestamps/{id}</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET /api/admin/timestamps/presets/{difficulty}</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/POST/PUT/PATCH/DELETE /api/admin/sparring/videos</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/POST/PUT/DELETE /api/admin/audio</span><span class="cfg-check-badge live2">LIVE</span></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-header"><span class="cfg-card-title">Phase C — 분석 · 비즈니스 API</span></div>
+          <div class="cfg-card-body">
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET /api/admin/analytics/overview, /training, /sparring, /users</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">✓</span><span class="cfg-check-label">GET/POST /api/admin/premium/*</span><span class="cfg-check-badge live2">LIVE</span></div>
+            <div class="cfg-check-item"><span class="cfg-check-icon">○</span><span class="cfg-check-label">GET/PUT /api/admin/settings</span><span class="cfg-check-badge planned">Phase D</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Operation checklist ───────────────────────────── -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">운영 체크리스트</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-body">
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">사이드바 disabled 항목 없음 (모든 페이지 접근 가능)</span>
+              <span class="cfg-check-badge live2">완료</span>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">admin-shell.css / admin-shell.js 공통 shell 적용</span>
+              <span class="cfg-check-badge live2">완료</span>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">API 실패 시 banner + 빈 상태 표시 (화면 죽지 않음)</span>
+              <span class="cfg-check-badge live2">완료</span>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">✓</span>
+              <span class="cfg-check-label">기존 사용자 화면 (tutorial/training/sparring) 영향 없음</span>
+              <span class="cfg-check-badge live2">완료</span>
+            </div>
+            <div class="cfg-check-item">
+              <span class="cfg-check-icon">○</span>
+              <span class="cfg-check-label">Settings API 연결 및 실제 저장 기능</span>
+              <span class="cfg-check-badge planned">Phase D</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    async function checkApiStatus() {
+      const el = document.getElementById('cfgApiStatus');
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/platform/overview`, {
+          headers: authHeaders(), signal: AbortSignal.timeout(4000),
+        });
+        if (res.ok) {
+          el.textContent = '연결됨';
+          el.className = 'cfg-status ok';
+        } else {
+          el.textContent = `오류 (HTTP ${res.status})`;
+          el.className = 'cfg-status warn';
+        }
+      } catch {
+        el.textContent = '연결 안 됨';
+        el.className = 'cfg-status off';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+
+      // Populate environment fields
+      document.getElementById('cfgApiUrl').textContent = API_BASE_URL || '(로컬)';
+      document.getElementById('cfgEnv').textContent =
+        (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'LOCAL' : 'PRODUCTION';
+
+      const adminName = document.querySelector('[data-admin-name]');
+      document.getElementById('cfgAdmin').textContent = adminName?.textContent?.trim() || '—';
+
+      checkApiStatus();
+    });
+  </script>
+</body>
+</html>
+

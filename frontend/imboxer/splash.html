@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | Start</title>
+
+  <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --red: #E8000D;
+      --yellow: #FFE500;
+      --s1: #000000;
+      --s2: #0e0e0e;
+      --s3: #161616;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.64);
+      --t3: rgba(255,255,255,0.34);
+      --border: rgba(255,255,255,0.08);
+      --border-2: rgba(255,255,255,0.16);
+      --fp: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+      --fm: 'Bebas Neue', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: var(--s1);
+      color: var(--t1);
+      font-family: var(--fp);
+    }
+
+    body {
+      min-height: 100svh;
+      overflow: hidden;
+    }
+
+    .splash {
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: minmax(380px, 0.9fr) minmax(0, 1.1fr);
+      background:
+        radial-gradient(circle at 14% 22%, rgba(232,0,13,0.18), transparent 32%),
+        linear-gradient(135deg, #000 0%, #080808 45%, #111 100%);
+    }
+
+    .copy-panel {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 54px;
+      min-height: 100svh;
+      padding: 34px 42px 38px;
+      border-right: 1px solid var(--border);
+      background: rgba(0,0,0,0.72);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      width: fit-content;
+      margin-bottom: 24px;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 62px;
+      height: 62px;
+      border-radius: 14px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter:
+        drop-shadow(0 0 14px rgba(232,0,13,0.42))
+        drop-shadow(0 0 34px rgba(232,0,13,0.18));
+    }
+
+    .hero-copy {
+      max-width: 520px;
+      animation: fadeUp .65s ease .08s both;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      color: var(--red);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 30px;
+      height: 2px;
+      background: var(--red);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--fm);
+      font-size: clamp(3.7rem, 7vw, 7.2rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      font-weight: 400;
+    }
+
+    h1 span { color: var(--red); }
+
+    .hero-sub {
+      max-width: 39ch;
+      margin: 22px 0 0;
+      color: var(--t2);
+      font-size: clamp(0.9rem, 1.3vw, 1.02rem);
+      line-height: 1.75;
+      word-break: keep-all;
+    }
+
+    .bottom-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 24px;
+      border: 1px solid var(--red);
+      background: var(--red);
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      box-shadow: 0 14px 38px rgba(232,0,13,0.28);
+      transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      background: #ff111f;
+      box-shadow: 0 18px 48px rgba(232,0,13,0.38);
+    }
+
+    .hint {
+      color: var(--t3);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .video-panel {
+      position: relative;
+      min-width: 0;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      overflow: hidden;
+      background: #050505;
+    }
+
+    .video-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.72), transparent 34%),
+        linear-gradient(0deg, rgba(0,0,0,0.76), transparent 38%, rgba(0,0,0,0.24));
+    }
+
+    .video-frame {
+      position: relative;
+      width: min(100%, 980px);
+      height: min(82svh, 720px);
+      background: #000;
+      overflow: hidden;
+    }
+
+    .video-frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.52) 78%, rgba(0,0,0,0.94) 100%),
+        linear-gradient(90deg, rgba(0,0,0,0.72), transparent 18%, transparent 82%, rgba(0,0,0,0.72)),
+        linear-gradient(0deg, rgba(0,0,0,0.78), transparent 22%, transparent 78%, rgba(0,0,0,0.58));
+    }
+
+    #splash-video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .splash { grid-template-columns: 1fr; }
+      .copy-panel {
+        min-height: auto;
+        gap: 64px;
+        padding: 28px 24px 30px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .video-panel {
+        min-height: auto;
+        padding: 18px;
+      }
+      .video-frame {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
+      .bottom-row { align-items: center; }
+    }
+
+    @media (max-width: 540px) {
+      .copy-panel { gap: 46px; padding: 22px 18px 24px; }
+      .brand-mark { width: 50px; height: 50px; border-radius: 12px; }
+      h1 { font-size: clamp(3rem, 16vw, 4.9rem); }
+      .hero-sub { font-size: 0.88rem; }
+      .hint { display: none; }
+      .cta-btn { width: 100%; }
+      .bottom-row { display: block; }
+      .video-panel { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="splash">
+    <section class="copy-panel" aria-label="IM_BOXER 시작 화면">
+      <div class="hero-copy">
+        <a class="brand" href="./splash.html" aria-label="IM_BOXER 시작 화면">
+          <span class="brand-mark" aria-hidden="true"></span>
+        </a>
+        <div class="eyebrow">AI Boxing Training</div>
+        <h1>TRAIN<br>LIKE A<br><span>BOXER</span></h1>
+        <p class="hero-sub">
+          기초 자세부터 훈련, 스파링, 기록까지 하나의 흐름으로 이어지는 복싱 트레이닝 플랫폼입니다.
+        </p>
+      </div>
+
+      <div class="bottom-row">
+        <a class="cta-btn" href="./index.html">시작하기</a>
+      </div>
+    </section>
+
+    <section class="video-panel" aria-label="복싱 영상">
+      <div class="video-frame">
+        <video id="splash-video" autoplay muted loop playsinline preload="auto">
+          <source src="./assets/videos/boarding/boxer_bodies.mp4" type="video/mp4">
+          <source src="./assets/videos/boarding/straight-round1.mp4" type="video/mp4">
+        </video>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    if (localStorage.getItem('im_boxer_access_token')) {
+      window.location.replace('./dashboard.html');
+    }
+
+    const video = document.getElementById('splash-video');
+    video.play().catch(() => {
+      video.style.display = 'none';
+      document.querySelector('.video-frame').style.background =
+        "url('./assets/images/boading/ring-bg-dark.jpg') center/cover no-repeat";
+    });
+  </script>
+</body>
+</html>
