@@ -27,14 +27,14 @@
         <div class="mp-avatar-wrap">
           <img crossorigin="anonymous" id="profileImage"
             class="mp-avatar"
-            src="https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000"
+            src="./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png"
             alt="프로필"
           />
         </div>
 
         <div class="mp-profile-info">
           <div class="mp-logo-row">
-            <img crossorigin="anonymous" class="mp-logo" src="https://lh3.googleusercontent.com/d/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8=w2000" alt="BOXER 로고" />
+            <img crossorigin="anonymous" class="mp-logo" src="./image/cache/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8.png" alt="BOXER 로고" />
             <span class="day-counter" id="dayCounter">+1일차</span>
           </div>
           <h1 class="mp-name" id="nicknameText">유저 닉네임님</h1>
@@ -73,7 +73,7 @@
                   stroke-dashoffset="0"
                 ></path>
               </svg>
-              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1hnbZ5TvvwjMi2Z9MkR08kSRYKAb2FIWa=w2000"
+              <img crossorigin="anonymous" src="./image/cache/1hnbZ5TvvwjMi2Z9MkR08kSRYKAb2FIWa.png"
                 class="gauge-icon"
                 alt="아이콘"
                 style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
@@ -108,7 +108,7 @@
                   stroke-dashoffset="0"
                 ></path>
               </svg>
-              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/14SGqNnOWakQhHrWgC4kkEaoCLhqE_WCF=w2000"
+              <img crossorigin="anonymous" src="./image/cache/14SGqNnOWakQhHrWgC4kkEaoCLhqE_WCF.png"
                 class="gauge-icon"
                 alt="아이콘"
                 style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
@@ -143,7 +143,7 @@
                   stroke-dashoffset="0"
                 ></path>
               </svg>
-              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1OPOr1iYXWhvTx_1smfQIR_bDes6YExev=w2000"
+              <img crossorigin="anonymous" src="./image/cache/1OPOr1iYXWhvTx_1smfQIR_bDes6YExev.png"
                 class="gauge-icon"
                 alt="아이콘"
                 style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
@@ -178,7 +178,7 @@
                   stroke-dashoffset="0"
                 ></path>
               </svg>
-              <img crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/11g8e8zCQ8VsBJM0J0b96nW8taq2BFSzj=w2000"
+              <img crossorigin="anonymous" src="./image/cache/11g8e8zCQ8VsBJM0J0b96nW8taq2BFSzj.png"
                 class="gauge-icon"
                 alt="아이콘"
                 style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
@@ -203,7 +203,7 @@
       <div class="auth-modal profile-edit-modal" role="dialog" aria-modal="true" aria-label="프로필 수정">
         <h3 class="modal-title">프로필 수정</h3>
         <div class="profile-image-edit">
-          <img crossorigin="anonymous" id="profileModalPreview" src="https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000" alt="프로필 미리보기" />
+          <img crossorigin="anonymous" id="profileModalPreview" src="./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png" alt="프로필 미리보기" />
           <input id="profileImageInput" type="file" accept="image/*" />
         </div>
 
@@ -442,7 +442,7 @@
             localStorage.getItem("boxer_profile_image")
           );
           document.getElementById("profileImage").src =
-            profile || "https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000";
+            profile || "./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png";
 
           const user =
             typeof auth !== "undefined" && auth.getCachedUser
@@ -477,7 +477,7 @@
               auth.normalizeDriveProfileImageUrl(
                 localStorage.getItem("boxer_profile_image")
               ) ||
-              "https://lh3.googleusercontent.com/d/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18=w2000",
+              "./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png",
           };
         }
 
