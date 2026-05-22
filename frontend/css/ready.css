@@ -1,0 +1,93 @@
+/* 1. 전체 화면 고정 및 배경 이미지 셋팅 */
+html, body.ready-page {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  font-family: "Paperlogy SemiBold", sans-serif; /* 폰트 확인 */
+}
+
+.ready-bg-figure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* 배경 이미지 경로를 피그마 시안의 여성 복서 이미지로 지정 (경로 확인 필수) */
+  background: #171717 center right / cover no-repeat;
+  z-index: 1;
+}
+
+/* 2. 완벽한 사선 컷팅 (상단 65%, 하단 35% 비율) */
+.red-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ed1d32;
+  clip-path: polygon(0 0, 65% 0, 35% 100%, 0% 100%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+}
+
+/* 3. 텍스트 안전 구역 (사선에 글자가 짤리지 않도록 너비 제한) */
+.red-overlay-inner {
+  width: 40vw; /* 화면의 40% 영역 안에서만 글자가 나오도록 강제 제한 */
+  padding-left: 5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* 4. 로고 크기 제어 */
+.ready-logo-wrap {
+  margin-bottom: 20px;
+}
+.ready-logo {
+  width: 100%;
+  max-width: 400px; /* 로고가 무식하게 커지는 것 방지 */
+  height: auto;
+  display: block;
+}
+
+/* 5. 텍스트 및 버튼 디테일 (피그마 시안 동기화) */
+.ready-heading {
+  display: none; /* 피그마 시안에는 해당 제목이 없으므로 숨김처리 */
+}
+
+.ready-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+  color: #fff;
+  font-size: clamp(16px, 1.5vw, 22px); /* 화면 크기에 맞게 폰트 자동 조절 */
+  line-height: 1.6;
+  word-break: keep-all; /* 단어 단위로 줄바꿈 (가독성 향상) */
+}
+
+.ready-list li {
+  margin-bottom: 16px;
+}
+
+.ready-start-btn {
+  align-self: flex-start; /* 버튼이 화면 전체 너비로 늘어나지 않게 좌측 정렬 */
+  background: #fff;
+  color: #ed1d32;
+  border: none;
+  border-radius: 50px;
+  padding: 18px 40px;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+}
+
+.ready-start-btn:hover {
+  transform: scale(1.05);
+}

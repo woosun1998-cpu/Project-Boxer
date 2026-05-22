@@ -1,0 +1,13 @@
+names:
+- Ball
+- Toy
+nc: 2
+roboflow:
+  license: CC BY 4.0
+  project: toy-model-1ukw8
+  url: https://universe.roboflow.com/reimagine-owlnn/toy-model-1ukw8/dataset/1
+  version: 1
+  workspace: reimagine-owlnn
+test: ../test/images
+train: ../train/images
+val: ../valid/images

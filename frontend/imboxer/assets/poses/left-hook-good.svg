@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39D353" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#39D353" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="70" r="48" fill="url(#glow)"/>
+  <!-- Head -->
+  <circle cx="50" cy="12" r="10" stroke="white" stroke-width="2.5" fill="rgba(255,255,255,0.07)"/>
+  <!-- Torso (rotated into hook) -->
+  <line x1="50" y1="22" x2="52" y2="76" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Shoulders (left shoulder forward) -->
+  <line x1="28" y1="32" x2="70" y2="38" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left arm: HOOK (elbow bent ~90°, arm horizontal at face height) -->
+  <line x1="28" y1="32" x2="12" y2="35" stroke="#39D353" stroke-width="3" stroke-linecap="round"/>
+  <line x1="12" y1="35" x2="16" y2="48" stroke="#39D353" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="16" cy="49" r="5.5" fill="#39D353"/>
+  <!-- Arc path to show hook motion -->
+  <path d="M 28,32 Q 6,32 14,50" stroke="#39D353" stroke-width="1" fill="none" opacity="0.4" stroke-dasharray="3,3"/>
+  <!-- Right arm: guard maintained -->
+  <polyline points="70,38 78,56 73,40" stroke="rgba(255,255,255,0.8)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="73" cy="39" r="5" fill="rgba(255,255,255,0.7)"/>
+  <!-- Hips (rotated) -->
+  <line x1="36" y1="76" x2="66" y2="74" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left leg -->
+  <polyline points="36,76 30,103 32,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="32" y1="128" x2="22" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Right leg -->
+  <polyline points="66,74 72,101 70,127" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="70" y1="127" x2="80" y2="131" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Good indicator -->
+  <circle cx="88" cy="14" r="8" fill="#39D353" opacity="0.9"/>
+  <polyline points="84,14 87,17 92,11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

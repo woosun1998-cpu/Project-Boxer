@@ -1,0 +1,1459 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - Diet Boxing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    />
+    <link rel="stylesheet" href="css/global.css" />
+    <style>
+      /* ── Fonts ── */
+      @font-face {
+        font-family: "Paperlogy SemiBold";
+        src: url("./font/Paperlogy-6SemiBold.ttf") format("truetype");
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Paperlogy Regular";
+        src: url("./font/Paperlogy-4Regular.ttf") format("truetype");
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "KBL Jump EB";
+        src: url("./font/KBLJump_EB_Extended.otf") format("opentype");
+        font-display: swap;
+      }
+
+      /* ── Base ── */
+      * {
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* global.css에 overflow:hidden / height:100vh 규칙이 있어서 !important로 강제 오버라이드 */
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100vh;
+        background: #171717 !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        display: block !important;
+        align-items: unset !important;
+        justify-content: unset !important;
+      }
+
+      /* ── Navigation Bar (global.css .hero-nav 와 동일) ── */
+      .hero-nav {
+        position: fixed;
+        top: 20px;
+        right: 46px;
+        width: auto;
+        min-width: max-content;
+        height: 70px;
+        border-radius: 100px;
+        background: #fff;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 34px;
+        padding: 0 32px;
+        color: #1c1c1c;
+        z-index: 999;
+        font-size: 20px;
+        line-height: 1;
+        white-space: nowrap;
+        font-family: "Paperlogy SemiBold", sans-serif;
+      }
+      .hero-nav a {
+        color: #1c1c1c;
+        text-decoration: none;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: color 0.2s ease;
+      }
+      .hero-nav a:hover,
+      .hero-nav a:focus-visible {
+        color: #b42318;
+      }
+      .hero-nav a.active,
+      .hero-nav a[href="diet-boxing.html"] {
+        color: #ed1c33 !important;
+      }
+
+      .drawer-auth-link {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        font-size: inherit;
+        font-weight: 600;
+        color: #1c1c1c;
+        white-space: nowrap;
+      }
+      .menu-btn {
+        width: 26px;
+        height: 20px;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+      }
+      .menu-btn i {
+        height: 3px;
+        width: 100%;
+        border-radius: 999px;
+        background: #1c1c1c;
+      }
+
+      /* ══════════════════════════════════════════════
+         섹션 1: 히어로 배너 — Figma 1920 × 1118px
+         모든 자식 position: absolute, % 기반
+      ══════════════════════════════════════════════ */
+      .diet-hero {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1920 / 1118;
+        overflow: hidden;
+        /* 무엇: 3번째 배경을 섹션 배경으로도 깔기 / 왜: 자식 img보다 아래에서 전체가 보이게, 평행사변형이 넓어져도 가장자리·빈틈에 배경색 유지 */
+        background-color: #171717;
+        background-image: url("./image/cache/1q0R8NWaNvle1dQuOl-6TTBdqreoEC7gF.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .diet-hero-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 0;
+        display: block;
+        max-width: none !important;
+      }
+      /* 평행사변형(.diet-hero-parallelogram) 스타일은 css/diet-boxing-user-parallelogram.css 에만 둠 — 직접 수정 시 그 파일만 고치면 됨 */
+      /* DIETBOXING 글자@3x — 평행사변형 위 */
+      .diet-hero-title {
+        position: absolute;
+        z-index: 3;
+        left: 100px; /* 48/1920   */
+        top: 15.03%; /* 168/1118 */
+        width: 72.34%; /* 1389/1920  */
+        height: auto;
+        display: block;
+        max-width: none !important;
+        pointer-events: none;
+      }
+      /* 복서 이미지 — Figma: left 590px, top 0, width 1331px, height 1118px */
+      .diet-hero-boxer {
+        position: absolute;
+        z-index: 10 !important;
+        left: 30.73%; /* 590/1920 */
+        top: 0;
+        height: 100%;
+        width: 69.32%; /* 1331/1920 */
+        max-width: none !important;
+        object-fit: cover;
+        object-position: top left;
+        display: block;
+        pointer-events: none;
+      }
+      /* 좌측 하단 카피 텍스트
+         Figma: left 50px, top 864px, width 805px, Paperlogy SemiBold 30px white */
+      .diet-hero-text {
+        position: absolute;
+        z-index: 6;
+        left: 100px; /* 50/1920  */
+        top: 77.28%; /* 864/1118 */
+        width: 41.93%; /* 805/1920 */
+        color: #ffffff;
+        font-family: "Paperlogy SemiBold", sans-serif;
+        font-size: clamp(11px, 1.5625vw, 40px);
+        line-height: 1.17;
+        white-space: nowrap;
+        margin: 0;
+      }
+      .diet-hero-text p {
+        margin: 0;
+      }
+
+      /* ── 구분선 (Figma: 50px 빨간 띠) ── */
+      .diet-divider {
+        width: 100%;
+        height: calc(50 / 1920 * 100vw);
+        min-height: 8px;
+        background: #ed1d32;
+        display: block;
+      }
+
+      /* ══════════════════════════════════════════════
+         섹션 2: 모드 선택 — Figma 1920 × 978px
+         aspect-ratio 고정, 모든 자식 position: absolute
+      ══════════════════════════════════════════════ */
+      .diet-mode {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1920 / 978;
+        overflow: hidden;
+        background: #2b1c12;
+      }
+      .diet-mode-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 0;
+        display: block;
+        max-width: none !important;
+      }
+
+      /* "모드 선택하기" 캡슐 버튼
+         Figma: width 467px, height 108px, top 50px, centered
+         %: w=467/1920=24.323%, h=108/978=11.043%, top=50/978=5.112% */
+      .diet-mode-title-btn {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 5.112%; /* 50/978   */
+        width: 24.323%; /* 467/1920 */
+        height: 11.043%; /* 108/978  */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ed1d32;
+        color: #fff;
+        font-family: "Paperlogy SemiBold", sans-serif;
+        font-size: clamp(16px, 2.083vw, 40px);
+        border-radius: 100vw;
+        box-shadow: 2px 10px 4px 2px rgba(0, 0, 0, 0.25);
+        white-space: nowrap;
+      }
+
+      /* ── 공통 카드 (position: absolute, .diet-mode 기준) ── */
+      .diet-card {
+        position: absolute;
+        z-index: 2;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        overflow: visible;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+      .diet-card:hover {
+        transform: translateY(-8px) scale(1.02);
+      }
+
+      /* ── 피그마 고정 위치 (Figma 원본 수치) ── */
+      .diet-card--light {
+        left: 14.583%; /* 280/1920 */
+        top: 25.256%; /* 247/978  */
+        width: 21.146%; /* 406/1920 */
+        height: 60.736%; /* 594/978  */
+      }
+      .diet-card--standard {
+        left: 38.333%; /* 736/1920 */
+        top: 25.256%; /* light/intense와 동일 */
+        width: 21.146%; /* 406/1920 */
+        height: 60.736%; /* 594/978 */
+      }
+      .diet-card--intense {
+        left: 64.271%; /* 1234/1920 */
+        top: 25.358%; /* 248/978   */
+        width: 21.146%; /* 406/1920  */
+        height: 60.736%; /* 594/978   */
+      }
+
+      /* ── 카드 내부 img ── */
+      .diet-card img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center center;
+        display: block;
+        max-width: none !important;
+        border-radius: 0;
+      }
+
+      /* ── Drawer 딤 레이어 ── */
+      .dim {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.52);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 2000 !important;
+      }
+      .drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(590px, calc(100% - 32px));
+        max-width: 100%;
+        background: #ffffff !important;
+        transform: translateX(110%);
+        transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+        z-index: 2001 !important;
+        overflow: hidden;
+        font-family: "Paperlogy SemiBold", sans-serif;
+      }
+      body.drawer-open .dim {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      body.drawer-open .drawer {
+        transform: translateX(0);
+      }
+      .drawer-inner {
+        position: relative;
+        height: 100%;
+        padding: 12px 30px;
+      }
+      .drawer-close {
+        position: absolute;
+        right: 30px !important;
+        top: 20px !important;
+        border: 0;
+        background: transparent;
+        font-size: 46px;
+        cursor: pointer;
+        line-height: 1;
+        z-index: 2002 !important;
+        color: #111 !important;
+      }
+      .drawer-profile {
+        display: grid;
+        grid-template-columns: 130px 1fr;
+        gap: 18px;
+        align-items: center;
+        margin-top: 18px;
+      }
+      .drawer-profile img {
+        width: 130px;
+        height: 130px;
+        border-radius: 999px;
+        object-fit: cover;
+      }
+      .drawer-note {
+        margin: 0;
+        color: #8c909a;
+        font-size: 25px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      .drawer-links {
+        margin-top: 10px;
+        display: flex;
+        gap: 40px;
+        font-size: 25px;
+      }
+      .drawer-action-btn {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        color: #9d9b9b;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .drawer-title {
+        margin: 100px 0 0;
+        font-size: 55px;
+        line-height: 65px;
+        word-break: keep-all;
+      }
+      .drawer-before-figure {
+        position: absolute;
+        right: 0;
+        bottom: -250px;
+        width: 530px;
+      }
+      .stat-box {
+        margin-top: 38px;
+        background: #1f1f1f;
+        border-radius: 18px;
+        padding: 18px;
+        color: #fff;
+        overflow: hidden;
+      }
+      .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 2px solid rgba(255, 255, 255, 0.92);
+        border-right: 0;
+        border-bottom: 0;
+        width: 100%;
+      }
+      .stat-cell {
+        border-right: 2px solid rgba(255, 255, 255, 0.92);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.92);
+        min-height: 190px;
+        padding: 10px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .stat-label {
+        margin: 0;
+        font-size: 18px !important;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        font-weight: normal;
+      }
+      .stat-number-row {
+        margin-top: auto;
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        white-space: nowrap;
+        line-height: 0.9;
+      }
+      .stat-value {
+        margin: 0;
+        color: #ccff00;
+        font-size: 88px !important;
+        line-height: 0.88;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        font-weight: normal;
+      }
+      .stat-unit {
+        margin: 0;
+        font-size: 44px !important;
+        line-height: 1;
+        font-weight: normal;
+        white-space: nowrap;
+        padding-bottom: 8px;
+      }
+      .graph-box {
+        margin-top: 28px;
+        background: #1f1f1f;
+        border-radius: 18px;
+        padding: 18px;
+        color: #fff;
+      }
+      .graph-box h4 {
+        margin: 0 0 14px;
+        font-size: 44px;
+        line-height: 1;
+        letter-spacing: -0.01em;
+      }
+      .graph-box img {
+        width: 100%;
+        border-radius: 8px;
+        display: block;
+      }
+
+      /* ── 인증 모달 ── */
+      .auth-modal-overlay,
+      .profile-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2100;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .auth-modal-overlay.open,
+      .profile-modal-overlay.open {
+        display: flex;
+      }
+      .auth-modal {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 20px;
+        padding: 14px 12px 18px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+      }
+      .auth-brand {
+        margin: 8px 0 12px;
+        text-align: center;
+        line-height: 0;
+      }
+      .auth-brand__img {
+        display: block;
+        width: 100%;
+        max-height: 140px;
+        object-fit: contain;
+        margin: 0 auto;
+      }
+      .auth-mode {
+        display: flex;
+        justify-content: center;
+        margin: 0 0 12px;
+        border-bottom: 1px solid #e8e8e8;
+      }
+      .auth-mode__btn {
+        flex: 1;
+        max-width: 50%;
+        height: 46px;
+        border: 0;
+        background: none;
+        font-size: 15px;
+        font-weight: 700;
+        color: #8a8a8a;
+        cursor: pointer;
+        position: relative;
+      }
+      .auth-mode__btn[aria-selected="true"] {
+        color: #ed1c33;
+      }
+      .auth-mode__btn[aria-selected="true"]::after {
+        content: "";
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 0;
+        height: 3px;
+        border-radius: 2px 2px 0 0;
+        background: #ed1c33;
+      }
+      .auth-inset-title {
+        margin: 0 0 12px;
+        padding-left: 16px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ed1c33;
+      }
+      .auth-inset {
+        border: 1px solid #d4d4d4;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+      }
+      .auth-inset__row {
+        position: relative;
+        border-top: 1px solid #ebebeb;
+      }
+      .auth-inset__row:first-of-type {
+        border-top: 0;
+      }
+      .naver-inp {
+        width: 100%;
+        height: 56px;
+        border: 0;
+        margin: 0;
+        padding: 18px 16px 0;
+        font-weight: 700;
+        font-size: 16px;
+        color: #1a1a1a;
+        background: #fff;
+      }
+      .naver-inp::placeholder {
+        color: transparent;
+      }
+      .naver-inp:focus {
+        outline: 2px solid #ed1d32;
+        outline-offset: -2px;
+      }
+      .auth-float {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        font-weight: 700;
+        color: #b0b0b0;
+        pointer-events: none;
+        background: #fff;
+        padding: 0 4px;
+        transition: all 0.16s ease;
+      }
+      .naver-inp:focus + .auth-float,
+      .naver-inp:not(:placeholder-shown) + .auth-float {
+        top: 10px;
+        transform: translateY(0);
+        font-size: 11px;
+        color: #8c8c8c;
+      }
+      .auth-extras {
+        display: flex;
+        align-items: center;
+        margin: 12px 0;
+        font-size: 12px;
+        color: #555;
+      }
+      .auth-keep {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+      .auth-keep input {
+        width: 16px;
+        height: 16px;
+        accent-color: #ed1c33;
+        cursor: pointer;
+      }
+      .auth-btn-main {
+        width: 100%;
+        height: 50px;
+        border: 0;
+        border-radius: 10px;
+        background: #ed1d32;
+        color: #fff;
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .auth-btn-main:hover,
+      .auth-btn-main:focus-visible {
+        background: #c81326;
+      }
+      .auth-foot {
+        margin-top: 12px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .auth-foot a,
+      .auth-foot__btn {
+        background: none;
+        border: 0;
+        padding: 0;
+        color: #888;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: inherit;
+      }
+      .auth-foot-sep {
+        margin: 0 4px;
+        color: #ccc;
+      }
+      .auth-pane {
+        display: none;
+      }
+      .auth-pane.active {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .auth-pane form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .auth-error {
+        min-height: 22px;
+        margin: 0;
+        font-size: 13px;
+        color: #d61f35;
+        display: none;
+      }
+      .profile-modal {
+        width: 100%;
+        max-width: 620px;
+        background: #fff;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+      .profile-title {
+        margin: 0 0 12px;
+        font-size: 24px;
+        font-weight: 800;
+      }
+      .profile-preview {
+        width: 96px;
+        height: 96px;
+        border-radius: 999px;
+        object-fit: cover;
+        border: 1px solid #d4d4d4;
+        margin-bottom: 10px;
+      }
+      .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .profile-grid .auth-field:last-child {
+        grid-column: 1 / -1;
+      }
+      .auth-field {
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .auth-input {
+        width: 100%;
+        height: 48px;
+        border-radius: 8px;
+        border: 1px solid #d4d4d4;
+        padding: 0 14px;
+        font-size: 15px;
+        padding-top: 14px;
+      }
+      .auth-label {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8e8e8e;
+        font-size: 14px;
+        pointer-events: none;
+        background: #fff;
+        padding: 0 4px;
+        transition: all 0.18s ease;
+      }
+      .auth-input:focus + .auth-label,
+      .auth-input:not(:placeholder-shown) + .auth-label {
+        top: 0;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #111;
+      }
+      .profile-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .btn-secondary {
+        width: 100%;
+        height: 46px;
+        border: 1px solid #cfcfcf;
+        border-radius: 8px;
+        background: #f7f7f7;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .auth-submit {
+        width: 100%;
+        height: 48px;
+        border: 0;
+        border-radius: 8px;
+        background: #111;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+    </style>
+    <!-- 평행사변형 위치: css/diet-boxing-user-parallelogram.css (본인 전용, 위 <style>에는 규칙 없음) -->
+    <link rel="stylesheet" href="css/diet-boxing-user-parallelogram.css?v=1" />
+  </head>
+
+  <body>
+    <!-- ══ 상단 내비게이션 바 (고정) ══ -->
+    <nav class="hero-nav" aria-label="메인 내비게이션">
+      <a href="index.html">홈</a>
+      <a href="tutorial-new.html">트레이닝</a>
+      <a href="diet-boxing.html" class="active">다이어트 복싱</a>
+      <a href="sparring.html">스파링</a>
+      <a href="stretch.html">스트레칭</a>
+      <button id="navLoginBtn" type="button" class="drawer-auth-link">
+        <span id="userLabel">로그인</span>
+      </button>
+    </nav>
+
+    <!-- ══ 섹션 1: 히어로 배너 (Figma 1920×1118) ══ -->
+    <section class="diet-hero">
+      <img crossorigin="anonymous"         class="diet-hero-bg"
+        src="./image/cache/1q0R8NWaNvle1dQuOl-6TTBdqreoEC7gF.png"
+        alt=""
+      />
+      <img crossorigin="anonymous"         class="diet-hero-parallelogram"
+        src="./image/cache/1QH3XaFWgPDjkpXbD2qo9Arbo70sLR3Y6.png"
+        alt=""
+        aria-hidden="true"
+      />
+      <img crossorigin="anonymous"         class="diet-hero-title"
+        src="./image/cache/1l9TYHFzvzvHi6JvOiY0V4_tcPBCQft0y.png"
+        alt="DIETBOXING"
+      />
+      <!-- 무엇: 메인 복서 레이어 / 왜: 다이어트복싱이미지 메인.png (Drive id 1iFZPj-...) — 카드용 1iESKt0g 이미지와 구분 -->
+      <img crossorigin="anonymous"         class="diet-hero-boxer"
+        src="./image/cache/1iFZPj-_D6EbeYw0UDLZ8Nop_1B_9Bk4_.png"
+        alt=""
+      />
+      <div class="diet-hero-text">
+        <p>영상 속 트레이너의 움직임에 맞춰 신나게 펀치를 뻗어보세요.</p>
+        <p>AI가 당신의 자세를 실시간으로 분석해 완벽한 폼으로 교정해 줍니다.</p>
+      </div>
+    </section>
+
+    <!-- ══ 구분선 (Figma: 50px 빨간 띠) ══ -->
+    <div class="diet-divider"></div>
+
+    <!-- ══ 섹션 2: 모드 선택 (Figma 1920×978) ══ -->
+    <section class="diet-mode">
+      <img crossorigin="anonymous"         class="diet-mode-bg"
+        src="./image/cache/1_r0vKkO6Njt8xS24qmSbI8QQWCw8W7h1.png"
+        alt=""
+      />
+
+      <span class="diet-mode-title-btn">모드 선택하기</span>
+
+      <!-- 라이트 카드: Figma left=280px top=247px w=406px h=594px -->
+      <div
+        class="diet-card diet-card--light"
+        data-mode="light"
+        role="button"
+        tabindex="0"
+        aria-label="라이트 모드 선택"
+      >
+        <img crossorigin="anonymous"           src="./image/cache/1Gm0xS-b5RJLq2EVsznJQjYQhoGj6_gPi.png"
+          alt="라이트 모드"
+        />
+      </div>
+
+      <!-- 스탠다드 카드: Figma left=736px top=217px w=448px h=656px -->
+      <div
+        class="diet-card diet-card--standard"
+        data-mode="standard"
+        role="button"
+        tabindex="0"
+        aria-label="스탠다드 모드 선택"
+      >
+        <img crossorigin="anonymous"           src="./image/cache/12Ps3xRPGBNqPXRGSqfTMw2_F6RLqrFb8.png"
+          alt="스탠다드 모드"
+        />
+      </div>
+
+      <!-- 인탠스 카드: Figma left=1234px top=248px w=406px h=594px -->
+      <div
+        class="diet-card diet-card--intense"
+        data-mode="intense"
+        role="button"
+        tabindex="0"
+        aria-label="인탠스 모드 선택"
+      >
+        <img crossorigin="anonymous"           src="./image/cache/1iRaWdg-CIIPR23_SoAxBbt8WtEIuIs64.png"
+          alt="인탠스 모드"
+        />
+      </div>
+    </section>
+
+    <!-- ══ 하단 구분선 ══ -->
+    <div class="diet-divider"></div>
+
+    <!-- ══ Drawer ══ -->
+    <div id="dimLayer" class="dim" aria-hidden="true"></div>
+    <aside id="drawer" class="drawer" aria-hidden="true">
+      <button id="closeDrawerBtn" class="drawer-close" aria-label="메뉴 닫기">
+        &times;
+      </button>
+      <div id="drawerInner" class="drawer-inner"></div>
+    </aside>
+
+    <!-- ══ 로그인/회원가입 모달 ══ -->
+    <div
+      id="authModal"
+      class="auth-modal-overlay"
+      onclick="closeAuthModalOnOverlay(event)"
+    >
+      <div
+        class="auth-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="로그인 및 회원가입"
+      >
+        <div class="auth-brand">
+          <img crossorigin="anonymous"             class="auth-brand__img"
+            src="./image/cache/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8.png"
+            alt="BOXER"
+          />
+        </div>
+        <div class="auth-mode" role="tablist" aria-label="로그인 또는 회원가입">
+          <button
+            class="auth-mode__btn"
+            type="button"
+            role="tab"
+            id="tabLogin"
+            aria-selected="true"
+            onclick="switchAuthTab('login')"
+          >
+            로그인
+          </button>
+          <button
+            class="auth-mode__btn"
+            type="button"
+            role="tab"
+            id="tabSignup"
+            aria-selected="false"
+            onclick="switchAuthTab('signup')"
+          >
+            회원가입
+          </button>
+        </div>
+        <div class="auth-pane active" id="paneLogin">
+          <p class="auth-inset-title">아이디(이메일) 로그인</p>
+          <form onsubmit="handleLogin(event)">
+            <div class="auth-inset">
+              <div class="auth-inset__row">
+                <input
+                  id="loginEmail"
+                  class="naver-inp"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="username"
+                  placeholder=" "
+                  required
+                />
+                <label class="auth-float" for="loginEmail"
+                  >아이디(이메일)</label
+                >
+              </div>
+              <div class="auth-inset__row">
+                <input
+                  id="loginPassword"
+                  class="naver-inp"
+                  type="password"
+                  autocomplete="current-password"
+                  minlength="8"
+                  placeholder=" "
+                  required
+                />
+                <label class="auth-float" for="loginPassword">비밀번호</label>
+              </div>
+            </div>
+            <div class="auth-extras">
+              <label class="auth-keep"
+                ><input type="checkbox" id="authKeepLogin" name="keep" />로그인
+                상태 유지</label
+              >
+            </div>
+            <p id="loginError" class="auth-error"></p>
+            <button class="auth-btn-main" type="submit">로그인</button>
+          </form>
+          <div class="auth-foot">
+            <a href="#" onclick="return showAuthNotReady(event);"
+              >비밀번호 찾기</a
+            >
+            <span class="auth-foot-sep" aria-hidden="true">|</span>
+            <a href="#" onclick="return showAuthNotReady(event);"
+              >아이디 찾기</a
+            >
+            <span class="auth-foot-sep" aria-hidden="true">|</span>
+            <button
+              type="button"
+              class="auth-foot__btn"
+              onclick="switchAuthTab('signup')"
+            >
+              회원가입
+            </button>
+          </div>
+        </div>
+        <div class="auth-pane" id="paneSignup">
+          <p class="auth-inset-title">새 계정으로 회원가입</p>
+          <form onsubmit="handleSignup(event)">
+            <div class="auth-inset">
+              <div class="auth-inset__row">
+                <input
+                  id="signupUsername"
+                  class="naver-inp"
+                  type="text"
+                  minlength="3"
+                  maxlength="20"
+                  autocomplete="nickname"
+                  placeholder=" "
+                  required
+                />
+                <label class="auth-float" for="signupUsername"
+                  >닉네임 (3~20자)</label
+                >
+              </div>
+              <div class="auth-inset__row">
+                <input
+                  id="signupEmail"
+                  class="naver-inp"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="email"
+                  placeholder=" "
+                  required
+                />
+                <label class="auth-float" for="signupEmail"
+                  >아이디(이메일)</label
+                >
+              </div>
+              <div class="auth-inset__row">
+                <input
+                  id="signupPassword"
+                  class="naver-inp"
+                  type="password"
+                  minlength="8"
+                  autocomplete="new-password"
+                  placeholder=" "
+                  required
+                />
+                <label class="auth-float" for="signupPassword"
+                  >비밀번호 (8자 이상)</label
+                >
+              </div>
+            </div>
+            <p id="signupError" class="auth-error"></p>
+            <button class="auth-btn-main" type="submit">회원가입</button>
+          </form>
+          <div class="auth-foot">
+            <a href="#" onclick="return showAuthNotReady(event);"
+              >비밀번호 찾기</a
+            >
+            <span class="auth-foot-sep" aria-hidden="true">|</span>
+            <a href="#" onclick="return showAuthNotReady(event);"
+              >아이디 찾기</a
+            >
+            <span class="auth-foot-sep" aria-hidden="true">|</span>
+            <button
+              type="button"
+              class="auth-foot__btn"
+              onclick="switchAuthTab('login')"
+            >
+              로그인
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 프로필 수정 모달 ══ -->
+    <div
+      id="profileModal"
+      class="profile-modal-overlay"
+      onclick="closeProfileModalOnOverlay(event)"
+    >
+      <div
+        class="profile-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="프로필 수정"
+      >
+        <h3 class="profile-title">프로필 수정</h3>
+        <img crossorigin="anonymous"           id="profilePreview"
+          class="profile-preview"
+          src="./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png"
+          alt="프로필 미리보기"
+        />
+        <form onsubmit="handleProfileSave(event)">
+          <div class="profile-grid">
+            <div class="auth-field">
+              <input
+                id="profileName"
+                class="auth-input"
+                type="text"
+                placeholder=" "
+              />
+              <label class="auth-label" for="profileName">이름</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profilePhone"
+                class="auth-input"
+                type="tel"
+                placeholder=" "
+              />
+              <label class="auth-label" for="profilePhone">전화번호</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profileNickname"
+                class="auth-input"
+                type="text"
+                placeholder=" "
+              />
+              <label class="auth-label" for="profileNickname">닉네임</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profilePassword"
+                class="auth-input"
+                type="password"
+                placeholder=" "
+              />
+              <label class="auth-label" for="profilePassword">비밀번호</label>
+            </div>
+            <div class="auth-field">
+              <input
+                id="profilePhoto"
+                class="auth-input"
+                type="file"
+                accept="image/*"
+              />
+            </div>
+          </div>
+          <p id="profileError" class="auth-error"></p>
+          <div class="profile-actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="closeProfileModal()"
+            >
+              취소
+            </button>
+            <button class="auth-submit" type="submit">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ══ Scripts ══ -->
+    <script src="js/core/api.js?v=8000"></script>
+    <script src="js/core/auth.js?v=8000"></script>
+    <script>
+      /* ── 모드 카드 클릭 → ready.html 경유 후 diet-boxing-play ── */
+      document.querySelectorAll(".diet-card").forEach((card) => {
+        const navigate = () => {
+          const mode = card.dataset.mode || "standard";
+          window.location.assign(
+            "./ready.html?target=diet-boxing-play.html&mode=" +
+              encodeURIComponent(mode),
+          );
+        };
+        card.addEventListener("click", navigate);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            navigate();
+          }
+        });
+      });
+
+      /* ── 로그인/드로어 상태 관리 ── */
+      let isLoggedIn =
+        typeof auth !== "undefined" && typeof auth.isLoggedIn === "function"
+          ? auth.isLoggedIn()
+          : false;
+      let isDrawerOpen = false;
+
+      const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+      const dimLayer = document.getElementById("dimLayer");
+      const drawer = document.getElementById("drawer");
+      const drawerInner = document.getElementById("drawerInner");
+      const userLabel = document.getElementById("userLabel");
+      const navLoginBtn = document.getElementById("navLoginBtn");
+      const profilePhotoInput = document.getElementById("profilePhoto");
+      const profilePreview = document.getElementById("profilePreview");
+
+      function beforeOverlay() {
+        return `
+    <div style="position:relative;width:100%;height:100%;background:#fff;overflow:hidden;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:30px;position:relative;z-index:10;">
+        <img crossorigin="anonymous" src="./image/cache/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8.png" alt="BOXER" style="width:80px;height:80px;object-fit:contain;" />
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:15px;">
+          <div style="background:#F2F2F2;padding:10px 20px;border-radius:5px;font-size:16px;color:#666;font-weight:500;">로그인 후 이용 하실 수 있습니다.</div>
+          <div style="display:flex;gap:20px;">
+            <button type="button" onclick="openAuthModal('login')" style="border:none;background:transparent;font-size:20px;font-weight:800;color:#000;cursor:pointer;padding:0;">로그인</button>
+            <button type="button" onclick="openAuthModal('signup')" style="border:none;background:transparent;font-size:20px;font-weight:800;color:#000;cursor:pointer;padding:0;">회원가입</button>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 40px;margin-top:50px;position:relative;z-index:5;">
+        <h2 style="margin:0;font-size:72px;font-weight:900;line-height:1.1;letter-spacing:-3px;color:#000;"><span style="display:block;">집에서 쉽게</span><span style="display:block;">복싱을 즐기세요</span></h2>
+      </div>
+      <div style="position:absolute;bottom:0;left:0;width:100%;height:70%;z-index:1;pointer-events:none;">
+        <img crossorigin="anonymous" src="./image/cache/19ZNW9ic3jcD0cefm9UWToxY_kyxJG8N0.png" alt="Boxer Illustration" style="width:100%;height:100%;object-fit:cover;object-position:center top;" />
+      </div>
+      <button id="closeDrawerBtnOverlay" onclick="closeDrawer()" style="position:absolute;top:20px;right:20px;border:none;background:transparent;font-size:40px;font-weight:300;color:#000;cursor:pointer;z-index:100;">&times;</button>
+    </div>`;
+      }
+
+      function afterOverlay() {
+        const profileImg =
+          auth.normalizeDriveProfileImageUrl(
+            localStorage.getItem("boxer_profile_image"),
+          ) ||
+          "./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png";
+        const cachedUser =
+          typeof auth !== "undefined" && auth.getCachedUser
+            ? auth.getCachedUser()
+            : null;
+        const nickname = cachedUser?.username || "User NickName님";
+        return `<section class="drawer-profile"><img crossorigin="anonymous" src="${profileImg}" alt="BOXER 로고" /><div><p style="margin:0;font-size:25px;line-height:1.2;">${nickname}</p><p style="margin:18px 0 0;font-size:25px;line-height:1.2;">오늘도 트레이닝 해요!</p><div class="drawer-links" style="margin-top:16px;"><button type="button" class="drawer-action-btn" onclick="openProfileModal()">프로필 수정</button><button type="button" class="drawer-action-btn" onclick="performLogout()">로그아웃</button></div></div></section><section class="stat-box"><div class="stat-grid"><div class="stat-cell"><p class="stat-label">최고 점수</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">점</p></div></div><div class="stat-cell"><p class="stat-label">최고 콤보</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">콤보</p></div></div><div class="stat-cell"><p class="stat-label">회피율</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">%</p></div></div><div class="stat-cell"><p class="stat-label">총 운동 횟수</p><div class="stat-number-row"><p class="stat-value">00</p><p class="stat-unit">회</p></div></div></div></section><section class="graph-box"><h4>최근 회피율 그래프</h4><img crossorigin="anonymous" src="./image/cache/1E58-Ar9HJovqNrhjRTCRZ5bArTU8Q1Hg.png" onerror="this.onerror=null;this.style.display='none'" alt="최근 회피율 그래프" /></section>`;
+      }
+
+      function getDisplayNickname() {
+        const cachedUser =
+          typeof auth !== "undefined" && auth.getCachedUser
+            ? auth.getCachedUser()
+            : null;
+        const rawName = (cachedUser?.username || "").trim();
+        if (!rawName) return null;
+        return rawName.endsWith("님") ? rawName : `${rawName}님`;
+      }
+
+      function syncLoginState() {
+        const tokenBased =
+          typeof auth !== "undefined" && typeof auth.isLoggedIn === "function"
+            ? auth.isLoggedIn()
+            : false;
+        isLoggedIn = isLoggedIn || tokenBased;
+        return isLoggedIn;
+      }
+
+      function renderAuthUi() {
+        const loggedIn = syncLoginState();
+        const nickname = getDisplayNickname();
+        if (loggedIn) {
+          userLabel.textContent = nickname || "내 계정";
+          userLabel.style.color = "#ED1D32";
+        } else {
+          userLabel.textContent = "로그인";
+          userLabel.style.color = "";
+        }
+        drawerInner.innerHTML = loggedIn ? afterOverlay() : beforeOverlay();
+      }
+
+      async function initAuthState() {
+        if (typeof auth === "undefined") {
+          isLoggedIn = false;
+          renderAuthUi();
+          return;
+        }
+        if (
+          typeof auth.handlePageLoadSessionCheck === "function" &&
+          !auth.handlePageLoadSessionCheck()
+        ) {
+          isLoggedIn = false;
+          renderAuthUi();
+          return;
+        }
+        if (typeof auth.validateSession === "function") {
+          try {
+            isLoggedIn = await auth.validateSession();
+          } catch {
+            isLoggedIn = false;
+          }
+        } else if (typeof auth.isLoggedIn === "function") {
+          isLoggedIn = auth.isLoggedIn();
+        } else {
+          isLoggedIn = false;
+        }
+        renderAuthUi();
+      }
+
+      function openDrawer() {
+        isDrawerOpen = true;
+        document.body.classList.add("drawer-open");
+        drawer.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        isDrawerOpen = false;
+        document.body.classList.remove("drawer-open");
+        drawer.setAttribute("aria-hidden", "true");
+      }
+
+      function openAuthModal(tab = "login") {
+        document.getElementById("authModal").classList.add("open");
+        switchAuthTab(tab);
+      }
+      function closeAuthModal() {
+        document.getElementById("authModal").classList.remove("open");
+      }
+      function closeAuthModalOnOverlay(event) {
+        if (event.target.id === "authModal") closeAuthModal();
+      }
+
+      function openProfileModal() {
+        const user =
+          typeof auth !== "undefined" && auth.getCachedUser
+            ? auth.getCachedUser()
+            : null;
+        const profileImage =
+          auth.normalizeDriveProfileImageUrl(
+            localStorage.getItem("boxer_profile_image"),
+          ) ||
+          "./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png";
+        document.getElementById("profileName").value = user?.name || "";
+        document.getElementById("profilePhone").value = user?.phone || "";
+        document.getElementById("profileNickname").value = user?.username || "";
+        document.getElementById("profilePassword").value = "";
+        document.getElementById("profileError").style.display = "none";
+        profilePreview.src = profileImage;
+        document.getElementById("profileModal").classList.add("open");
+      }
+      function closeProfileModal() {
+        document.getElementById("profileModal").classList.remove("open");
+      }
+      function closeProfileModalOnOverlay(event) {
+        if (event.target.id === "profileModal") closeProfileModal();
+      }
+
+      async function handleProfileSave(event) {
+        event.preventDefault();
+        const errorEl = document.getElementById("profileError");
+        errorEl.style.display = "none";
+        try {
+          const currentUser =
+            typeof auth !== "undefined" && auth.getCachedUser
+              ? auth.getCachedUser() || {}
+              : {};
+          const mergedUser = {
+            ...currentUser,
+            name: document.getElementById("profileName").value.trim(),
+            phone: document.getElementById("profilePhone").value.trim(),
+            username:
+              document.getElementById("profileNickname").value.trim() ||
+              currentUser.username,
+          };
+          localStorage.setItem("boxer_user", JSON.stringify(mergedUser));
+          closeProfileModal();
+          renderAuthUi();
+        } catch (error) {
+          errorEl.textContent = error.message || "프로필 저장에 실패했습니다.";
+          errorEl.style.display = "block";
+        }
+      }
+
+      function performLogout() {
+        if (typeof auth !== "undefined" && typeof auth.logout === "function") {
+          auth.logout({ redirect: false });
+          isLoggedIn = false;
+          closeDrawer();
+          renderAuthUi();
+          return;
+        }
+        [
+          "boxer_token",
+          "boxer_user",
+          "boxer_logged_in",
+          "boxer_last_activity",
+        ].forEach((k) => localStorage.removeItem(k));
+        isLoggedIn = false;
+        closeDrawer();
+        renderAuthUi();
+      }
+
+      function switchAuthTab(tab) {
+        document
+          .getElementById("tabLogin")
+          .setAttribute("aria-selected", tab === "login" ? "true" : "false");
+        document
+          .getElementById("tabSignup")
+          .setAttribute("aria-selected", tab === "signup" ? "true" : "false");
+        document
+          .getElementById("paneLogin")
+          .classList.toggle("active", tab === "login");
+        document
+          .getElementById("paneSignup")
+          .classList.toggle("active", tab === "signup");
+        const le = document.getElementById("loginError");
+        const se = document.getElementById("signupError");
+        if (le) le.style.display = "none";
+        if (se) se.style.display = "none";
+      }
+
+      function showAuthNotReady(e) {
+        e.preventDefault();
+        alert("해당 기능은 준비 중입니다.");
+        return false;
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+        const errEl = document.getElementById("loginError");
+        errEl.style.display = "none";
+        if (typeof auth === "undefined") {
+          errEl.textContent = "인증 모듈을 불러오지 못했습니다.";
+          errEl.style.display = "block";
+          return;
+        }
+        try {
+          let user = await auth.login(
+            document.getElementById("loginEmail").value.trim(),
+            document.getElementById("loginPassword").value,
+          );
+          if (!user && typeof auth.fetchCurrentUser === "function")
+            user = await auth.fetchCurrentUser();
+          isLoggedIn = !!(
+            (typeof auth.isLoggedIn === "function" && auth.isLoggedIn()) ||
+            user
+          );
+          closeAuthModal();
+          closeDrawer();
+          renderAuthUi();
+        } catch (error) {
+          errEl.textContent = error.message || "로그인에 실패했습니다.";
+          errEl.style.display = "block";
+        }
+      }
+
+      async function handleSignup(event) {
+        event.preventDefault();
+        const errEl = document.getElementById("signupError");
+        errEl.style.display = "none";
+        if (typeof auth === "undefined") {
+          errEl.textContent = "인증 모듈을 불러오지 못했습니다.";
+          errEl.style.display = "block";
+          return;
+        }
+        try {
+          const signupResult = await auth.signup(
+            document.getElementById("signupUsername").value.trim(),
+            document.getElementById("signupEmail").value.trim(),
+            document.getElementById("signupPassword").value,
+          );
+          isLoggedIn = !!(
+            (typeof auth.isLoggedIn === "function" && auth.isLoggedIn()) ||
+            signupResult?.token ||
+            signupResult?.access_token
+          );
+          closeAuthModal();
+          closeDrawer();
+          renderAuthUi();
+        } catch (error) {
+          errEl.textContent = error.message || "회원가입에 실패했습니다.";
+          errEl.style.display = "block";
+        }
+      }
+
+      navLoginBtn.addEventListener("click", () => {
+        if (isLoggedIn) {
+          window.location.href = "mypage.html";
+          return;
+        }
+        openAuthModal("login");
+      });
+      profilePhotoInput.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || "");
+          localStorage.setItem("boxer_profile_image", result);
+          profilePreview.src = result;
+        };
+        reader.readAsDataURL(file);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && isDrawerOpen) closeDrawer();
+      });
+      window.addEventListener("storage", (event) => {
+        if (
+          ["boxer_logged_in", "boxer_user", "boxer_auth_event"].includes(
+            event.key,
+          )
+        )
+          initAuthState();
+      });
+
+      initAuthState();
+    </script>
+  </body>
+</html>

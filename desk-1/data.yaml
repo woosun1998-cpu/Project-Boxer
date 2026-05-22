@@ -1,0 +1,18 @@
+names:
+- chair
+- desk
+- keyboard
+- laptop
+- mouse
+- person
+- tv
+nc: 7
+roboflow:
+  license: CC BY 4.0
+  project: desk-o6fsr
+  url: https://universe.roboflow.com/usthb-rlwd5/desk-o6fsr/dataset/1
+  version: 1
+  workspace: usthb-rlwd5
+test: ../test/images
+train: ../train/images
+val: ../valid/images

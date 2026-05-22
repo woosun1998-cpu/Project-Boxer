@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 400 500" height="500" width="400">
+  <path fill="#111111" d="M210 80 Q175 55 145 95 Q165 165 175 195 Q140 240 125 290 Q145 370 175 425 Q225 445 255 390 Q280 280 265 205 Q245 160 210 145"></path>
+  
+  <ellipse fill="#111111" ry="42" rx="35" cy="95" cx="165"></ellipse>
+  
+  <path stroke-dasharray="10,5" stroke-width="6" stroke="#FF1E1E" fill="none" d="M200 80 Q165 55 135 95"></path>
+</svg>

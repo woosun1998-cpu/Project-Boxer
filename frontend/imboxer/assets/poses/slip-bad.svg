@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E8000D" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#E8000D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="70" r="48" fill="url(#glow)"/>
+  <!-- Head (over-lean - too far to side) -->
+  <circle cx="72" cy="22" r="10" stroke="#E8000D" stroke-width="2.5" fill="rgba(232,0,13,0.07)"/>
+  <!-- Torso (excessive lean - bad) -->
+  <line x1="70" y1="32" x2="50" y2="80" stroke="#E8000D" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Shoulders (too tilted) -->
+  <line x1="44" y1="46" x2="76" y2="34" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left arm: DROPPED (guard broken) -->
+  <polyline points="44,46 36,66 34,76" stroke="#E8000D" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="34" cy="76" r="5" fill="#E8000D"/>
+  <!-- Error: down arrow -->
+  <line x1="34" y1="62" x2="34" y2="72" stroke="#FFE500" stroke-width="2" stroke-linecap="round"/>
+  <polyline points="31,70 34,74 37,70" stroke="#FFE500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right arm: also low -->
+  <polyline points="76,34 84,54 82,64" stroke="rgba(255,255,255,0.4)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="82" cy="64" r="5" fill="rgba(255,255,255,0.3)"/>
+  <!-- Hips -->
+  <line x1="38" y1="80" x2="66" y2="76" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left leg -->
+  <polyline points="38,80 32,106 34,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="34" y1="128" x2="24" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Right leg -->
+  <polyline points="66,76 72,103 70,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="70" y1="128" x2="80" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Bad indicator -->
+  <circle cx="14" cy="14" r="8" fill="#E8000D" opacity="0.9"/>
+  <line x1="10" y1="10" x2="18" y2="18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="10" x2="10" y2="18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - Diet Boxing Play</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- 영상 경로는 본 페이지에 직접 정의 (boxer-video-local.js 캐시 404 방지) -->
+    <style>
+      @font-face {
+        font-family: "Paperlogy Medium";
+        src: url("./font/Paperlogy-5Medium.ttf") format("truetype");
+        font-weight: 500;
+      }
+      @font-face {
+        font-family: "Paperlogy SemiBold";
+        src: url("./font/Paperlogy-6SemiBold.ttf") format("truetype");
+        font-weight: 600;
+      }
+      @font-face {
+        font-family: "Paperlogy Bold";
+        src: url("./font/Paperlogy-7Bold.ttf") format("truetype");
+        font-weight: 700;
+      }
+      @font-face {
+        font-family: "KBL Jump";
+        src: url("./font/KBLJump_EB_Extended.otf") format("opentype");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "Urban Shadow Sans Serif";
+        src: url("./font/Urban Shadow Sans Serif.otf") format("opentype");
+        font-weight: 400;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      /* width=100% 만 쓰면 viewport meta 또는 상위 블록이 1920px로 잡혀 실제 브라우저보다 좁게 계산되어
+         오른쪽에 검은 여백이 생김 → 항상 창 크기와 맞춤 */
+      html,
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #000;
+        background-image: none;
+      }
+      .stage-viewport {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #000;
+        background-image: none;
+      }
+      body {
+        font-family: "Paperlogy SemiBold", sans-serif;
+        color: #fff;
+      }
+
+      .stage-container {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: #000;
+      }
+
+      /* ── 트레이닝 화면 (ready.html 이후 본 화면) ── */
+      #state-2-training {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        z-index: 10;
+      }
+      #training-left-bg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1380px;
+        height: 1080px;
+        background: #000;
+      }
+      /* 왼쪽 1380px만 사용(웹캠 540px 미침범), 커버 핏 + 상단 초점으로 머리 보존 */
+      #trainer-video {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1380px;
+        height: 1080px;
+        object-fit: cover;
+        object-position: center 10%; /* 화면 윗부분(머리)이 잘리지 않게 초점을 위로 올림 */
+        background: #000;
+        z-index: 1;
+      }
+      #trainer-poster {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1380px;
+        height: 1080px;
+        object-fit: cover;
+        object-position: center;
+        z-index: 0;
+        display: none;
+        background: #111;
+      }
+      #trainer-poster.is-visible {
+        display: block;
+      }
+      #trainer-video.is-hidden {
+        display: none !important;
+      }
+      #trainer-audio {
+        display: none;
+      }
+      #trainer-audio-hint {
+        position: absolute;
+        left: 40px;
+        top: 40px;
+        z-index: 12;
+        max-width: 520px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        font-size: 18px;
+        line-height: 1.45;
+        display: none;
+        pointer-events: none;
+      }
+      #trainer-audio-hint.is-visible {
+        display: block;
+      }
+      #trainer-audio-hint small {
+        display: block;
+        margin-top: 8px;
+        font-size: 14px;
+        opacity: 0.85;
+      }
+      .volume-control-wrap {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 12px 20px;
+        border-radius: 50px;
+        z-index: 50;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .volume-icon {
+        font-size: 20px;
+      }
+      .volume-slider {
+        width: 120px;
+        accent-color: #ccff00;
+        cursor: pointer;
+      }
+
+      .accuracy-gauge-container {
+        position: absolute;
+        top: 50px;
+        right: 590px;
+        width: 160px;
+        height: 160px;
+        background: #111;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        z-index: 12;
+      }
+      .accuracy-svg {
+        position: absolute;
+        inset: 0;
+        transform: rotate(-90deg);
+      }
+      .accuracy-bg {
+        fill: none;
+        stroke: #333;
+        stroke-width: 8;
+      }
+      .accuracy-progress {
+        fill: none;
+        stroke: #00ffa3;
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 440;
+        transition: stroke-dashoffset 0.3s ease-out;
+      }
+      .accuracy-text-wrap {
+        text-align: center;
+        color: #fff;
+        z-index: 2;
+      }
+      .accuracy-number {
+        font-family: "KBL Jump", sans-serif;
+        font-size: 55px;
+        font-weight: 900;
+        line-height: 1;
+        color: #00ffa3;
+      }
+      .accuracy-percent {
+        font-size: 30px;
+        font-weight: 700;
+        color: #00ffa3;
+      }
+      .accuracy-label {
+        margin: 0;
+        font-size: 16px;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      #state2-right-red {
+        position: absolute;
+        left: 1380px;
+        top: 0;
+        width: 540px;
+        height: 1080px;
+        background: #ed1d32;
+        box-shadow: 2000px 0 0 0 #ed1c33;
+      }
+      #state2-right-white {
+        position: absolute;
+        left: 1380px;
+        top: 0;
+        width: 540px;
+        height: 674px;
+        background: #fff;
+      }
+      #user-cam-box {
+        position: absolute;
+        left: 1380px;
+        top: 0;
+        width: 540px;
+        height: 674px;
+        background: #fff;
+        overflow: hidden;
+      }
+      #webcamFeed {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+      #poseCanvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        transform: scaleX(-1);
+      }
+      #feedback-box {
+        position: absolute;
+        left: 1380px;
+        top: 694px;
+        width: 540px;
+        height: 386px;
+        background: transparent;
+        padding: 0 0 0 20px;
+      }
+
+      /* 2. 우측 UI 패널들을 영상 위(z-index: 10)로 확실하게 띄움 */
+      #state2-right-red,
+      #state2-right-white,
+      #user-cam-box,
+      #feedback-box {
+        z-index: 10;
+      }
+      #feedback-box h2 {
+        margin: 0;
+        font-family: "Urban Shadow Sans Serif", sans-serif;
+        font-size: 30px;
+        line-height: 36px;
+        letter-spacing: 3px;
+      }
+      #feedback-msg {
+        margin-top: 12px;
+        font-size: 22px;
+        line-height: 1.4;
+      }
+
+      /* ── 결과 모달 ── */
+      .summary-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .summary-content {
+        background: #1c1c1c;
+        border-radius: 30px;
+        padding: 40px;
+        text-align: center;
+        color: #fff;
+        width: 550px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border: 1px solid #333;
+      }
+      .summary-title {
+        margin: 0 0 30px;
+        font-size: 40px;
+        color: #ccff00;
+      }
+      .summary-stats-section {
+        margin-bottom: 40px;
+      }
+      .final-score-wrap .label {
+        font-size: 18px;
+        color: #aaa;
+        display: block;
+        margin-bottom: 5px;
+      }
+      .final-score-wrap .score {
+        font-size: 100px;
+        color: #fff;
+        line-height: 1;
+        font-weight: 900;
+      }
+      .feedback-msg {
+        margin-top: 20px;
+        font-size: 20px;
+        color: #fff;
+        line-height: 1.4;
+        word-break: keep-all;
+      }
+      .summary-actions {
+        display: flex;
+        gap: 15px;
+      }
+      .btn-summary {
+        flex: 1;
+        height: 60px;
+        border-radius: 12px;
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-retry {
+        background: transparent;
+        color: #ccff00;
+        border: 2px solid #ccff00;
+      }
+      .btn-retry:hover {
+        background: rgba(204, 255, 0, 0.1);
+      }
+      .btn-home {
+        background: #ed1d32;
+        color: #fff;
+        border: 0;
+      }
+      .btn-home:hover {
+        background: #c81326;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage-viewport">
+      <div class="stage-container" id="stage-container" data-scale-mode="cover">
+        <!-- 트레이닝 화면: ready.html 이후 바로 표시 -->
+        <div id="state-2-training">
+          <div id="training-left-bg"></div>
+          <img id="trainer-poster" alt="" aria-hidden="true" />
+          <video id="trainer-video" playsinline src=""></video>
+          <audio id="trainer-audio" preload="auto"></audio>
+          <div id="trainer-audio-hint" hidden aria-live="polite">
+            <strong>영상 파일(MP4)이 없습니다</strong>
+            <small id="trainer-audio-hint-detail">폴더에 M4A(음성만)는 있어도 MP4(영상)가 없으면 화면이 나오지 않습니다.</small>
+          </div>
+          <div class="volume-control-wrap">
+            <span class="volume-icon">🔊</span>
+            <input
+              type="range"
+              id="videoVolume"
+              class="volume-slider"
+              min="0"
+              max="1"
+              step="0.05"
+              value="0.5"
+            />
+          </div>
+          <div class="accuracy-gauge-container">
+            <svg
+              class="accuracy-svg"
+              width="160"
+              height="160"
+              viewBox="0 0 160 160"
+            >
+              <circle class="accuracy-bg" cx="80" cy="80" r="70"></circle>
+              <circle class="accuracy-progress" cx="80" cy="80" r="70"></circle>
+            </svg>
+            <div class="accuracy-text-wrap">
+              <span id="accuracyValue" class="accuracy-number">0</span
+              ><span class="accuracy-percent">%</span>
+              <p class="accuracy-label">자세 정확도</p>
+            </div>
+          </div>
+          <div id="state2-right-red"></div>
+          <div id="state2-right-white"></div>
+          <div id="user-cam-box">
+            <video id="webcamFeed" autoplay playsinline muted></video>
+            <canvas id="poseCanvas"></canvas>
+          </div>
+          <div id="feedback-box">
+            <h2>FEED BACK</h2>
+            <div id="feedback-msg">자세 분석 중...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 운동 완료 모달 -->
+    <div
+      id="trainingSummaryModal"
+      class="summary-overlay"
+      style="display: none"
+    >
+      <div class="summary-content">
+        <h2 class="summary-title">운동 완료!</h2>
+        <div class="summary-stats-section">
+          <div class="final-score-wrap">
+            <span class="label">내 자세 정확도</span>
+            <strong class="score"><span id="finalScore">0</span>%</strong>
+          </div>
+          <p id="finalFeedback" class="feedback-msg"></p>
+        </div>
+        <div class="summary-actions">
+          <button
+            type="button"
+            class="btn-summary btn-retry"
+            onclick="retryTraining()"
+          >
+            다시하기
+          </button>
+          <button
+            type="button"
+            class="btn-summary btn-home"
+            onclick="goToHome()"
+          >
+            홈으로
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showTrainingSummary() {
+        const modal = document.getElementById("trainingSummaryModal");
+        const finalScoreEl = document.getElementById("finalScore");
+        const finalFeedbackEl = document.getElementById("finalFeedback");
+        const accuracyEl = document.getElementById("accuracyValue");
+
+        let score = Number.parseInt(accuracyEl?.textContent || "", 10);
+        if (!Number.isFinite(score)) score = 95;
+        score = Math.max(0, Math.min(100, score));
+        finalScoreEl.textContent = String(score);
+
+        if (score >= 90) {
+          finalFeedbackEl.textContent = "완벽해요! 자세가 매우 안정적입니다.";
+        } else if (score >= 75) {
+          finalFeedbackEl.textContent =
+            "좋습니다! 리듬과 자세를 조금만 더 다듬어 보세요.";
+        } else if (score >= 60) {
+          finalFeedbackEl.textContent =
+            "좋은 출발입니다. 어깨 수평과 가드 유지에 집중해 보세요.";
+        } else {
+          finalFeedbackEl.textContent =
+            "기초 자세를 다시 점검해 주세요. 천천히 정확도를 올려봅시다.";
+        }
+
+        modal.style.display = "flex";
+      }
+
+      function retryTraining() {
+        window.location.reload();
+      }
+
+      function goToHome() {
+        window.location.href = "./diet-boxing.html";
+      }
+
+      /** 현재 페이지 기준 ./video/ 파일 URL (한글·공백 파일명 지원) */
+      function localVideoUrl(fileName) {
+        const out = [];
+        const bases = ["video/", "./video/"];
+        for (const base of bases) {
+          try {
+            out.push(new URL(base + fileName, window.location.href).href);
+          } catch {
+            /* ignore */
+          }
+        }
+        return out;
+      }
+
+      function buildDietVideoCandidates(fileNames) {
+        const seen = new Set();
+        const list = [];
+        for (const name of fileNames) {
+          for (const url of localVideoUrl(name)) {
+            if (!seen.has(url)) {
+              seen.add(url);
+              list.push(url);
+            }
+          }
+        }
+        return list;
+      }
+
+      const DIET_MODE_POSTERS = {
+        light: "./image/cache/1iFZPj-_D6EbeYw0UDLZ8Nop_1B_9Bk4_.png",
+        standard: "./image/cache/12Ps3xRPGBNqPXRGSqfTMw2_F6RLqrFb8.png",
+        intense: "./image/cache/1iRaWdg-CIIPR23_SoAxBbt8WtEIuIs64.png",
+      };
+
+      const STANDARD_MP4 =
+        "20분 전신 HIIT 운동 1   고강도 지방 연소 및 탄력 강화 유산소 운동   장비 없음.mp4";
+      const INTENSE_MP4 = "30-Minute At-Home Boxing Workout (1).mp4";
+
+      const DIET_MODE_VIDEOS = {
+        light: buildDietVideoCandidates([
+          "diet-light.mp4",
+          "다이어트복싱.mp4",
+          "라이트모드.mp4",
+        ]),
+        standard: buildDietVideoCandidates([STANDARD_MP4]),
+        intense: buildDietVideoCandidates([INTENSE_MP4]),
+      };
+
+      /** 스탠다드·인탠스: mp4만 재생 (m4a는 음성 전용이라 영상 없음) */
+      const DIET_MODE_MEDIA = {
+        standard: { mp4: STANDARD_MP4 },
+        intense: { mp4: INTENSE_MP4 },
+      };
+
+      async function probeVideoFile(fileName) {
+        const url = localVideoUrl(fileName)[0];
+        if (!url) return false;
+        try {
+          const res = await fetch(url, { method: "HEAD" });
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
+
+      /**
+       * URL mode → 트레이너 영상 경로 (ready.html에서 안내 후 본 화면만 담당)
+       */
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentMode = urlParams.get("mode") || "light";
+
+        const candidates = DIET_MODE_VIDEOS[currentMode] || DIET_MODE_VIDEOS.light;
+        const trainerVideo = document.getElementById("trainer-video");
+        const trainerAudio = document.getElementById("trainer-audio");
+        const trainerPoster = document.getElementById("trainer-poster");
+        const audioHint = document.getElementById("trainer-audio-hint");
+        const volumeSlider = document.getElementById("videoVolume");
+        const feedbackMsg = document.getElementById("feedback-msg");
+        const modePoster = DIET_MODE_POSTERS[currentMode] || DIET_MODE_POSTERS.standard;
+        let activeTrainerMedia = trainerVideo;
+        let usingAudioMode = false;
+
+        function getTrainerVolume() {
+          return Number(volumeSlider?.value ?? 0.5);
+        }
+
+        function applyTrainerVolume(media) {
+          if (!media) return;
+          const vol = getTrainerVolume();
+          media.volume = vol;
+          media.muted = vol === 0;
+        }
+
+        function setAudioOnlyUi(active) {
+          usingAudioMode = active;
+          if (trainerPoster) {
+            trainerPoster.classList.toggle("is-visible", false);
+          }
+          if (trainerVideo) {
+            trainerVideo.classList.toggle("is-hidden", active);
+          }
+          if (audioHint) {
+            audioHint.hidden = !active;
+            audioHint.classList.toggle("is-visible", active);
+          }
+        }
+
+        function showMp4RequiredError(spec, hasM4a) {
+          trainerAudio?.pause();
+          if (trainerAudio) trainerAudio.removeAttribute("src");
+          if (trainerVideo) {
+            trainerVideo.pause();
+            trainerVideo.removeAttribute("src");
+            trainerVideo.classList.add("is-hidden");
+          }
+          setAudioOnlyUi(false);
+          if (trainerPoster) {
+            trainerPoster.src = modePoster || "";
+            trainerPoster.classList.add("is-visible");
+          }
+          const detail = document.getElementById("trainer-audio-hint-detail");
+          if (audioHint) {
+            audioHint.hidden = false;
+            audioHint.classList.add("is-visible");
+          }
+          if (detail) {
+            detail.innerHTML = hasM4a
+              ? `탐색기에 <b>M4A 파일(음성만)</b>은 있지만 <b>MP4 파일(영상)</b>이 없습니다.<br>필요: <b>${spec.mp4}</b><br>M4A를 MP4 영상으로 변환·다운로드 후 같은 이름으로 저장하세요.`
+              : `video 폴더에 <b>${spec.mp4}</b> 파일을 넣어 주세요.`;
+          }
+          if (feedbackMsg) {
+            feedbackMsg.textContent = hasM4a
+              ? "M4A(음성) ≠ MP4(영상). 탐색기에서 'M4A 파일'은 화면이 나오지 않습니다."
+              : `영상 파일 없음: ${spec.mp4}`;
+          }
+        }
+
+        async function playActiveTrainerMedia() {
+          if (!activeTrainerMedia) return;
+          applyTrainerVolume(activeTrainerMedia);
+          try {
+            await activeTrainerMedia.play();
+          } catch {
+            activeTrainerMedia.muted = true;
+            try {
+              await activeTrainerMedia.play();
+            } catch {
+              /* autoplay policy */
+            }
+          }
+        }
+
+        function onTrainerEnded() {
+          showTrainingSummary();
+        }
+
+        function loadTrainerVideo(url) {
+          if (!trainerVideo) return;
+          trainerAudio?.pause();
+          if (trainerAudio) trainerAudio.removeAttribute("src");
+          setAudioOnlyUi(false);
+          trainerVideo.loop = false;
+          trainerVideo.muted = getTrainerVolume() === 0;
+          activeTrainerMedia = trainerVideo;
+          trainerVideo.onerror = null;
+          trainerVideo.onloadeddata = null;
+          trainerVideo.onloadedmetadata = null;
+          trainerVideo.src = url;
+          trainerVideo.load();
+          const onReady = () => {
+            trainerVideo.onerror = null;
+            playActiveTrainerMedia();
+          };
+          trainerVideo.onerror = () => tryNextCandidate();
+          trainerVideo.onloadeddata = onReady;
+          trainerVideo.onloadedmetadata = onReady;
+        }
+
+        function loadTrainerAudio(url) {
+          if (!trainerAudio) return;
+          trainerVideo?.pause();
+          if (trainerVideo) {
+            trainerVideo.removeAttribute("src");
+            trainerVideo.classList.add("is-hidden");
+          }
+          setAudioOnlyUi(true);
+          activeTrainerMedia = trainerAudio;
+          trainerAudio.onerror = null;
+          trainerAudio.onloadeddata = null;
+          trainerAudio.onloadedmetadata = null;
+          trainerAudio.src = url;
+          trainerAudio.load();
+          const onReady = () => {
+            trainerAudio.onerror = null;
+            playActiveTrainerMedia();
+          };
+          trainerAudio.onerror = () => tryNextCandidate();
+          trainerAudio.onloadeddata = onReady;
+          trainerAudio.onloadedmetadata = onReady;
+        }
+
+        let candidateIndex = 0;
+        function tryNextCandidate() {
+          if (candidateIndex >= candidates.length) {
+            if (feedbackMsg) {
+              feedbackMsg.textContent =
+                "영상을 불러오지 못했습니다. frontend/video/에 mp4 파일을 확인해 주세요.";
+            }
+            return;
+          }
+          const next = candidates[candidateIndex++];
+          console.info("[diet-boxing] video try:", next);
+          loadTrainerVideo(next);
+        }
+
+        async function initTrainerMedia() {
+          const spec = DIET_MODE_MEDIA[currentMode];
+          if (spec) {
+            if (await probeVideoFile(spec.mp4)) {
+              loadTrainerVideo(localVideoUrl(spec.mp4)[0]);
+              return;
+            }
+            showMp4RequiredError(spec, false);
+            return;
+          }
+          candidateIndex = 0;
+          tryNextCandidate();
+        }
+
+        if (!trainerVideo) return;
+
+        trainerVideo.addEventListener("ended", onTrainerEnded);
+
+        if (volumeSlider) {
+          const syncVolume = () => applyTrainerVolume(trainerVideo);
+          syncVolume();
+          volumeSlider.addEventListener("input", syncVolume);
+        }
+
+        initTrainerMedia();
+
+        /**
+         * 포즈 추적·웹캠: 페이지 로드와 동시에 시작 (트레이너 재생과 병렬)
+         */
+        (async () => {
+          try {
+            await window.initPoseTracking?.({
+              videoId: "webcamFeed",
+              canvasId: "poseCanvas",
+              showOverlay: false,
+            });
+            await window.initTrainerPoseCompare?.({
+              trainerVideoId: "trainer-video",
+              feedbackId: "feedback-msg",
+            });
+          } catch {
+            if (feedbackMsg) {
+              feedbackMsg.innerText = "웹캠 권한을 허용해주세요!";
+            }
+          }
+        })();
+      });
+    </script>
+    <script src="js/core/pose.js"></script>
+    <script src="js/core/pose-compare.js"></script>
+    <script src="js/ui/auto-scale.js"></script>
+  </body>
+</html>

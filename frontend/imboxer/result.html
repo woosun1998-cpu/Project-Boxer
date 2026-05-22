@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 기술 분석</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design Tokens ──────────────────────────────── */
+    :root {
+      --red:    #E8000D;
+      --yellow: #FFE500;
+      --green:  #39D353;
+      --s1: #000000;
+      --s2: #0e0e0e;
+      --s3: #161616;
+      --s4: #1e1e1e;
+      --t1: #ffffff;
+      --t2: rgba(255,255,255,0.62);
+      --t3: rgba(255,255,255,0.32);
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.14);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+      /* legacy compat for result.js CSS selectors */
+      --accent:  #E8000D;
+      --warm:    #ff9a3d;
+      --danger:  #ff6b6b;
+      --success: #39D353;
+      --text:    #ffffff;
+      --muted:   rgba(255,255,255,0.62);
+      --card-2:  #161616;
+      --line:    rgba(255,255,255,0.07);
+      --line-2:  rgba(255,255,255,0.14);
+      /* tone: result.js sets this per-result */
+      --result-tone-rgb: 255, 154, 61;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--s1); color: var(--t1); font-family: var(--fp); }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, rgba(232,0,13,0.09) 0%, transparent 40%),
+        var(--s1);
+    }
+
+    /* ── Topbar ──────────────────────────────────────── */
+    .bx-topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 62px;
+      background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px); z-index: 100;
+    }
+    .bx-topbar-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 100%; padding: 0 28px; max-width: 1080px; margin: 0 auto;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 12px; }
+    .bx-brand { text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .bx-brand-logo {
+      width: 30px; height: 30px; object-fit: cover; border-radius: 8px;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.22)) drop-shadow(0 0 20px rgba(232,0,13,0.10));
+    }
+    .bx-live {
+      display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+      border: 1px solid rgba(232,0,13,0.28); background: rgba(232,0,13,0.06);
+      font-family: var(--fp); font-size: 11px; font-weight: 900; letter-spacing: .12em;
+      color: var(--red); text-transform: uppercase; border-radius: 2px;
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    .bx-live::before {
+      content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--red);
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .bx-nav { display: flex; align-items: center; gap: 16px; }
+    .bx-nav a {
+      font-size: 12px; font-weight: 700; color: var(--t3); text-decoration: none;
+      letter-spacing: .04em; transition: color .15s;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp); font-size: 12px; font-weight: 700; color: var(--t3);
+      background: none; border: 1px solid var(--border-2); padding: 5px 12px;
+      cursor: pointer; border-radius: 2px; transition: all .15s;
+    }
+    .bx-nav button[data-logout-button]:hover { color: var(--t1); border-color: var(--t2); }
+
+    /* ── Button base ─────────────────────────────────── */
+    .primary, .ghost {
+      font-family: var(--fp); font-size: 13px; font-weight: 800; letter-spacing: .04em;
+      border-radius: 2px; padding: 11px 20px; cursor: pointer;
+      border: 1px solid transparent; transition: all .15s;
+    }
+    .primary { background: var(--red); color: #fff; border-color: var(--red); }
+    .primary:hover { opacity: .88; }
+    .ghost {
+      background: none; color: var(--t2); border-color: var(--border-2);
+    }
+    .ghost:hover { color: var(--t1); border-color: var(--t2); background: rgba(255,255,255,0.04); }
+
+    /* ── Page wrapper ────────────────────────────────── */
+    .r-page {
+      padding-top: 62px;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+      padding-bottom: 64px;
+    }
+    .r-wrap { display: grid; gap: 14px; margin-top: 28px; }
+
+    /* ── Slot / tone ─────────────────────────────────── */
+    [data-api-result-slot] { --result-tone-rgb: 255, 154, 61; }
+
+    /* ── Hero: Score + Grade ─────────────────────────── */
+    .r-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1px 1fr;
+      align-items: center;
+      gap: 0;
+      background: var(--s3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    /* top tone stripe */
+    .r-hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg,
+        rgb(var(--result-tone-rgb)) 0%,
+        rgba(var(--result-tone-rgb), 0.3) 100%);
+      transition: background .5s;
+    }
+
+    /* Score block */
+    .r-hero-score {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 20px 36px 20px 28px; min-width: 180px;
+    }
+    .r-score-tag {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: var(--t3); margin-bottom: 4px;
+    }
+    .r-big-val {
+      font-family: var(--fm); font-size: clamp(56px, 9vw, 84px);
+      letter-spacing: .02em; line-height: .92; color: var(--t1);
+      transition: color .4s;
+    }
+    .r-hero-score .r-big-val {
+      color: rgb(var(--result-tone-rgb));
+    }
+    .r-big-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--t3); margin-top: 6px;
+    }
+
+    /* Divider */
+    .r-hero-divider { background: var(--border); align-self: stretch; }
+
+    /* Grade + chips block */
+    .r-hero-grade {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 20px 28px;
+    }
+    .r-grade-row {
+      display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px;
+    }
+    .r-hero-grade .r-big-val { color: var(--t1); font-size: clamp(36px, 6vw, 56px); }
+    .r-grade-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--t3);
+    }
+
+    /* Stats inline row */
+    .r-hero-stats {
+      display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .r-hero-stat { display: flex; flex-direction: column; gap: 2px; }
+    .r-hero-stat-label {
+      font-size: 10px; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--t3);
+    }
+    .r-hero-stat-val {
+      font-family: var(--fm); font-size: 22px; letter-spacing: .04em; color: var(--t1);
+    }
+
+    /* Chips row */
+    .r-snapshot-chiprow { display: flex; flex-wrap: wrap; gap: 7px; }
+    .r-snapshot-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px; border-radius: 2px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+      font-family: var(--fp); font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; color: var(--t1);
+    }
+    .r-snapshot-chip[data-result-analysis-label] {
+      background: rgba(var(--result-tone-rgb), 0.10);
+      border-color: rgba(var(--result-tone-rgb), 0.4);
+      color: rgb(var(--result-tone-rgb));
+    }
+    .r-snapshot-chip[data-result-tip-level] {
+      background: rgba(var(--result-tone-rgb), 0.12);
+      border-color: rgba(var(--result-tone-rgb), 0.52);
+      color: rgb(var(--result-tone-rgb));
+      font-weight: 800;
+      transition: background .5s, border-color .5s, color .5s;
+    }
+    [data-api-result-slot][data-tip-level="excellent"] .r-snapshot-chip[data-result-tip-level] {
+      box-shadow: 0 0 12px rgba(61,180,120,0.2);
+      animation: r-tip-glow 2.8s ease-in-out infinite;
+    }
+    [data-api-result-slot][data-tip-level="critical"] .r-snapshot-chip[data-result-tip-level] {
+      animation: r-tip-glow 1.6s ease-in-out infinite;
+    }
+    @keyframes r-tip-glow { 0%,100%{opacity:1} 50%{opacity:.62} }
+
+    /* trend chip */
+    .r-snapshot-chip[data-result-trend] { font-weight: 700; }
+    [data-api-result-slot][data-trend="up"]   .r-snapshot-chip[data-result-trend]::before { content: "↑\00a0"; }
+    [data-api-result-slot][data-trend="flat"] .r-snapshot-chip[data-result-trend]::before { content: "→\00a0"; }
+    [data-api-result-slot][data-trend="down"] .r-snapshot-chip[data-result-trend]::before { content: "↓\00a0"; }
+    [data-api-result-slot][data-trend="up"]   .r-snapshot-chip[data-result-trend] { background: rgba(61,180,120,.11); border-color: rgba(61,180,120,.48); color: rgb(61,180,120); font-weight: 800; }
+    [data-api-result-slot][data-trend="flat"] .r-snapshot-chip[data-result-trend] { background: rgba(109,135,164,.08); border-color: rgba(109,135,164,.3); color: #8fa8bf; }
+    [data-api-result-slot][data-trend="down"] .r-snapshot-chip[data-result-trend] { background: rgba(255,99,99,.11); border-color: rgba(255,99,99,.46); color: rgb(255,99,99); font-weight: 800; }
+
+    /* ── Analysis section: video + detail grid ───────── */
+    .r-analysis {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    /* Left: video / pose panel */
+    .r-pose-panel {
+      position: relative;
+      border-radius: 3px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow:
+        0 0 0 1px rgba(var(--result-tone-rgb), 0.10) inset,
+        0 0 28px rgba(var(--result-tone-rgb), 0.06);
+      transition: box-shadow .5s;
+    }
+
+    /* Grid overlay on panel */
+    .r-pose-panel::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,106,0,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,106,0,.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Label */
+    .r-pose-label {
+      position: relative; z-index: 3;
+      display: flex; align-items: center; gap: 7px;
+      padding: 12px 14px 8px;
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: rgb(var(--result-tone-rgb));
+    }
+    .r-pose-label::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor; animation: r-blink 2s ease-in-out infinite; flex-shrink: 0;
+    }
+    @keyframes r-blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+    /* Video area */
+    .r-pose-visual {
+      position: relative; width: 100%; flex: 1;
+      display: flex; align-items: stretch; min-height: 260px;
+    }
+    .r-analysis-video {
+      width: 100%; height: 100%; min-height: 260px;
+      object-fit: cover; display: block;
+      position: relative; z-index: 0;
+    }
+    /* Scan line over video */
+    .r-scan-line {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(
+        90deg, transparent 0%,
+        rgba(255,106,0,.32) 25%, rgba(255,154,61,.52) 50%,
+        rgba(255,106,0,.32) 75%, transparent 100%);
+      animation: r-scan 3.4s linear infinite;
+      pointer-events: none; z-index: 2;
+    }
+    @keyframes r-scan {
+      0%   { top: 2%;  opacity: 0; }
+      6%   { opacity: 1; }
+      94%  { opacity: 1; }
+      100% { top: 98%; opacity: 0; }
+    }
+    /* Vignette on video */
+    .r-pose-vignette {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 25%, transparent 75%, rgba(0,0,0,0.6) 100%),
+        linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.3) 100%);
+    }
+
+    /* Annotation strip */
+    .r-pose-annotation {
+      position: relative; z-index: 3;
+      display: flex; justify-content: space-between;
+      padding: 8px 14px;
+      border-top: 1px solid rgba(var(--result-tone-rgb), 0.1);
+      font-family: 'Courier New', monospace; font-size: 10px;
+      color: rgba(255,106,0,.42); letter-spacing: .08em; text-transform: uppercase;
+      background: rgba(0,0,0,0.4);
+    }
+
+    /* ── Right: metrics ──────────────────────────────── */
+    .r-metrics-panel {
+      display: grid; gap: 10px; align-content: start;
+    }
+
+    /* Section title */
+    .r-metrics-title {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      letter-spacing: .18em; text-transform: uppercase; color: var(--t3);
+      padding: 0 2px;
+    }
+
+    /* Accuracy + HP metrics with bar */
+    .r-metric {
+      padding: 13px 16px; border-radius: 3px;
+      background: var(--s3); border: 1px solid var(--border);
+    }
+    .r-metric-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .r-metric-label {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .1em; color: var(--t3);
+    }
+    .r-metric-val {
+      font-family: var(--fm); font-size: 26px; letter-spacing: .04em; color: var(--t1);
+    }
+    .r-metric-bar {
+      height: 4px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden;
+    }
+    .r-metric-bar-fill {
+      height: 100%; border-radius: 999px; width: 0%;
+      transition: width .7s cubic-bezier(.16,1,.3,1);
+    }
+    [data-bar-fill-accuracy] { background: linear-gradient(90deg, #3d9ef7, var(--success)); }
+    [data-bar-fill-hp]       { background: linear-gradient(90deg, #c0392b, var(--accent)); }
+
+    /* Stat rows (no bar) */
+    .r-stats-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .r-stat-row {
+      padding: 11px 14px; border-radius: 3px;
+      background: var(--s3); border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 3px;
+    }
+    .r-stat-row-label {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .1em; color: var(--t3);
+    }
+    .r-stat-row-val {
+      font-family: var(--fm); font-size: 22px; letter-spacing: .04em; color: var(--t1);
+    }
+    .r-state-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 2px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      font-family: var(--fp); font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      color: var(--t2); margin-top: 2px; width: fit-content;
+    }
+
+    /* ── Detail grid (8 metrics) ─────────────────────── */
+    .r-detail-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2px; margin-top: 4px;
+    }
+    .r-detail-title {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      letter-spacing: .18em; text-transform: uppercase; color: var(--t3);
+    }
+
+    .r-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .r-detail-card {
+      padding: 11px 13px; border-radius: 3px;
+      background: var(--s4); border: 1px solid var(--border);
+      display: grid; gap: 7px;
+      box-shadow: 0 0 0 1px rgba(var(--result-tone-rgb), 0.06) inset;
+      transition: box-shadow .5s;
+    }
+    .r-detail-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    }
+    .r-detail-label {
+      font-family: var(--fp); font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .1em; color: var(--t3);
+    }
+    .r-detail-value {
+      font-family: var(--fm); font-size: 18px; letter-spacing: .04em; color: var(--t1);
+    }
+    .r-detail-bar {
+      height: 3px; border-radius: 999px;
+      background: rgba(255,255,255,0.06); overflow: hidden;
+    }
+    .r-detail-bar-fill {
+      height: 100%; width: 0%; border-radius: 999px;
+      background: linear-gradient(90deg,
+        rgba(var(--result-tone-rgb), 0.5),
+        rgb(var(--result-tone-rgb)));
+      transition: width .7s cubic-bezier(.16,1,.3,1), background .5s;
+    }
+
+    /* ── Lesson + Coach row ──────────────────────────── */
+    .r-bottom-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start;
+    }
+
+    /* Lesson card */
+    .r-lesson-card {
+      padding: 18px 20px; border-radius: 3px;
+      background: var(--s3); border: 1px solid var(--border);
+    }
+    .r-lesson-key-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 2px;
+      background: rgba(255,106,0,.08); border: 1px solid rgba(255,106,0,.2);
+      color: var(--warm); font-size: 10px; font-weight: 700;
+      letter-spacing: .1em; font-family: 'Courier New', monospace;
+      margin-bottom: 10px;
+    }
+    .r-lesson-title-text {
+      font-size: 16px; font-weight: 800; color: var(--t1);
+      margin-bottom: 6px; letter-spacing: .01em;
+    }
+    .r-lesson-goal-text {
+      font-size: 13px; color: var(--t2); line-height: 1.68;
+    }
+
+    /* Coach card */
+    .r-coach {
+      padding: 18px 20px; border-radius: 3px;
+      background: rgba(232,0,13,0.04);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--red);
+    }
+    .r-coach-label {
+      display: block; font-family: var(--fp); font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .14em;
+      color: var(--red); margin-bottom: 10px;
+    }
+    [data-result-coach-message] {
+      margin: 0; font-size: 14px; font-weight: 600;
+      color: var(--t1); line-height: 1.7; letter-spacing: .01em;
+    }
+
+    /* ── Feedback list ───────────────────────────────── */
+    .r-feedback-card {
+      padding: 16px 18px; border-radius: 3px;
+      background: var(--s3); border: 1px solid var(--border);
+    }
+    .r-section-label {
+      display: block; font-family: var(--fp); font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .14em;
+      color: var(--t3); margin-bottom: 10px;
+    }
+    [data-result-feedback-list] {
+      list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;
+    }
+    [data-result-feedback-list] li {
+      font-size: 13px; padding: 8px 12px; border-radius: 3px;
+      background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+      color: var(--t2); display: flex; align-items: flex-start; gap: 8px; line-height: 1.55;
+    }
+    [data-result-feedback-list] li::before {
+      content: '—'; color: var(--border-2); flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── Empty state ─────────────────────────────────── */
+    [data-result-empty] {
+      padding: 56px 28px 48px; border-radius: 3px;
+      background: var(--s3); border: 1px dashed rgba(255,255,255,0.09);
+      text-align: center; color: var(--t2); font-size: 14px; line-height: 1.75;
+    }
+    [data-result-empty]::before {
+      content: ''; display: block; width: 48px; height: 48px;
+      border-radius: 3px; border: 2px dashed rgba(255,255,255,0.09);
+      margin: 0 auto 20px;
+    }
+
+    /* ── Actions ─────────────────────────────────────── */
+    .r-actions {
+      display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px;
+    }
+    .r-actions [data-result-retry-button]   { flex: 2; min-width: 160px; }
+    .r-actions [data-result-tutorial-button],
+    .r-actions [data-result-home-button]    { flex: 1; min-width: 110px; }
+    .r-actions button:disabled,
+    .r-actions button[aria-disabled="true"] { opacity: .35; cursor: not-allowed; pointer-events: none; }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 860px) {
+      .r-analysis { grid-template-columns: 1fr; }
+      .r-pose-panel { min-height: 240px; }
+      .r-analysis-video { min-height: 240px; }
+      .r-bottom-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .r-hero { grid-template-columns: 1fr; }
+      .r-hero-divider { height: 1px; width: auto; align-self: auto; }
+      .r-hero-score { padding: 28px 24px 20px; }
+      .r-hero-grade { padding: 20px 24px 28px; }
+      .r-detail-grid { grid-template-columns: 1fr 1fr; }
+      .r-stats-row { grid-template-columns: 1fr 1fr; }
+      .r-actions { flex-direction: column; }
+      .r-actions [data-result-retry-button],
+      .r-actions [data-result-tutorial-button],
+      .r-actions [data-result-home-button] { flex: unset; min-width: unset; width: 100%; }
+    }
+    @media (max-width: 400px) {
+      .r-big-val { font-size: 60px; }
+      .r-detail-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ──────────────────────────────────────── -->
+<header class="bx-topbar" data-app-header>
+  <div class="bx-topbar-inner">
+    <div class="bx-topbar-left">
+      <a class="bx-brand" href="/index.html">
+        <img class="bx-brand-logo"
+          src="./assets/images/dashboard/오버레이 프로필 이미지.png"
+          alt="IM_BOXER">
+      </a>
+      <span class="bx-live">AI Coach</span>
+      <span style="font-size:12px;color:var(--t3);letter-spacing:.03em;" data-user-summary>기술 분석</span>
+    </div>
+    <nav class="bx-nav">
+      <button type="button" data-logout-button>로그아웃</button>
+    </nav>
+  </div>
+</header>
+
+<div class="r-page">
+  <div class="r-wrap">
+
+    <!--
+      data-api-result-slot:
+        result.js가 slot을 통째로 조작하므로 이 구조를 유지.
+        data-result-content가 내부 시작점.
+    -->
+    <div data-api-result-slot>
+      <section data-result-content>
+
+        <!-- ① Hero: Score + Grade + Chips ─────────── -->
+        <div class="r-hero">
+
+          <!-- Score -->
+          <div class="r-hero-score">
+            <span class="r-score-tag">총점</span>
+            <span class="r-big-val" data-result-score>—</span>
+            <span class="r-big-label">100점 기준</span>
+          </div>
+
+          <div class="r-hero-divider"></div>
+
+          <!-- Grade + stats + chips -->
+          <div class="r-hero-grade">
+            <div class="r-grade-row">
+              <span class="r-big-val" data-result-grade>—</span>
+              <span class="r-grade-label">등급</span>
+            </div>
+
+            <div class="r-hero-stats">
+              <div class="r-hero-stat">
+                <span class="r-hero-stat-label">정확도</span>
+                <span class="r-hero-stat-val" data-result-accuracy>—</span>
+              </div>
+              <div class="r-hero-stat">
+                <span class="r-hero-stat-label">체력</span>
+                <span class="r-hero-stat-val" data-result-hp>—</span>
+              </div>
+              <div class="r-hero-stat">
+                <span class="r-hero-stat-label">최고 콤보</span>
+                <span class="r-hero-stat-val" data-result-combo>—</span>
+              </div>
+              <div class="r-hero-stat">
+                <span class="r-hero-stat-label">라운드</span>
+                <span class="r-hero-stat-val" data-result-rounds>—</span>
+              </div>
+            </div>
+
+            <div class="r-snapshot-chiprow">
+              <span class="r-snapshot-chip" data-result-analysis-label>기술 분석</span>
+              <span class="r-snapshot-chip" data-result-tip-level>TIP</span>
+              <span class="r-snapshot-chip" data-result-trend>TREND</span>
+              <span class="r-snapshot-chip" data-result-state>—</span>
+            </div>
+          </div>
+
+        </div><!-- /r-hero -->
+
+        <!-- ② Analysis: Video + Detail grid ─────── -->
+        <div class="r-analysis">
+
+          <!--
+            LEFT: 자세 분석 영상
+            data-pose-canvas = Codex 확장 진입점 (canvas 교체 가능)
+          -->
+          <div class="r-pose-panel" data-pose-canvas>
+            <span class="r-pose-label">자세 분석</span>
+
+            <div class="r-pose-visual">
+              <div class="r-scan-line" aria-hidden="true"></div>
+              <div class="r-pose-vignette" aria-hidden="true"></div>
+              <video class="r-analysis-video"
+                src="./assets/videos/sparring/sparring_result_1.mp4"
+                data-result-analysis-video
+                autoplay loop muted playsinline
+                aria-label="자세 분석 영상">
+              </video>
+            </div>
+
+            <div class="r-pose-annotation" aria-hidden="true">
+              <span>AI REVIEW</span>
+              <span>POSE ANALYSIS</span>
+              <span>ORTHODOX</span>
+            </div>
+          </div>
+
+          <!-- RIGHT: Metrics ──────────────────────── -->
+          <div class="r-metrics-panel">
+
+            <!-- Accuracy bar -->
+            <div>
+              <div class="r-metrics-title" style="margin-bottom:8px;">분석 지표</div>
+              <div class="r-metric">
+                <div class="r-metric-header">
+                  <span class="r-metric-label">정확도</span>
+                  <span class="r-metric-val" data-result-accuracy-bar-ref>—</span>
+                </div>
+                <div class="r-metric-bar">
+                  <div class="r-metric-bar-fill" data-bar-fill-accuracy></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- HP bar -->
+            <div class="r-metric">
+              <div class="r-metric-header">
+                <span class="r-metric-label">체력</span>
+                <span class="r-metric-val" data-result-hp-bar-ref>—</span>
+              </div>
+              <div class="r-metric-bar">
+                <div class="r-metric-bar-fill" data-bar-fill-hp></div>
+              </div>
+            </div>
+
+            <!-- 8 detail metrics -->
+            <div class="r-detail-header">
+              <span class="r-detail-title">세부 항목</span>
+            </div>
+            <div class="r-detail-grid">
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">자세</span>
+                  <span class="r-detail-value" data-result-posture-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-posture-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">가드</span>
+                  <span class="r-detail-value" data-result-guard-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-guard-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">균형</span>
+                  <span class="r-detail-value" data-result-balance-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-balance-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">반응</span>
+                  <span class="r-detail-value" data-result-reaction-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-reaction-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">일관성</span>
+                  <span class="r-detail-value" data-result-consistency-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-consistency-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">속도</span>
+                  <span class="r-detail-value" data-result-speed-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-speed-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">파워</span>
+                  <span class="r-detail-value" data-result-power-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-power-bar></div></div>
+              </div>
+
+              <div class="r-detail-card">
+                <div class="r-detail-head">
+                  <span class="r-detail-label">복귀</span>
+                  <span class="r-detail-value" data-result-recovery-score>--</span>
+                </div>
+                <div class="r-detail-bar"><div class="r-detail-bar-fill" data-result-recovery-bar></div></div>
+              </div>
+
+            </div><!-- /r-detail-grid -->
+
+          </div><!-- /r-metrics-panel -->
+
+        </div><!-- /r-analysis -->
+
+        <!-- ③ Lesson + Coach (row) ───────────────── -->
+        <div class="r-bottom-row">
+
+          <div class="r-lesson-card">
+            <div class="r-lesson-key-badge" data-result-lesson-key>—</div>
+            <div class="r-lesson-title-text" data-result-lesson-title>—</div>
+            <div class="r-lesson-goal-text"  data-result-lesson-goal>레슨 목표가 여기에 표시됩니다.</div>
+          </div>
+
+          <div class="r-coach">
+            <span class="r-coach-label">코치 메시지</span>
+            <p data-result-coach-message>훈련이 완료되면 코치 메시지가 표시됩니다.</p>
+          </div>
+
+        </div>
+
+        <!-- ④ Feedback ───────────────────────────── -->
+        <div class="r-feedback-card">
+          <span class="r-section-label">훈련 피드백</span>
+          <ul data-result-feedback-list>
+            <li>피드백이 없습니다.</li>
+          </ul>
+        </div>
+
+        <!-- Legacy stat rows (hidden, kept for result.js compat) -->
+        <div hidden aria-hidden="true" style="display:none!important">
+          <span data-result-combo>—</span>
+          <span data-result-rounds>—</span>
+          <span data-result-state>—</span>
+        </div>
+
+      </section>
+    </div><!-- /data-api-result-slot -->
+
+    <div data-result-empty hidden style="display:none"></div>
+
+    <div class="r-actions">
+      <button type="button" class="primary" data-result-retry-button>다시 훈련하기</button>
+      <button type="button" class="ghost"   data-result-tutorial-button>튜토리얼 목록</button>
+      <button type="button" class="ghost"   data-result-home-button>메인으로</button>
+    </div>
+
+  </div><!-- /r-wrap -->
+</div><!-- /r-page -->
+
+<script type="module" src="./js/core/api.js"></script>
+<script type="module" src="./js/core/auth.js"></script>
+<script type="module" src="./js/core/ui.js"></script>
+<script type="module" src="./js/pages/result.js?v=20260512-woosun-guest"></script>
+
+<!--
+  Visual bar updater: result.js(module) deferred 실행 후 80ms 대기 후 bars 반영.
+  data-result-accuracy / data-result-hp → 히어로에 표시, bar-fill은 별도 참조 유지.
+-->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  setTimeout(function () {
+    function readPct(sel) {
+      var el = document.querySelector(sel);
+      if (!el) return 0;
+      return Math.min(100, Math.max(0, parseFloat(el.textContent) || 0));
+    }
+
+    var accFill = document.querySelector("[data-bar-fill-accuracy]");
+    var hpFill  = document.querySelector("[data-bar-fill-hp]");
+    if (accFill) accFill.style.width = readPct("[data-result-accuracy]") + "%";
+    if (hpFill)  hpFill.style.width  = readPct("[data-result-hp]") + "%";
+
+    /* Mirror accuracy/hp into bar-ref spans */
+    var accRef = document.querySelector("[data-result-accuracy-bar-ref]");
+    var hpRef  = document.querySelector("[data-result-hp-bar-ref]");
+    var accEl  = document.querySelector("[data-result-accuracy]");
+    var hpEl   = document.querySelector("[data-result-hp]");
+    if (accRef && accEl) accRef.textContent = accEl.textContent;
+    if (hpRef  && hpEl)  hpRef.textContent  = hpEl.textContent;
+
+    /* Detail metric bars */
+    var pairs = [
+      ["[data-result-posture-score]",     "[data-result-posture-bar]"],
+      ["[data-result-guard-score]",       "[data-result-guard-bar]"],
+      ["[data-result-balance-score]",     "[data-result-balance-bar]"],
+      ["[data-result-reaction-score]",    "[data-result-reaction-bar]"],
+      ["[data-result-consistency-score]", "[data-result-consistency-bar]"],
+      ["[data-result-speed-score]",       "[data-result-speed-bar]"],
+      ["[data-result-power-score]",       "[data-result-power-bar]"],
+      ["[data-result-recovery-score]",    "[data-result-recovery-bar]"],
+    ];
+    pairs.forEach(function(p) {
+      var fill = document.querySelector(p[1]);
+      if (fill) fill.style.width = readPct(p[0]) + "%";
+    });
+  }, 80);
+});
+</script>
+
+</body>
+</html>

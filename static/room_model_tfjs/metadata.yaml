@@ -1,0 +1,41 @@
+description: Ultralytics YOLO11n model trained on /content/room-1/data.yaml
+author: Ultralytics
+date: '2026-04-21T09:28:36.480705'
+version: 8.4.40
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: bed vintage
+  1: chair vintage
+  2: modern bed
+  3: modern chair
+  4: modern desk
+  5: modern shelf
+  6: modern sofa
+  7: natural chair
+  8: natural desk
+  9: natural shelf
+  10: natural sofa
+  11: vintage bed
+  12: vintage chair
+  13: vintage desk
+  14: vintage shelf
+  15: vintage sofa
+  16: white bed
+  17: white chair
+  18: white desk
+  19: white shelf
+  20: white sofa
+args:
+  batch: 1
+  half: false
+  int8: false
+  nms: false
+channels: 3
+end2end: false

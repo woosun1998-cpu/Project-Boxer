@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 대시보드</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design tokens ─────────────────────────────────── */
+    :root {
+      --red:    #E8000D;
+      --yellow: #FFE500;
+      --green:  #39D353;
+      --s1:     #000000;
+      --s2:     #0e0e0e;
+      --s3:     #161616;
+      --s4:     #1e1e1e;
+      --t1:     #ffffff;
+      --t2:     rgba(255,255,255,0.62);
+      --t3:     rgba(255,255,255,0.30);
+      --border:   rgba(255,255,255,0.07);
+      --border-2: rgba(255,255,255,0.13);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--s1);
+      font-family: var(--fp);
+      color: var(--t1);
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ─────────────────────────────────────────── */
+    .bx-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.90);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .bx-topbar-inner {
+      width: min(1360px, calc(100% - 48px));
+      margin: 0 auto;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .bx-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .bx-brand {
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bx-brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter:
+        drop-shadow(0 0 10px rgba(232,0,13,0.22))
+        drop-shadow(0 0 20px rgba(232,0,13,0.10));
+    }
+    .bx-brand-ai {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border: 1px solid rgba(232,0,13,0.28);
+      background: rgba(232,0,13,0.06);
+      font-family: var(--fp);
+      font-size: 0.56rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+    .bx-brand-ai::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: bx-blink 1.4s ease-in-out infinite;
+    }
+    @keyframes bx-blink { 0%,100%{opacity:1} 50%{opacity:.22} }
+
+    .bx-nav {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+    }
+    .bx-nav a, .bx-nav button {
+      padding: 7px 13px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--t3);
+      font-size: 0.77rem;
+      font-weight: 500;
+      font-family: var(--fp);
+      text-decoration: none;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      transition: color .14s, border-color .14s, background .14s;
+    }
+    .bx-nav a:hover, .bx-nav button:hover {
+      color: var(--t1);
+      border-color: var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    .bx-nav a.active,
+    .bx-nav a[aria-current] {
+      color: var(--t1);
+      border-color: var(--border-2);
+      background: rgba(255,255,255,0.05);
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border: 1px solid rgba(232,0,13,0.28);
+      background: rgba(232,0,13,0.06);
+      font-family: var(--fp);
+      font-size: 0.56rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--red);
+      text-transform: uppercase;
+    }
+    .bx-live::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: bx-blink 1.4s ease-in-out infinite;
+    }
+    .bx-nav [data-logout-button] {
+      margin-left: 6px;
+      border-color: rgba(232,0,13,0.25);
+      color: rgba(232,0,13,0.65);
+    }
+    .bx-nav [data-logout-button]:hover {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(232,0,13,0.05);
+    }
+
+    /* ── WRAP ───────────────────────────────────────────── */
+    .bx-nav { gap: 22px; }
+    .bx-nav a {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--t3);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+    .bx-nav a:hover {
+      color: var(--t1);
+      border-color: transparent;
+      background: transparent;
+    }
+    .bx-nav a.active,
+    .bx-nav a[aria-current] {
+      color: var(--red);
+      border: 0;
+      border-bottom: 1px solid var(--red);
+      background: transparent;
+      padding-bottom: 1px;
+    }
+    .bx-nav button[data-logout-button] {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--t3);
+      border-color: var(--border-2);
+      padding: 5px 13px;
+      border-radius: 2px;
+      margin-left: 0;
+    }
+    .bx-nav button[data-logout-button]:hover {
+      color: var(--t1);
+      border-color: var(--t2);
+      background: transparent;
+    }
+
+    .db-wrap { padding-top: 62px; }
+
+    /* ── HERO SPLIT ─────────────────────────────────────── */
+    .db-hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 62px);
+    }
+
+    /* LEFT — image + logo */
+    .db-hero-visual {
+      position: relative;
+      overflow: hidden;
+      background: var(--s3)
+        url('./assets/images/dashboard/메인이미지배경.jpg')
+        center center / cover no-repeat;
+      background-color: #242424;
+      background-blend-mode: screen;
+    }
+    .db-hero-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        115deg,
+        rgba(0,0,0,0.04) 0%,
+        rgba(0,0,0,0.18) 55%,
+        rgba(0,0,0,0.46) 100%
+      );
+    }
+
+    .db-visual-tag {
+      position: absolute;
+      top: 28px;
+      left: 32px;
+      z-index: 2;
+      font-family: var(--fm);
+      font-size: 0.68rem;
+      letter-spacing: 0.32em;
+      color: rgba(255,255,255,0.32);
+      text-transform: uppercase;
+    }
+
+    .db-hero-logo {
+      position: absolute;
+      top: clamp(122px, 20vh, 180px);
+      left: 36px;
+      z-index: 2;
+      width: clamp(100px, 15vw, 200px);
+      height: auto;
+      filter: drop-shadow(0 2px 20px rgba(0,0,0,0.72))
+              drop-shadow(0 0 40px rgba(232,0,13,0.12));
+    }
+
+    .db-visual-credit {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2;
+      font-size: 0.54rem;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.18);
+      text-transform: uppercase;
+    }
+
+    /* RIGHT — user content */
+    .db-hero-content {
+      background: var(--s2);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 72px 56px;
+    }
+
+    .db-tier-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border: 1px solid var(--border-2);
+      background: var(--s4);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--t2);
+      width: fit-content;
+      margin-bottom: 18px;
+    }
+
+    .db-user-name {
+      font-family: var(--fp);
+      font-size: clamp(3rem, 5.5vw, 5.2rem);
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+      font-weight: 900;
+      color: var(--t1);
+      margin: 0 0 14px;
+    }
+
+    .db-hero-msg {
+      font-size: 0.88rem;
+      color: var(--t2);
+      line-height: 1.7;
+      margin: 0 0 36px;
+      max-width: 360px;
+    }
+
+    /* stats strip */
+    .db-stats {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      margin-bottom: 36px;
+    }
+    .db-stat {
+      flex: 1;
+      padding: 16px 20px;
+      border-right: 1px solid var(--border);
+    }
+    .db-stat:last-child { border-right: none; }
+    .db-stat-num {
+      display: block;
+      font-family: var(--fm);
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      color: var(--t1);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .db-stat-num.hi { color: var(--yellow); }
+    .db-stat-label {
+      display: block;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--t3);
+    }
+
+    /* CTA */
+    .db-cta-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .db-btn-red {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: var(--red);
+      border: none;
+      color: #fff;
+      font-family: var(--fp);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .14s;
+    }
+    .db-btn-red:hover { background: #bf000b; }
+
+    .db-btn-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border: 1px solid var(--border-2);
+      background: transparent;
+      color: var(--t2);
+      font-family: var(--fp);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color .14s, border-color .14s, background .14s;
+    }
+    .db-btn-line:hover {
+      color: var(--t1);
+      border-color: rgba(255,255,255,0.26);
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* ── INNER ──────────────────────────────────────────── */
+    .db-inner {
+      width: min(1360px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .db-section { padding: 64px 0 0; }
+
+    .db-section-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .db-section-label {
+      font-family: var(--fp);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--t3);
+      white-space: nowrap;
+    }
+    .db-section-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── QUICK CARDS ────────────────────────────────────── */
+    .db-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .db-card {
+      background: var(--s2);
+      padding: 36px 30px 30px;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+      transition: background .18s;
+      min-height: 260px;
+    }
+    .db-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--border);
+      transition: background .18s;
+    }
+    .db-card:hover { background: var(--s3); }
+    .db-card:hover::before { background: var(--red); }
+
+    .db-card-index {
+      font-family: var(--fp);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: rgba(232,0,13,0.7);
+      margin-bottom: 20px;
+    }
+    .db-card-title {
+      font-family: var(--fp);
+      font-size: clamp(1.7rem, 2.8vw, 2.4rem);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--t1);
+      margin-bottom: 12px;
+    }
+    .db-card-desc {
+      font-family: var(--fp);
+      font-size: 0.88rem;
+      color: var(--t2);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .db-card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      font-family: var(--fp);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--t3);
+      margin-top: 20px;
+      transition: color .14s;
+    }
+    .db-card:hover .db-card-cta { color: var(--red); }
+    .db-card-cta::after { content: '→'; }
+
+    /* ── BOTTOM ROW ─────────────────────────────────────── */
+    .db-bottom {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 1px;
+    }
+
+    .db-mini-card {
+      background: var(--s2);
+      padding: 28px 26px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background .16s;
+    }
+    .db-mini-card:hover { background: var(--s3); }
+
+    .db-mini-label {
+      font-family: var(--fp);
+      font-size: 0.56rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--t3);
+    }
+    .db-mini-title {
+      font-family: var(--fp);
+      font-size: 1.08rem;
+      letter-spacing: -0.02em;
+      font-weight: 900;
+      color: var(--t1);
+    }
+    .db-mini-sub {
+      font-family: var(--fp);
+      font-size: 0.78rem;
+      color: var(--t2);
+      line-height: 1.55;
+      margin-top: 2px;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────── */
+    .db-footer {
+      margin-top: 1px;
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 22px min(calc((100% - 1360px) / 2 + 24px), 24px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--s2);
+    }
+    .db-footer-left {
+      font-family: var(--fp);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--t3);
+    }
+    .db-footer-right {
+      display: flex;
+      gap: 16px;
+    }
+    .db-footer-right a {
+      font-family: var(--fp);
+      font-size: 0.7rem;
+      letter-spacing: 0.02em;
+      color: var(--t3);
+      text-decoration: none;
+      transition: color .14s;
+    }
+    .db-footer-right a:hover { color: var(--t2); }
+
+    /* ── LAST RESULT BANNER ─────────────────────────────── */
+    .db-result-banner {
+      display: none; /* JS로 show */
+      border: 1px solid var(--border);
+      background: var(--s3);
+      padding: 20px 28px;
+      margin-top: 1px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .db-result-banner.visible { display: flex; }
+    .db-result-left { display: flex; align-items: center; gap: 20px; }
+    .db-result-tag {
+      font-family: var(--fp);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--t3);
+    }
+    .db-result-score {
+      font-family: var(--fm);
+      font-size: 2.2rem;
+      letter-spacing: 0.06em;
+      color: var(--yellow);
+      line-height: 1;
+    }
+    .db-result-meta {
+      font-family: var(--fp);
+      font-size: 0.78rem;
+      color: var(--t2);
+    }
+    .db-result-link {
+      font-family: var(--fp);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--t3);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      transition: color .14s, border-color .14s;
+    }
+    .db-result-link:hover { color: var(--t1); border-color: var(--border-2); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .db-hero { grid-template-columns: 1fr; }
+      .db-hero-visual { min-height: 340px; }
+      .db-hero-content { padding: 48px 32px; }
+      .db-cards { grid-template-columns: 1fr; }
+      .db-bottom { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .bx-topbar-inner { width: calc(100% - 32px); }
+      .bx-nav a:not([data-logout-button]):not(.bx-nav-main) { display: none; }
+      .db-hero-content { padding: 36px 20px; }
+      .db-inner { width: calc(100% - 32px); }
+      .db-cta-row { flex-direction: column; }
+      .db-bottom { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .db-bottom { grid-template-columns: 1fr; }
+    }
+
+    .db-stat-label,
+    .db-hero-msg,
+    .db-card-desc,
+    .db-mini-sub,
+    .db-result-meta {
+      font-family: var(--fp);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── TOPBAR ─────────────────────────────────────────── -->
+  <header class="bx-topbar" data-app-header>
+    <div class="bx-topbar-inner">
+      <div class="bx-topbar-left">
+        <a class="bx-brand" href="./dashboard.html" aria-label="AI Coach 홈">
+          <span class="bx-brand-logo"></span>
+        </a>
+        <span class="bx-live">AI Coach</span>
+      </div>
+      <nav class="bx-nav">
+        <a href="./dashboard.html" aria-current="page">대시보드</a>
+        <a href="./tutorial.html">튜토리얼</a>
+        <a href="./training.html">훈련</a>
+        <a href="./sparring.html">스파링</a>
+        <a href="./leaderboard.html">랭킹</a>
+        <a href="./boxing-gyms.html">복싱장 찾기</a>
+        <a href="./admin.html" data-admin-nav hidden>관리자모드</a>
+        <a href="./mypage.html">마이페이지</a>
+        <a href="./shop.html">샵</a>
+        <button type="button" data-logout-button>로그아웃</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="db-wrap" data-page="dashboard">
+
+    <!-- ── HERO ───────────────────────────────────────────── -->
+    <section class="db-hero">
+
+      <!-- LEFT: 메인이미지 + 로고 -->
+      <div class="db-hero-visual" aria-hidden="true">
+        <span class="db-visual-tag">IM_BOXER · AI COACHING</span>
+        <img
+          class="db-hero-logo"
+          src="./assets/images/dashboard/로고.png"
+          alt="IM_BOXER 로고"
+          draggable="false"
+        >
+        <span class="db-visual-credit">© IM_BOXER</span>
+      </div>
+
+      <!-- RIGHT: 유저 정보 + CTA -->
+      <div class="db-hero-content">
+        <span class="db-tier-badge" data-user-tier-badge>FREE</span>
+
+        <h1 class="db-user-name" data-user-name>BOXER</h1>
+
+        <p class="db-hero-msg" data-page-message>
+          오늘의 훈련 흐름을 확인하고 다음 단계로 이어가세요.
+        </p>
+
+        <!-- 최근 세션 stats -->
+        <div class="db-stats">
+          <div class="db-stat">
+            <span class="db-stat-num" id="db-last-score">—</span>
+            <span class="db-stat-label">최근 점수</span>
+          </div>
+          <div class="db-stat">
+            <span class="db-stat-num" id="db-last-accuracy">—</span>
+            <span class="db-stat-label">정확도</span>
+          </div>
+          <div class="db-stat">
+            <span class="db-stat-num hi" id="db-last-combo">—</span>
+            <span class="db-stat-label">최고 콤보</span>
+          </div>
+        </div>
+
+        <div class="db-cta-row">
+          <a class="db-btn-red" href="./tutorial.html">튜토리얼 시작</a>
+          <a class="db-btn-line" href="./training.html">훈련 바로가기</a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── LAST RESULT BANNER ──────────────────────────────── -->
+    <div class="db-inner">
+      <div class="db-result-banner" id="db-result-banner">
+        <div class="db-result-left">
+          <span class="db-result-tag">최근 훈련 결과</span>
+          <span class="db-result-score" id="db-banner-score">0</span>
+          <span class="db-result-meta" id="db-banner-meta">—</span>
+        </div>
+        <a class="db-result-link" href="./result.html">결과 보기 →</a>
+      </div>
+    </div>
+
+    <!-- ── QUICK ACTION CARDS ──────────────────────────────── -->
+    <div class="db-inner">
+      <div class="db-section">
+        <div class="db-section-head">
+          <span class="db-section-label">지금 시작할 수 있는 것</span>
+          <div class="db-section-line"></div>
+        </div>
+
+        <div class="db-cards">
+
+          <a class="db-card" href="./tutorial.html">
+            <span class="db-card-index">01 — TUTORIAL</span>
+            <span class="db-card-title">튜토리얼</span>
+            <p class="db-card-desc">
+              가드, 잽, 훅, 크로스, 슬립, 어퍼컷.<br>
+              6가지 기본 동작을 단계별로 배웁니다.
+            </p>
+            <span class="db-card-cta">배우기 시작</span>
+          </a>
+
+          <a class="db-card" href="./training.html">
+            <span class="db-card-index">02 — TRAINING</span>
+            <span class="db-card-title">훈련</span>
+            <p class="db-card-desc">
+              웹캠을 켜고 실시간 자세 분석을 받으세요.<br>
+              AI가 자세, 가드, 균형, 반응 속도를 측정합니다.
+            </p>
+            <span class="db-card-cta">훈련 시작</span>
+          </a>
+
+          <a class="db-card" href="./sparring.html">
+            <span class="db-card-index">03 — SPARRING</span>
+            <span class="db-card-title">스파링</span>
+            <p class="db-card-desc">
+              AI 상대와 실전처럼 맞붙습니다.<br>
+              HP, 라운드, 콤보로 진짜 게임을 경험하세요.
+            </p>
+            <span class="db-card-cta">도전하기</span>
+          </a>
+
+        </div>
+
+        <!-- ── BOTTOM MINI CARDS ──────────────────────────── -->
+        <div class="db-bottom">
+          <a class="db-mini-card" href="./leaderboard.html">
+            <span class="db-mini-label">RANKING</span>
+            <span class="db-mini-title">리더보드</span>
+            <span class="db-mini-sub">전국 랭킹과 내 순위를 확인하세요.</span>
+          </a>
+          <a class="db-mini-card" href="./mypage.html">
+            <span class="db-mini-label">MY RECORD</span>
+            <span class="db-mini-title">마이페이지</span>
+            <span class="db-mini-sub">내 레벨, 기록, 훈련 히스토리를 봅니다.</span>
+          </a>
+          <a class="db-mini-card" href="./shop.html">
+            <span class="db-mini-label">STORE</span>
+            <span class="db-mini-title">샵</span>
+            <span class="db-mini-sub">프리미엄 콘텐츠와 아이템을 만나보세요.</span>
+          </a>
+          <a class="db-mini-card" href="./settings.html">
+            <span class="db-mini-label">CONFIG</span>
+            <span class="db-mini-title">설정</span>
+            <span class="db-mini-sub">웹캠, 알림, 계정 설정을 조정합니다.</span>
+          </a>
+          <a class="db-mini-card" href="./boxing-gyms.html">
+            <span class="db-mini-label">GYM FINDER</span>
+            <span class="db-mini-title">복싱장 찾기</span>
+            <span class="db-mini-sub">내 주변 복싱장과 권투장을 지도로 찾습니다.</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── FOOTER ─────────────────────────────────────────── -->
+    <div class="db-inner">
+      <footer class="db-footer">
+        <span class="db-footer-left" data-user-summary>IM_BOXER Dashboard</span>
+        <div class="db-footer-right">
+          <a href="./settings.html">설정</a>
+          <a href="./tutorial.html">튜토리얼</a>
+          <a href="./result.html">최근 결과</a>
+        </div>
+      </footer>
+    </div>
+
+  </div><!-- /db-wrap -->
+
+  <script type="module" src="./js/pages/dashboard.js"></script>
+
+  <!--
+    localStorage에서 최근 훈련 결과를 읽어 stats와 배너를 채운다.
+    dashboard.js와 충돌 없는 순수 시각 보조.
+  -->
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem("im_boxer_training_last_result");
+        if (!raw) return;
+        var r = JSON.parse(raw);
+        var score    = r?.score ?? r?.metrics?.score;
+        var accuracy = r?.accuracy ?? r?.metrics?.accuracy;
+        var combo    = r?.combo ?? r?.metrics?.combo;
+        var lesson   = r?.lesson?.title || r?.lessonTitle || "";
+
+        function fill(id, val, suffix) {
+          var el = document.getElementById(id);
+          if (el && val != null) el.textContent = Math.round(val) + (suffix || "");
+        }
+
+        fill("db-last-score",    score,    "");
+        fill("db-last-accuracy", accuracy, "%");
+        fill("db-last-combo",    combo,    "x");
+
+        var banner = document.getElementById("db-result-banner");
+        if (banner && score != null) {
+          banner.classList.add("visible");
+          var bannerScore = document.getElementById("db-banner-score");
+          var bannerMeta  = document.getElementById("db-banner-meta");
+          if (bannerScore) bannerScore.textContent = Math.round(score);
+          if (bannerMeta)  bannerMeta.textContent  =
+            (lesson ? lesson + " · " : "") +
+            (accuracy != null ? "정확도 " + Math.round(accuracy) + "%" : "");
+        }
+      } catch (e) { /* localStorage 실패 무시 */ }
+    })();
+  </script>
+
+</body>
+</html>

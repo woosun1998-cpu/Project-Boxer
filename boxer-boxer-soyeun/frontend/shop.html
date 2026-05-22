@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOXER — 코인 샵</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body { padding-top: 64px; }
+    .shop-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ─── 헤더 ─── */
+    .shop-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .shop-header h1 {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+    }
+    .coin-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--color-bg-secondary);
+      border: 1px solid rgba(255,214,10,0.3);
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+    }
+    .coin-icon { font-size: 1.5rem; }
+    .coin-amount {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--color-accent-gold);
+      line-height: 1;
+    }
+    .coin-label { font-size: 12px; color: var(--color-text-secondary); }
+
+    /* ─── 프리미엄 배너 ─── */
+    .premium-banner {
+      background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(255,214,10,0.1));
+      border: 1px solid rgba(0,122,255,0.3);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .premium-banner.owned {
+      background: linear-gradient(135deg, rgba(48,209,88,0.1), rgba(0,122,255,0.1));
+      border-color: rgba(48,209,88,0.3);
+    }
+    .premium-banner-info h2 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .premium-banner-info p { color: var(--color-text-secondary); font-size: 14px; }
+    .premium-features {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .premium-feature {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    /* ─── 탭 ─── */
+    .shop-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 1.5rem;
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      width: fit-content;
+    }
+    .shop-tab {
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      transition: all 0.2s;
+      border: none;
+      background: none;
+    }
+    .shop-tab.active {
+      background: var(--color-bg-tertiary);
+      color: white;
+    }
+
+    /* ─── 상품 그리드 ─── */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+    }
+
+    .item-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .item-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow-blue); }
+    .item-card.purchased { border-color: rgba(48,209,88,0.3); }
+
+    .item-thumb {
+      width: 100%;
+      height: 130px;
+      background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      position: relative;
+    }
+    .item-type-label {
+      position: absolute;
+      top: 8px; left: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+    }
+    .type-tutorial { background: rgba(0,122,255,0.2); color: var(--color-accent-blue); }
+    .type-skin     { background: rgba(255,45,85,0.2);  color: var(--color-accent-red); }
+    .type-report   { background: rgba(255,214,10,0.2); color: var(--color-accent-gold); }
+    .type-premium  { background: rgba(48,209,88,0.2);  color: var(--color-accent-green); }
+
+    .purchased-stamp {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(48,209,88,0.2);
+      border: 1px solid rgba(48,209,88,0.4);
+      border-radius: 10px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: var(--color-accent-green);
+    }
+
+    .item-body { padding: 1.2rem; }
+    .item-name { font-weight: 700; margin-bottom: 4px; font-size: 0.95rem; }
+    .item-desc { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 12px; line-height: 1.5; }
+
+    .item-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .item-price {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-accent-gold);
+    }
+    .item-price.free { color: var(--color-accent-green); }
+    .btn-buy {
+      background: var(--color-accent-gold);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-buy:hover { transform: scale(1.05); }
+    .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-owned {
+      background: rgba(48,209,88,0.15);
+      color: var(--color-accent-green);
+      border: 1px solid rgba(48,209,88,0.3);
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ─── 구매 확인 모달 ─── */
+    .confirm-modal {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      width: 100%;
+      max-width: 380px;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+    .modal-overlay.open .confirm-modal { transform: scale(1); }
+    .confirm-item-name {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      margin: 1rem 0 0.4rem;
+    }
+    .confirm-price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+      margin: 1rem 0;
+    }
+    .confirm-price-label { color: var(--color-text-secondary); font-size: 14px; }
+    .confirm-price-val {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--color-accent-gold);
+    }
+    .confirm-balance {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-align: right;
+      margin-bottom: 1.2rem;
+    }
+    .confirm-balance.insufficient { color: var(--color-accent-red); }
+    .confirm-actions { display: flex; gap: 8px; }
+
+    /* ─── 플랜 비교 테이블 ─── */
+    .plan-section { margin-top: 3rem; }
+    .plan-section h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 1px;
+      margin-bottom: 1.5rem;
+    }
+    .plan-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--color-bg-secondary);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .plan-table th {
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .plan-table th:first-child { text-align: left; }
+    .plan-table th.col-free    { color: var(--color-text-secondary); }
+    .plan-table th.col-premium { color: var(--color-accent-gold); }
+    .plan-table td {
+      padding: 14px 20px;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .plan-table td:not(:first-child) { text-align: center; }
+    .plan-table tr:last-child td { border-bottom: none; }
+    .plan-check    { color: var(--color-accent-green); font-size: 1.1rem; }
+    .plan-cross    { color: var(--color-text-secondary); font-size: 1.1rem; }
+    .plan-partial  { color: var(--color-accent-gold); font-size: 0.9rem; }
+
+    /* 빈 상태 */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .items-grid { grid-template-columns: repeat(2, 1fr); }
+      .premium-banner { flex-direction: column; }
+    }
+    @media (max-width: 500px) {
+      .items-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── 네비게이션 ─── -->
+<nav class="nav">
+  <a class="nav-logo" href="/frontend/index.html">
+    <img class="nav-logo-img" src="assets/images/logo.png" alt="BOXER" onerror="this.style.display='none'">
+    <span class="nav-logo-text">BOXER</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/frontend/tutorial.html">튜토리얼</a>
+    <a class="nav-link" href="/frontend/sparring.html">스파링</a>
+    <a class="nav-link" href="/frontend/dashboard.html">대시보드</a>
+    <a class="nav-link active" href="/frontend/shop.html">샵</a>
+    <button class="btn-outline" style="padding:8px 16px;font-size:13px;" onclick="auth.logout()">로그아웃</button>
+  </div>
+</nav>
+
+<div class="shop-wrap">
+
+  <!-- ─── 헤더 ─── -->
+  <div class="shop-header">
+    <h1>코인 샵</h1>
+    <div class="coin-badge">
+      <div class="coin-icon">🪙</div>
+      <div>
+        <div class="coin-amount" id="my-coins">—</div>
+        <div class="coin-label">보유 코인</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 프리미엄 배너 ─── -->
+  <div class="premium-banner" id="premium-banner">
+    <div class="premium-banner-info">
+      <h2>⭐ PREMIUM 업그레이드</h2>
+      <p>무제한 스파링, 전체 튜토리얼 30개, AI 코치 조언, 랭킹 참여 자격</p>
+      <div class="premium-features">
+        <div class="premium-feature">✅ 무제한 스파링</div>
+        <div class="premium-feature">✅ AI 코칭 (Gemini)</div>
+        <div class="premium-feature">✅ PDF 리포트 다운로드</div>
+        <div class="premium-feature">✅ 글로벌 랭킹 참여</div>
+      </div>
+    </div>
+    <div style="flex-shrink:0;">
+      <div style="font-family:var(--font-display);font-size:2rem;color:var(--color-accent-gold);text-align:center;">월 9,900원</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:12px;">또는 코인으로 구매</div>
+      <button class="btn-gold" id="premium-btn" onclick="buyPremium()" style="width:180px;">프리미엄 시작하기</button>
+    </div>
+  </div>
+
+  <!-- ─── 탭 필터 ─── -->
+  <div class="shop-tabs">
+    <button class="shop-tab active" onclick="filterItems(null, this)">전체</button>
+    <button class="shop-tab" onclick="filterItems('tutorial', this)">📚 강좌</button>
+    <button class="shop-tab" onclick="filterItems('skin', this)">🎭 스킨</button>
+    <button class="shop-tab" onclick="filterItems('report', this)">📊 리포트</button>
+  </div>
+
+  <!-- ─── 상품 그리드 ─── -->
+  <div id="items-grid" class="items-grid">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ─── 구독 플랜 비교 ─── -->
+  <div class="plan-section">
+    <h2>플랜 비교</h2>
+    <table class="plan-table">
+      <thead>
+        <tr>
+          <th>기능</th>
+          <th class="col-free">FREE</th>
+          <th class="col-premium">PREMIUM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>기초 튜토리얼</td>
+          <td><span class="plan-partial">3개 무료</span></td>
+          <td><span class="plan-check">✅</span> 30개 전체</td>
+        </tr>
+        <tr>
+          <td>일일 스파링</td>
+          <td><span class="plan-partial">3판 제한</span></td>
+          <td><span class="plan-check">✅</span> 무제한</td>
+        </tr>
+        <tr>
+          <td>자세 교정 체크포인트</td>
+          <td><span class="plan-partial">5개</span></td>
+          <td><span class="plan-check">✅</span> 전체 정밀 분석</td>
+        </tr>
+        <tr>
+          <td>AI 코치 조언 (Gemini)</td>
+          <td><span class="plan-cross">✗</span></td>
+          <td><span class="plan-check">✅</span></td>
+        </tr>
+        <tr>
+          <td>PDF 자세 분석 리포트</td>
+          <td><span class="plan-cross">✗</span></td>
+          <td><span class="plan-check">✅</span></td>
+        </tr>
+        <tr>
+          <td>글로벌 랭킹 참여</td>
+          <td><span class="plan-cross">✗</span></td>
+          <td><span class="plan-check">✅</span></td>
+        </tr>
+        <tr>
+          <td>EXP·코인 획득</td>
+          <td><span class="plan-check">✅</span></td>
+          <td><span class="plan-check">✅</span> 2배 보너스</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ─── 구매 확인 모달 ─── -->
+<div class="modal-overlay" id="buy-modal" onclick="closeModalOnOverlay(event)">
+  <div class="confirm-modal">
+    <div style="text-align:center;">
+      <div id="modal-item-icon" style="font-size:3.5rem;">🎁</div>
+      <div class="confirm-item-name" id="modal-item-name">상품명</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);" id="modal-item-desc"></div>
+    </div>
+    <div class="confirm-price-row">
+      <span class="confirm-price-label">가격</span>
+      <span class="confirm-price-val" id="modal-price">0 🪙</span>
+    </div>
+    <div class="confirm-balance" id="modal-balance"></div>
+    <div class="confirm-actions">
+      <button class="btn-primary" id="modal-confirm-btn" style="flex:1;" onclick="confirmPurchase()">구매하기</button>
+      <button class="btn-outline" style="flex:1;" onclick="closeBuyModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/core/api.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/ui/navbar.js"></script>
+<script>
+  auth.requireAuthAsync().then(user => { if (!user) return; });
+  if (!auth.requireAuth()) throw new Error('redirect');
+
+  // ─── 상태 ───
+  let allItems = [];
+  let pendingItem = null;
+  let myCoins = 0;
+  const ITEM_ICONS = {
+    tutorial: '📚',
+    skin:     '🎭',
+    report:   '📊',
+    premium:  '⭐'
+  };
+
+  // ─── 초기화 ───
+  async function initShop() {
+    try {
+      const [user, itemsResp] = await Promise.all([
+        auth.fetchCurrentUser(),
+        api.get('/api/shop/items')
+      ]);
+
+      myCoins = user?.coins || 0;
+      document.getElementById('my-coins').textContent = myCoins.toLocaleString();
+
+      // 프리미엄 배너 상태
+      if (user?.tier === 'premium') {
+        const banner = document.getElementById('premium-banner');
+        banner.classList.add('owned');
+        banner.querySelector('h2').textContent = '✅ 프리미엄 구독 중';
+        document.getElementById('premium-btn').textContent = '이용 중';
+        document.getElementById('premium-btn').disabled = true;
+      }
+
+      // api.js가 {success, data} 래퍼를 자동 해제하므로
+      // itemsResp는 이미 배열 또는 객체임
+      allItems = Array.isArray(itemsResp)
+        ? itemsResp
+        : Array.isArray(itemsResp?.items)
+          ? itemsResp.items
+          : [];
+      renderItems(allItems);
+
+    } catch (err) {
+      showToast('샵 데이터 로드 실패: ' + err.message, 'error');
+      document.getElementById('items-grid').innerHTML =
+        '<div class="empty-state">데이터를 불러오지 못했어요.</div>';
+    }
+  }
+
+  // ─── 아이템 렌더링 ───
+  function renderItems(items) {
+    const grid = document.getElementById('items-grid');
+
+    if (!items.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">등록된 상품이 없습니다.</div>';
+      return;
+    }
+
+    grid.innerHTML = items.filter(it => it.is_active).map(item => {
+      const icon = ITEM_ICONS[item.item_type] || '🎁';
+      const typeClass = `type-${item.item_type}`;
+      const typeLabel = { tutorial: '강좌', skin: '스킨', report: '리포트', premium: '프리미엄' }[item.item_type] || item.item_type;
+      const canAfford = myCoins >= item.price_coins;
+
+      return `
+        <div class="item-card ${item.is_purchased ? 'purchased' : ''}">
+          <div class="item-thumb">
+            ${icon}
+            <span class="item-type-label ${typeClass}">${typeLabel}</span>
+            ${item.is_purchased ? '<span class="purchased-stamp">보유 중</span>' : ''}
+          </div>
+          <div class="item-body">
+            <div class="item-name">${item.name}</div>
+            <div class="item-desc">${item.description || ''}</div>
+            <div class="item-footer">
+              <div class="item-price ${item.price_coins === 0 ? 'free' : ''}">
+                ${item.price_coins === 0 ? 'FREE' : `🪙 ${item.price_coins.toLocaleString()}`}
+              </div>
+              ${item.is_purchased
+                ? `<span class="btn-owned">✅ 보유 중</span>`
+                : `<button class="btn-buy" onclick="openBuyModal(${item.id})" ${!canAfford ? 'disabled title="코인이 부족합니다"' : ''}>
+                     ${canAfford ? '구매' : '코인 부족'}
+                   </button>`
+              }
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ─── 탭 필터 ───
+  function filterItems(type, tabEl) {
+    document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+
+    const filtered = type ? allItems.filter(it => it.item_type === type) : allItems;
+    renderItems(filtered);
+  }
+
+  // ─── 프리미엄 직접 구매 ───
+  function buyPremium() {
+    const premiumItem = allItems.find(it => it.item_type === 'premium');
+    if (premiumItem) {
+      openBuyModal(premiumItem.id);
+    } else {
+      // 프리미엄 아이템이 샵에 없으면 premium_upgrade 타입으로 직접 구매
+      pendingItem = { id: 0, name: 'PREMIUM 구독', description: '무제한 모든 기능 이용', price_coins: 0, item_type: 'premium' };
+      openModalWithData(pendingItem, 'premium_upgrade');
+    }
+  }
+
+  // ─── 구매 모달 열기 ───
+  function openBuyModal(itemId) {
+    const item = allItems.find(it => it.id === itemId);
+    if (!item) return;
+    pendingItem = item;
+    openModalWithData(item, 'coin');
+  }
+
+  function openModalWithData(item, paymentType) {
+    const icon = ITEM_ICONS[item.item_type] || '🎁';
+    document.getElementById('modal-item-icon').textContent = icon;
+    document.getElementById('modal-item-name').textContent = item.name;
+    document.getElementById('modal-item-desc').textContent = item.description || '';
+    document.getElementById('modal-price').textContent =
+      item.price_coins === 0 ? 'FREE' : `${item.price_coins.toLocaleString()} 🪙`;
+
+    const remaining = myCoins - (item.price_coins || 0);
+    const balanceEl = document.getElementById('modal-balance');
+    if (item.price_coins > 0) {
+      balanceEl.textContent = `구매 후 잔액: 🪙 ${remaining.toLocaleString()}`;
+      balanceEl.className = `confirm-balance ${remaining < 0 ? 'insufficient' : ''}`;
+      document.getElementById('modal-confirm-btn').disabled = remaining < 0;
+    } else {
+      balanceEl.textContent = '';
+    }
+
+    // 결제 타입 저장
+    pendingItem._paymentType = paymentType;
+
+    document.getElementById('buy-modal').classList.add('open');
+  }
+
+  function closeBuyModal() {
+    document.getElementById('buy-modal').classList.remove('open');
+    pendingItem = null;
+  }
+
+  function closeModalOnOverlay(e) {
+    if (e.target === document.getElementById('buy-modal')) closeBuyModal();
+  }
+
+  // ─── 구매 확정 ───
+  async function confirmPurchase() {
+    if (!pendingItem) return;
+    const btn = document.getElementById('modal-confirm-btn');
+    setButtonLoading(btn, true);
+
+    try {
+      const resp = await api.post('/api/shop/purchase', {
+        item_id:      pendingItem.id || 1,
+        payment_type: pendingItem._paymentType || 'coin'
+      });
+
+      // api.js가 data 래퍼 자동 해제 — resp가 이미 결과 객체
+      const result = resp || {};
+      // 잔액 업데이트: 서버가 remaining_coins를 반환하면 사용, 아니면 로컬 계산
+      myCoins = result.remaining_coins ?? Math.max(0, myCoins - (pendingItem.price_coins || 0));
+      document.getElementById('my-coins').textContent = myCoins.toLocaleString();
+
+      // 구매된 아이템 상태 갱신
+      const idx = allItems.findIndex(it => it.id === pendingItem.id);
+      if (idx !== -1) allItems[idx].is_purchased = true;
+
+      closeBuyModal();
+      renderItems(allItems);
+      showToast(`${pendingItem.name} 구매 완료! 🎉`, 'success');
+
+      // 프리미엄 구매이면 배너 업데이트
+      if (pendingItem.item_type === 'premium') {
+        const banner = document.getElementById('premium-banner');
+        banner.classList.add('owned');
+        banner.querySelector('h2').textContent = '✅ 프리미엄 구독 중';
+        document.getElementById('premium-btn').textContent = '이용 중';
+        document.getElementById('premium-btn').disabled = true;
+      }
+
+    } catch (err) {
+      showToast('구매 실패: ' + err.message, 'error');
+      setButtonLoading(btn, false);
+    }
+  }
+
+  // ─── 시작 ───
+  initShop();
+</script>
+  <script src="js/ui/auto-scale.js"></script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Boxing Gym Manager</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    .gym-search-row {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .gym-search-row .adm-input { flex: 1; min-width: 180px; }
+    .gym-radius-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-radius {
+      padding: 6px 13px;
+      border: 1px solid var(--border-2); background: transparent;
+      color: var(--t3); font-family: var(--fp); font-size: 0.74rem; font-weight: 700;
+      cursor: pointer; transition: all .12s;
+    }
+    .btn-radius.active { border-color: var(--ice); color: var(--ice); background: rgba(0,194,255,0.07); }
+    .btn-radius:hover { color: var(--t2); border-color: var(--border-2); }
+
+    .gym-result-meta {
+      font-size: 0.72rem; color: var(--t3); margin: 10px 0 0;
+    }
+    .adm-tag {
+      display: inline-flex; padding: 2px 8px;
+      font-size: 0.56rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+      border: 1px solid var(--border); color: var(--t3);
+    }
+    .adm-tag.ice { border-color: rgba(0,194,255,0.3); color: var(--ice); }
+
+    .gym-stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+    .gym-empty {
+      padding: 18px;
+      border: 1px solid var(--border);
+      color: var(--t3);
+      font-size: 0.78rem;
+      background: var(--s2);
+    }
+    .gym-stat-card {
+      background: var(--s2); padding: 18px 20px;
+    }
+    .gym-stat-label {
+      font-size: 0.56rem; font-weight: 900; letter-spacing: 0.12em;
+      color: var(--t4); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .gym-stat-value {
+      font-family: var(--fm); font-size: 2rem; letter-spacing: 0.04em; color: var(--t1); line-height: 1;
+    }
+    .gym-stat-value.ice { color: var(--ice); }
+
+    .adm-loading {
+      display: flex; align-items: center; gap: 10px;
+      padding: 32px 0; font-size: 0.8rem; color: var(--t3);
+    }
+    .adm-spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--red);
+      border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .adm-loading[hidden] { display: none; }
+
+    @media (max-width: 860px) {
+      .gym-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 540px) {
+      .gym-search-row { flex-direction: column; }
+      .gym-stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── TOPBAR ──────────────────────────────────────────────── -->
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">—</span>
+      <a class="adm-topbar-link" href="../admin.html">← Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <!-- ── MOBILE NAV ─────────────────────────────────────────── -->
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item" href="../sparring_start.html?mode=beginner&admin=1">스파링 튜닝</a>
+    <a class="adm-mobile-nav-item" href="../admin-dataset.html">AI Dataset</a>
+    <a class="adm-mobile-nav-item active" href="./gyms.html">Boxing Gyms</a>
+  </div>
+
+  <div class="adm-shell">
+
+    <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item active" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ─────────────────────────────────────────────── -->
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Business /</span> <span>Boxing Gyms</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Boxing Gym Manager</h1>
+          <p class="adm-page-sub">복싱장 검색 API 테스트 · 관심 체육관 통계</p>
+        </div>
+        <a class="adm-btn-ghost" href="../boxing-gyms.html" target="_blank">사용자 화면 열기 ↗</a>
+      </div>
+
+      <!-- 통계 -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">STATS</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="gym-stats-grid">
+          <div class="gym-stat-card">
+            <div class="gym-stat-label">총 관심 저장</div>
+            <div class="gym-stat-value ice" id="statTotal">—</div>
+          </div>
+          <div class="gym-stat-card">
+            <div class="gym-stat-label">오늘 검색 (API)</div>
+            <div class="gym-stat-value" id="statToday">—</div>
+          </div>
+          <div class="gym-stat-card">
+            <div class="gym-stat-label">주요 검색어</div>
+            <div class="gym-stat-value" id="statTopQuery" style="font-size:1rem;padding-top:6px;color:var(--t2)">복싱장</div>
+          </div>
+          <div class="gym-stat-card">
+            <div class="gym-stat-label">관심 저장 사용자</div>
+            <div class="gym-stat-value" id="statUsers">—</div>
+          </div>
+        </div>
+        <p style="font-size:0.7rem;color:var(--t4);margin:8px 0 0">관리자 집계 API: <code style="color:var(--ice);font-size:0.75rem">GET /api/admin/gyms/favorites</code></p>
+      </section>
+
+      <!-- 검색 테스트 -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">API 검색 테스트</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="adm-panel">
+          <div class="gym-search-row">
+            <input class="adm-input" id="searchQuery" type="text" value="복싱장" placeholder="검색어" style="max-width:160px">
+            <input class="adm-input" id="searchLat" type="text" value="37.5665" placeholder="위도" style="max-width:110px">
+            <input class="adm-input" id="searchLng" type="text" value="126.9780" placeholder="경도" style="max-width:110px">
+            <button class="adm-btn-primary" id="btnSearch" type="button">검색 실행</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:0.68rem;color:var(--t4);font-weight:700;text-transform:uppercase;letter-spacing:0.1em">반경</span>
+            <div class="gym-radius-group" id="radiusGroup">
+              <button class="btn-radius" data-radius="1000">1km</button>
+              <button class="btn-radius active" data-radius="3000">3km</button>
+              <button class="btn-radius" data-radius="5000">5km</button>
+              <button class="btn-radius" data-radius="10000">10km</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="adm-loading" id="searchLoading" hidden>
+          <div class="adm-spinner"></div>
+          <span>검색 중...</span>
+        </div>
+
+        <div id="searchResultWrap" hidden>
+          <p class="gym-result-meta" id="resultMeta"></p>
+          <div class="adm-table-wrap" style="margin-top:8px">
+            <table class="adm-table" id="resultTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>이름</th>
+                  <th>도로명 주소</th>
+                  <th>전화</th>
+                  <th>거리</th>
+                  <th>ID</th>
+                  <th>링크</th>
+                </tr>
+              </thead>
+              <tbody id="resultTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="adm-panel" id="searchError" hidden style="border-color:rgba(232,0,13,0.2);background:rgba(232,0,13,0.04);margin-top:8px">
+          <span style="font-size:0.82rem;color:var(--red)" id="searchErrorMsg"></span>
+        </div>
+      </section>
+
+      <!-- 관심 체육관 집계 -->
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">관심 체육관 저장 현황</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot live">LIVE</span>
+        </div>
+        <div class="adm-panel" id="favoriteError" hidden style="border-color:rgba(232,0,13,0.2);background:rgba(232,0,13,0.04);margin-bottom:10px">
+          <span style="font-size:0.82rem;color:var(--red)" id="favoriteErrorMsg"></span>
+        </div>
+
+        <div class="adm-loading" id="favoriteLoading">
+          <div class="adm-spinner"></div>
+          <span>관심 체육관 집계를 불러오는 중입니다.</span>
+        </div>
+
+        <div id="favoriteOverview" hidden>
+          <div class="adm-section-header" style="margin-top:4px">
+            <span class="adm-section-label">인기 체육관 순위</span>
+            <div class="adm-section-line"></div>
+          </div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>체육관</th><th>주소</th><th>저장 수</th><th>최근 저장</th><th>링크</th>
+                </tr>
+              </thead>
+              <tbody id="topGymsTbody"></tbody>
+            </table>
+          </div>
+          <div class="gym-empty" id="topGymsEmpty" hidden>아직 저장된 관심 체육관이 없습니다.</div>
+
+          <div class="adm-section-header" style="margin-top:18px">
+            <span class="adm-section-label">지역별 분포</span>
+            <div class="adm-section-line"></div>
+          </div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead><tr><th>지역</th><th>저장 수</th></tr></thead>
+              <tbody id="regionTbody"></tbody>
+            </table>
+          </div>
+          <div class="gym-empty" id="regionEmpty" hidden>지역 통계 데이터가 없습니다.</div>
+
+          <div class="adm-section-header" style="margin-top:18px">
+            <span class="adm-section-label">최근 저장 내역</span>
+            <div class="adm-section-line"></div>
+          </div>
+          <div class="adm-table-wrap">
+            <table class="adm-table">
+              <thead>
+                <tr><th>사용자</th><th>이메일</th><th>체육관</th><th>주소</th><th>저장일</th></tr>
+              </thead>
+              <tbody id="recentTbody"></tbody>
+            </table>
+          </div>
+          <div class="gym-empty" id="recentEmpty" hidden>최근 저장 내역이 없습니다.</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module" src="../js/pages/admin-gyms.js">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    let selectedRadius = 3000;
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[ch]));
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    function renderEmpty(id, show) {
+      const el = document.getElementById(id);
+      if (el) el.hidden = !show;
+    }
+
+    function renderFavoriteOverview(data) {
+      const metrics = data.metrics || {};
+      document.getElementById('statTotal').textContent = (metrics.total_favorites ?? 0).toLocaleString();
+      document.getElementById('statToday').textContent = (metrics.today_favorites ?? 0).toLocaleString();
+      document.getElementById('statTopQuery').textContent = `${(metrics.unique_gyms ?? 0).toLocaleString()}개 체육관`;
+      document.getElementById('statUsers').textContent = (metrics.users_with_favorites ?? 0).toLocaleString();
+
+      const topGyms = data.top_gyms || [];
+      const topBody = document.getElementById('topGymsTbody');
+      topBody.innerHTML = topGyms.map((gym, index) => {
+        const address = gym.road_address || gym.address || '—';
+        const link = gym.place_url
+          ? `<a href="${esc(gym.place_url)}" target="_blank" rel="noopener" style="color:var(--ice);font-size:0.72rem">카카오맵 ↗</a>`
+          : '—';
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td style="font-weight:800;color:var(--t1)">${esc(gym.name)}</td>
+            <td>${esc(address)}</td>
+            <td style="color:var(--ice);font-weight:800">${Number(gym.favorite_count || 0).toLocaleString()}</td>
+            <td>${formatDate(gym.last_saved_at)}</td>
+            <td>${link}</td>
+          </tr>
+        `;
+      }).join('');
+      renderEmpty('topGymsEmpty', topGyms.length === 0);
+
+      const regions = data.regions || [];
+      document.getElementById('regionTbody').innerHTML = regions.map(row => `
+        <tr>
+          <td style="font-weight:800;color:var(--t1)">${esc(row.region)}</td>
+          <td style="color:var(--ice);font-weight:800">${Number(row.favorite_count || 0).toLocaleString()}</td>
+        </tr>
+      `).join('');
+      renderEmpty('regionEmpty', regions.length === 0);
+
+      const recent = data.recent_favorites || [];
+      document.getElementById('recentTbody').innerHTML = recent.map(row => `
+        <tr>
+          <td style="font-weight:800;color:var(--t1)">${esc(row.username)}</td>
+          <td>${esc(row.email)}</td>
+          <td>${esc(row.name)}</td>
+          <td>${esc(row.road_address || row.address || '—')}</td>
+          <td>${formatDate(row.saved_at)}</td>
+        </tr>
+      `).join('');
+      renderEmpty('recentEmpty', recent.length === 0);
+    }
+
+    async function loadFavoriteOverview() {
+      document.getElementById('favoriteLoading').hidden = false;
+      document.getElementById('favoriteOverview').hidden = true;
+      document.getElementById('favoriteError').hidden = true;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/gyms/favorites`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        renderFavoriteOverview(data);
+        document.getElementById('favoriteOverview').hidden = false;
+      } catch (err) {
+        document.getElementById('favoriteErrorMsg').textContent = `관심 체육관 집계 로드 실패 (${err.message})`;
+        document.getElementById('favoriteError').hidden = false;
+      } finally {
+        document.getElementById('favoriteLoading').hidden = true;
+      }
+    }
+
+    // 반경 버튼
+    document.getElementById('radiusGroup')?.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-radius');
+      if (!btn) return;
+      document.querySelectorAll('.btn-radius').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedRadius = Number(btn.dataset.radius);
+    });
+
+    // 검색 실행
+    async function runSearch() {
+      const query = document.getElementById('searchQuery')?.value.trim() || '복싱장';
+      const lat   = parseFloat(document.getElementById('searchLat')?.value) || 37.5665;
+      const lng   = parseFloat(document.getElementById('searchLng')?.value) || 126.9780;
+
+      document.getElementById('searchLoading').hidden = false;
+      document.getElementById('searchResultWrap').hidden = true;
+      document.getElementById('searchError').hidden = true;
+
+      try {
+        const params = new URLSearchParams({ query, lat, lng, radius_m: selectedRadius, provider: 'kakao' });
+        const res = await fetch(`${API_BASE_URL}/api/boxing-gyms/nearby?${params}`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        const items = data.items ?? [];
+        const tbody = document.getElementById('resultTbody');
+        tbody.innerHTML = '';
+        items.forEach((gym, i) => {
+          const tr = document.createElement('tr');
+          const dist = gym.distance_m < 1000
+            ? `${gym.distance_m}m`
+            : `${(gym.distance_m/1000).toFixed(1)}km`;
+          const link = gym.place_url
+            ? `<a href="${gym.place_url}" target="_blank" rel="noopener" style="color:var(--ice);font-size:0.72rem">카카오맵 ↗</a>`
+            : '—';
+          tr.innerHTML = `
+            <td>${i+1}</td>
+            <td style="font-weight:700;color:var(--t1);max-width:160px;overflow:hidden;text-overflow:ellipsis">${gym.name}</td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis">${gym.road_address || gym.address || '—'}</td>
+            <td>${gym.phone || '—'}</td>
+            <td style="color:var(--ice)">${dist}</td>
+            <td style="font-size:0.68rem;color:var(--t4)">${gym.id}</td>
+            <td>${link}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const meta = document.getElementById('resultMeta');
+        meta.textContent = `${items.length}개 결과 · "${query}" · 반경 ${selectedRadius/1000}km · lat:${lat} lng:${lng}`;
+        document.getElementById('searchResultWrap').hidden = false;
+
+      } catch (err) {
+        const errEl = document.getElementById('searchError');
+        document.getElementById('searchErrorMsg').textContent = `검색 오류: ${err.message}`;
+        errEl.hidden = false;
+      } finally {
+        document.getElementById('searchLoading').hidden = true;
+      }
+    }
+
+    document.getElementById('btnSearch')?.addEventListener('click', runSearch);
+    document.getElementById('searchQuery')?.addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+
+    // Shell 초기화 (auth 체크)
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdminShell()
+        .then(user => { if (user) loadFavoriteOverview(); })
+        .catch(() => { window.location.href = '../login.html'; });
+    });
+  </script>
+
+</body>
+</html>

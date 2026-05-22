@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 400 500" height="500" width="400">
+  <defs><filter height="300%" width="300%" y="-100%" x="-100%" id="neon"><feGaussianBlur result="blur1" stdDeviation="6" in="SourceGraphic"></feGaussianBlur><feGaussianBlur result="blur2" stdDeviation="12" in="SourceGraphic"></feGaussianBlur><feGaussianBlur result="blur3" stdDeviation="18" in="SourceGraphic"></feGaussianBlur><feMerge><feMergeNode in="blur3"></feMergeNode><feMergeNode in="blur2"></feMergeNode><feMergeNode in="blur1"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs>
+  <g filter="url(#neon)">
+    <path stroke-width="21" stroke="#FF1E1E" fill="none" d="M205 95 Q165 65 135 95 Q150 165 175 200 Q145 255 165 320 Q190 395 235 440 Q280 420 300 355 Q315 255 280 190"></path>
+    <ellipse stroke-width="19" stroke="#FF1E1E" fill="none" ry="45" rx="37" cy="95" cx="200"></ellipse>
+    
+    <path stroke-linecap="round" stroke-width="24" stroke="#FF1E1E" fill="none" d="M175 200 Q195 255 225 145 Q245 115 265 150"></path>
+    <path stroke-width="9" stroke="#FFFFFF" fill="none" d="M205 95 Q165 65 135 95 Q150 165 175 200 Q145 255 165 320 Q190 395 235 440 Q280 420 300 355 Q315 255 280 190"></path>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 400 500" height="500" width="400">
+  <path fill="#111111" d="M205 80 Q165 50 140 90 Q155 170 185 195 Q130 230 135 280 Q165 370 210 430 Q255 410 280 340 Q320 250 295 195"></path>
+  
+  <path stroke-linecap="round" stroke-width="50" stroke="#111111" fill="none" d="M185 195 Q220 175 295 215 Q320 245 305 280"></path>
+  
+  <path stroke-dasharray="8,4" stroke-width="6" stroke="#FF1E1E" fill="none" d="M190 195 Q240 165 295 215"></path>
+</svg>

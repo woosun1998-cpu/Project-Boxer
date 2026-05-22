@@ -1,0 +1,69 @@
+.env
+backend/.env
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+.DS_Store
+node_modules/
+*.log
+.claude/
+
+# 대용량 튜토리얼 영상 (로컬 전용)
+frontend/assets/videos/라이트모드.mp4
+frontend/assets/videos/스탠다드모드.mp4
+frontend/assets/videos/인탠스모드.mp4
+
+# 스파링·튜토리얼 대용량 영상 (로컬 전용 — GitHub 단일 파일·LFS 한도 회피)
+# 한글 등 파일명 glob 이슈 회피: 폴더 전체 무시 후 .gitkeep만 예외
+frontend/video/**
+!frontend/video/
+!frontend/video/.gitkeep
+/video/
+
+# Roboflow 등 대용량 다운로드
+dataset/_roboflow/
+
+# 학습·실험 산출 (Ultralytics runs, 로그, 플롯) — dataset 아래로 통합
+dataset/runs/
+wandb/
+
+# 모델 가중치·백업 (용량 큼 — 필요 시 릴리스·드라이브로 공유)
+dataset/model_backups/
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+*.mlmodel
+
+# YOLO/데이터 로더 캐시
+*.cache
+
+# 통합 학습용 이미지·라벨 (팀에서 데이터까지 Git에 넣을 때는 아래 두 줄 주석 처리)
+dataset/images/
+dataset/labels/
+
+# Roboflow 경로 기록(로컬 절대경로)
+dataset/.roboflow_bottle_root.txt
+
+# 임시·삭제 대기 백업
+_safe_delete_backups/
+
+# 로컬에만 두는 Roboflow/원본 데이터셋 폴더(필요 시 주석 해제 후 추가)
+bag-1/
+# Chair-Detection-1/
+# desk-1/
+# Toy-Model-1/
+# box-detection-1/
+
+# 테스트·커버리지
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+Thumbs.db
+Desktop.ini

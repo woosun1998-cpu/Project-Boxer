@@ -1,0 +1,12 @@
+names:
+- box
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: box-detection-lnrli
+  url: https://universe.roboflow.com/jayita-maiti/box-detection-lnrli/dataset/1
+  version: 1
+  workspace: jayita-maiti
+test: ../test/images
+train: ../train/images
+val: ../valid/images

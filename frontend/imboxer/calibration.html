@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | Calibration Lab</title>
+  <link rel="stylesheet" href="./css/common.css">
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top, rgba(255, 106, 0, 0.08), transparent 42%),
+        linear-gradient(180deg, #06101f 0%, #050914 55%, #04070d 100%);
+    }
+
+    .cal-wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding-bottom: 28px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--card-2);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .cal-header-left {
+      display: grid;
+      gap: 8px;
+      min-width: 280px;
+    }
+
+    .cal-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--warm);
+    }
+
+    .cal-kicker::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(255, 106, 0, 0.55);
+    }
+
+    .cal-header h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.2vw, 2rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .cal-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .cal-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .cal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .cal-badge strong {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .cal-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .cal-col {
+      display: grid;
+      gap: 14px;
+    }
+
+    .cal-secondary-grid {
+      grid-template-columns: minmax(300px, 0.7fr) minmax(420px, 1.3fr);
+      align-items: start;
+    }
+
+    .cal-secondary-grid > .cal-card:nth-child(2),
+    .cal-secondary-grid > .cal-card:nth-child(3) {
+      display: none;
+    }
+
+    .cal-secondary-grid > .cal-card:nth-child(4) {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+
+    .cal-secondary-grid > .cal-card:nth-child(5) {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .cal-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--card-2);
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .cal-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .cal-card-title {
+      display: grid;
+      gap: 3px;
+    }
+
+    .cal-card-title strong {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .cal-card-title span {
+      font-size: 0.77rem;
+      color: var(--muted);
+    }
+
+    .cal-chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .cal-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .cal-chip[data-active="true"] {
+      color: var(--warm);
+      border-color: rgba(255, 154, 61, 0.35);
+      background: rgba(255, 154, 61, 0.08);
+    }
+
+    .cal-controls {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .cal-field-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cal-clip-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cal-clip-label-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cal-time-group {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .cal-time-group > label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .cal-time-inputs {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .cal-time-inputs .cal-field {
+      gap: 5px;
+    }
+
+    .cal-time-inputs .cal-field label {
+      font-size: 0.66rem;
+    }
+
+    .cal-progress {
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .cal-progress-track {
+      position: relative;
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .cal-progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff6a00, #ffcc66, #61d095);
+      transition: width 0.25s ease;
+    }
+
+    .cal-progress[data-active="true"] .cal-progress-fill {
+      box-shadow: 0 0 16px rgba(255, 154, 61, 0.45);
+    }
+
+    .cal-progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .cal-field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .cal-field label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .cal-field select,
+    .cal-field input[type="range"],
+    .cal-field input[type="text"],
+    .cal-field input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 11px 12px;
+      font: inherit;
+    }
+
+    .cal-field input[type="range"] {
+      padding: 12px 0;
+    }
+
+    .cal-field select:focus,
+    .cal-field input:focus {
+      outline: none;
+      border-color: rgba(255, 154, 61, 0.45);
+      box-shadow: 0 0 0 3px rgba(255, 154, 61, 0.12);
+    }
+
+    .cal-mode-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cal-mode-btn,
+    .cal-action-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 11px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+    }
+
+    .cal-mode-btn:hover,
+    .cal-action-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 154, 61, 0.38);
+    }
+
+    .cal-mode-btn[data-active="true"] {
+      background: rgba(255, 154, 61, 0.12);
+      border-color: rgba(255, 154, 61, 0.45);
+      color: var(--warm);
+    }
+
+    .cal-mode-btn[disabled] {
+      opacity: 0.46;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .cal-action-btn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .cal-action-btn[data-applied="true"] {
+      border-color: rgba(97, 208, 149, 0.42);
+      background: rgba(97, 208, 149, 0.1);
+      color: #87f0b8;
+    }
+
+    .cal-action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cal-action-group {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      gap: 10px;
+    }
+
+    .cal-playback-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px 0;
+    }
+
+    .cal-playback-bar .cal-field {
+      min-width: 160px;
+      max-width: 220px;
+    }
+
+    .cal-capture-box {
+      display: grid;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 154, 61, 0.22);
+      background: rgba(255, 154, 61, 0.06);
+    }
+
+    .cal-capture-box strong {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .cal-capture-box span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .cal-capture-meter {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 10px;
+    }
+
+    .cal-capture-countdown {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--warm);
+      letter-spacing: -0.03em;
+    }
+
+    .cal-action-btn[data-capture-active="true"] {
+      border-color: rgba(255, 154, 61, 0.6);
+      box-shadow: 0 0 0 3px rgba(255, 154, 61, 0.12);
+    }
+
+    .cal-action-btn.primary {
+      background: linear-gradient(135deg, rgba(255, 106, 0, 0.9), rgba(255, 154, 61, 0.85));
+      color: #fff;
+      border-color: rgba(255, 154, 61, 0.3);
+    }
+
+    .cal-action-btn.danger {
+      color: var(--danger);
+      border-color: rgba(255, 107, 107, 0.28);
+    }
+
+    .cal-action-btn.danger:hover {
+      background: rgba(255, 107, 107, 0.08);
+    }
+
+    .cal-stage {
+      position: relative;
+      min-height: 0;
+      background: #050a14;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .cal-stage-grid {
+      display: grid;
+      grid-template-columns: minmax(380px, 0.7fr) minmax(560px, 0.9fr);
+      gap: 14px;
+      padding: 14px;
+      align-items: start;
+    }
+
+    .cal-video-column {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      min-width: 0;
+    }
+
+    .cal-workbench-side {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.75fr) minmax(300px, 1.25fr);
+      gap: 10px;
+      align-content: start;
+      min-width: 0;
+    }
+
+    .cal-workbench-side .cal-debug-shell {
+      grid-column: 1 / -1;
+    }
+
+    .cal-reference-card {
+      grid-column: 1 / -1;
+    }
+
+    .cal-reference-card .cal-panel {
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      align-items: start;
+    }
+
+    .cal-reference-card .cal-empty {
+      min-height: 100%;
+    }
+
+    .cal-video-column .cal-reference-card .cal-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .cal-workbench-side .cal-debug-shell > .cal-empty {
+      display: none;
+    }
+
+    .cal-video-shell,
+    .cal-debug-shell {
+      position: relative;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .cal-video-shell {
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      background: #0a0d12;
+      aspect-ratio: 4 / 5;
+      min-height: 520px;
+      max-height: 680px;
+    }
+
+    .cal-video-shell video,
+    .cal-video-shell canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cal-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .cal-placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .cal-placeholder strong {
+      display: block;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .cal-placeholder span {
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .cal-debug-shell {
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      min-height: 0;
+    }
+
+    .cal-workbench-side .cal-card {
+      border-radius: 16px;
+      box-shadow: none;
+    }
+
+    .cal-workbench-side .cal-card-head {
+      padding: 10px 12px;
+    }
+
+    .cal-workbench-side .cal-panel {
+      padding: 10px 12px 12px;
+    }
+
+    .cal-workbench-side .cal-list.failure-list,
+    .cal-workbench-side .cal-threshold-grid {
+      max-height: none;
+      overflow: visible;
+      padding-right: 4px;
+    }
+
+    .cal-workbench-side .cal-threshold-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cal-debug-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .cal-debug-title strong {
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .cal-mini-status {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      white-space: nowrap;
+    }
+
+    .cal-pass-banner {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0;
+      padding: 9px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .cal-pass-banner[data-state="success"] {
+      border-color: rgba(97, 208, 149, 0.45);
+      background: rgba(97, 208, 149, 0.12);
+      box-shadow: 0 0 0 1px rgba(97, 208, 149, 0.14) inset;
+    }
+
+    .cal-pass-banner[data-state="fail"] {
+      border-color: rgba(255, 107, 107, 0.42);
+      background: rgba(255, 107, 107, 0.1);
+      box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.12) inset;
+    }
+
+    .cal-pass-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: fit-content;
+      color: #f8fafc;
+      background: rgba(148, 163, 184, 0.24);
+    }
+
+    .cal-pass-banner[data-state="success"] .cal-pass-badge {
+      background: rgba(97, 208, 149, 0.92);
+      color: #04150c;
+    }
+
+    .cal-pass-banner[data-state="fail"] .cal-pass-badge {
+      background: rgba(255, 107, 107, 0.92);
+      color: #210606;
+    }
+
+    .cal-pass-note {
+      font-size: 0.76rem;
+      line-height: 1.35;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .cal-score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .cal-score {
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      display: grid;
+      gap: 5px;
+    }
+
+    .cal-score label {
+      font-size: 0.56rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .cal-score strong {
+      font-size: 1.02rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .cal-section {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cal-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cal-section-head strong {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--warm);
+    }
+
+    .cal-panel {
+      padding: 14px 16px 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .cal-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .cal-list li {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      font-size: 0.78rem;
+      color: var(--text);
+    }
+
+    .cal-list li span {
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .cal-list.compact li {
+      align-items: center;
+    }
+
+    .cal-list.failure-list li {
+      display: grid;
+      gap: 5px;
+      align-items: start;
+      justify-content: stretch;
+    }
+
+    .cal-list.failure-list li strong {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .cal-list.failure-list li span {
+      display: block;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
+    }
+
+    .cal-list.recommendation-list li {
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .cal-list.recommendation-list li strong {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .cal-list.recommendation-list .recommendation-meta {
+      display: block;
+      color: rgba(226, 232, 240, 0.68);
+      font-weight: 500;
+      font-size: 0.73rem;
+      line-height: 1.28;
+      letter-spacing: 0.01em;
+      white-space: normal;
+    }
+
+    .cal-note {
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .cal-log-browser {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.9fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .cal-log-list {
+      display: grid;
+      gap: 10px;
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .cal-log-item {
+      display: grid;
+      grid-template-columns: 68px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      text-align: left;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .cal-log-item[data-active="true"] {
+      border-color: rgba(255, 154, 61, 0.55);
+      box-shadow: 0 0 0 3px rgba(255, 154, 61, 0.1);
+    }
+
+    .cal-log-item[data-label="correct"] {
+      border-color: rgba(97, 208, 149, 0.28);
+    }
+
+    .cal-log-item[data-label="incorrect"] {
+      border-color: rgba(255, 107, 107, 0.28);
+    }
+
+    .cal-log-item[data-label="correct"] .cal-mini-status {
+      color: #87f0b8;
+    }
+
+    .cal-log-item[data-label="incorrect"] .cal-mini-status {
+      color: #ff9a9a;
+    }
+
+    .cal-log-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .cal-log-meta {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .cal-log-meta strong {
+      font-size: 0.92rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cal-log-meta span {
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.4;
+    }
+
+    .cal-log-actions {
+      display: grid;
+      gap: 6px;
+      justify-items: end;
+    }
+
+    .cal-log-detail {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .cal-log-detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cal-log-nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cal-log-detail-body {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cal-log-detail[hidden] {
+      display: none;
+    }
+
+    .cal-filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cal-filter-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .cal-filter-btn[data-active="true"] {
+      color: var(--text);
+      border-color: rgba(255, 154, 61, 0.42);
+      background: rgba(255, 154, 61, 0.12);
+    }
+
+    .cal-detail-toggle {
+      margin-left: auto;
+    }
+
+    .cal-log-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .cal-log-column {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      min-width: 0;
+    }
+
+    .cal-log-column-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cal-log-column-head strong {
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .cal-log-column-head span {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    .cal-log-column-list {
+      display: grid;
+      gap: 8px;
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .cal-log-item-compare {
+      grid-template-columns: 56px minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .cal-log-item-compare .cal-log-thumb {
+      width: 56px;
+      height: 56px;
+    }
+
+    .cal-log-item-compare .cal-log-actions {
+      grid-column: 1 / -1;
+      justify-items: stretch;
+    }
+
+    .cal-log-detail img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .cal-log-detail pre {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .cal-log-detail-empty {
+      padding: 18px 14px;
+      border-radius: 14px;
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    .cal-threshold-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .cal-threshold-item {
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      display: grid;
+      gap: 4px;
+    }
+
+    .cal-threshold-item label {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      text-transform: none;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .cal-threshold-item input {
+      width: 100%;
+    }
+
+    .cal-threshold-item small {
+      color: var(--muted);
+      font-size: 0.64rem;
+      line-height: 1.3;
+    }
+
+    .cal-empty {
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.6;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .cal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+
+    .cal-footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1080px) {
+      .cal-stage-grid,
+      .cal-secondary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cal-workbench-side {
+        grid-template-columns: 1fr;
+      }
+
+      .cal-reference-card .cal-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .cal-secondary-grid > .cal-card:nth-child(4),
+      .cal-secondary-grid > .cal-card:nth-child(5) {
+        grid-column: auto;
+        grid-row: auto;
+      }
+
+      .cal-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .cal-header {
+        padding: 16px;
+      }
+
+      .cal-field-grid,
+      .cal-clip-grid,
+      .cal-time-inputs,
+      .cal-threshold-grid,
+      .cal-score-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cal-stage {
+        min-height: auto;
+      }
+
+      .cal-video-shell,
+      .cal-debug-shell {
+        min-height: 300px;
+      }
+
+      .cal-video-shell {
+        max-height: none;
+      }
+
+      .cal-footer {
+        align-items: flex-start;
+      }
+
+      .cal-action-group {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body data-page="calibration">
+  <main class="page-shell cal-wrap">
+    <section class="cal-header">
+      <div class="cal-header-left">
+        <div class="cal-kicker">IM_BOXER Calibration Lab</div>
+        <h1>동작 기준값을 테스트하고 조정하는 개발자용 화면</h1>
+        <p>훈련 본체와 분리된 보정 실험실입니다. 실제 pose 샘플만 수집하고, 추천 threshold는 적용 버튼을 눌렀을 때만 반영합니다.</p>
+      </div>
+
+      <div class="cal-badges" aria-label="Calibration badges">
+        <div class="cal-badge">Mode <strong data-calibration-mode-badge>webcam</strong></div>
+        <div class="cal-badge">Lesson <strong data-calibration-lesson-badge>beginner-basic-guard</strong></div>
+        <div class="cal-badge">Samples <strong data-calibration-sample-badge>0</strong></div>
+      </div>
+    </section>
+
+    <section class="cal-layout">
+      <div class="cal-col">
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Calibration Control</strong>
+              <span>레슨 선택, 입력 모드, 샘플 수집, threshold 적용</span>
+            </div>
+            <div class="cal-chip-row">
+              <span class="cal-chip" data-active="true" data-mode-chip="webcam">webcam</span>
+              <span class="cal-chip" data-active="false" data-mode-chip="correct-video">correct-video</span>
+              <span class="cal-chip" data-active="false" data-mode-chip="incorrect-video">incorrect-video</span>
+            </div>
+          </div>
+
+          <div class="cal-controls">
+            <div class="cal-field-grid">
+              <div class="cal-field">
+                <label for="cal-lesson-select">Lesson</label>
+                <select id="cal-lesson-select" data-cal-lesson-select>
+                  <option value="beginner-basic-guard">beginner-basic-guard</option>
+                  <option value="jab">jab</option>
+                  <option value="cross">cross</option>
+                  <option value="left-hook">left-hook</option>
+                  <option value="slip">slip</option>
+                  <option value="uppercut">uppercut</option>
+                </select>
+              </div>
+
+              <div class="cal-field">
+                <label for="cal-threshold-filter">Threshold Search</label>
+                <input id="cal-threshold-filter" type="number" min="0" step="0.01" value="0" data-cal-threshold-filter>
+              </div>
+            </div>
+
+            <div class="cal-section">
+              <div class="cal-section-head">
+                <strong>Input Mode</strong>
+                <span class="cal-mini-status" data-cal-mode-status>webcam ready</span>
+              </div>
+              <div class="cal-mode-row" role="tablist" aria-label="Calibration input mode">
+                <button type="button" class="cal-mode-btn" data-cal-mode-btn="webcam" data-active="true">webcam</button>
+                <button type="button" class="cal-mode-btn" data-cal-mode-btn="correct-video" data-active="false">correct-video</button>
+                <button type="button" class="cal-mode-btn" data-cal-mode-btn="incorrect-video" data-active="false">incorrect-video</button>
+              </div>
+            </div>
+
+            <div class="cal-action-row" aria-label="Capture controls">
+              <button type="button" class="cal-action-btn primary" data-cal-action="sample-correct">5초 뒤 correct 자동 저장</button>
+              <button type="button" class="cal-action-btn" data-cal-action="sample-incorrect">5초 뒤 incorrect 자동 저장</button>
+              <button type="button" class="cal-action-btn" data-cal-action="apply-threshold">추천값 적용</button>
+              <button type="button" class="cal-action-btn danger" data-cal-action="reset-lesson">현재 레슨 초기화</button>
+              <button type="button" class="cal-action-btn danger" data-cal-action="reset-all">전체 로그 초기화</button>
+            </div>
+            <div class="cal-capture-box">
+              <strong>자동 저장 안내</strong>
+              <span>버튼을 한 번만 누르면 준비 상태가 되고, 실제 자세가 잡히는 순간 5초 카운트다운이 시작됩니다. 카운트다운 중 자세가 끊기면 자동 취소됩니다.</span>
+              <div class="cal-capture-meter">
+                <span class="cal-mini-status" data-cal-capture-status>대기 중</span>
+                <span class="cal-capture-countdown" data-cal-capture-countdown>--</span>
+              </div>
+            </div>
+            <input
+              type="file"
+              accept="image/*,video/*"
+              hidden
+              data-cal-upload-input
+            >
+            <div class="cal-capture-box" style="margin-top: 10px;">
+              <strong>MP4/JPEG 생성</strong>
+              <span>업로드한 영상 또는 사용 권한이 있는 YouTube URL에서 구간 MP4를 만들고, 원하는 시점의 JPEG 프레임을 저장합니다.</span>
+              <div class="cal-field">
+                <label for="cal-youtube-url">YouTube URL</label>
+                <input id="cal-youtube-url" type="text" placeholder="https://www.youtube.com/watch?v=..." data-cal-youtube-url>
+              </div>
+              <div class="cal-clip-grid">
+                <div class="cal-time-group">
+                  <label>MP4 Start</label>
+                  <div class="cal-time-inputs">
+                    <div class="cal-field">
+                      <label for="cal-clip-start-min">Min</label>
+                      <input id="cal-clip-start-min" type="number" min="0" step="1" value="0" data-cal-time="clip-start-min">
+                    </div>
+                    <div class="cal-field">
+                      <label for="cal-clip-start-sec">Sec</label>
+                      <input id="cal-clip-start-sec" type="number" min="0" step="0.01" value="0" data-cal-time="clip-start-sec">
+                    </div>
+                  </div>
+                </div>
+                <div class="cal-time-group">
+                  <label>MP4 End</label>
+                  <div class="cal-time-inputs">
+                    <div class="cal-field">
+                      <label for="cal-clip-end-min">Min</label>
+                      <input id="cal-clip-end-min" type="number" min="0" step="1" value="0" data-cal-time="clip-end-min">
+                    </div>
+                    <div class="cal-field">
+                      <label for="cal-clip-end-sec">Sec</label>
+                      <input id="cal-clip-end-sec" type="number" min="0" step="0.01" value="0" data-cal-time="clip-end-sec">
+                    </div>
+                  </div>
+                </div>
+                <div class="cal-time-group">
+                  <label>JPEG Start Frame</label>
+                  <div class="cal-time-inputs">
+                    <div class="cal-field">
+                      <label for="cal-jpeg-start-min">Min</label>
+                      <input id="cal-jpeg-start-min" type="number" min="0" step="1" value="0" data-cal-time="jpeg-start-min">
+                    </div>
+                    <div class="cal-field">
+                      <label for="cal-jpeg-start-sec">Sec</label>
+                      <input id="cal-jpeg-start-sec" type="number" min="0" step="0.01" value="0" data-cal-time="jpeg-start-sec">
+                    </div>
+                  </div>
+                </div>
+                <div class="cal-time-group">
+                  <label>JPEG End Frame</label>
+                  <div class="cal-time-inputs">
+                    <div class="cal-field">
+                      <label for="cal-jpeg-end-min">Min</label>
+                      <input id="cal-jpeg-end-min" type="number" min="0" step="1" value="0" data-cal-time="jpeg-end-min">
+                    </div>
+                    <div class="cal-field">
+                      <label for="cal-jpeg-end-sec">Sec</label>
+                      <input id="cal-jpeg-end-sec" type="number" min="0" step="0.01" value="0" data-cal-time="jpeg-end-sec">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="cal-action-row">
+                <button type="button" class="cal-action-btn" data-cal-action="set-clip-start">현재 시간을 시작으로</button>
+                <button type="button" class="cal-action-btn" data-cal-action="set-clip-end">현재 시간을 끝으로</button>
+              </div>
+              <div class="cal-action-row">
+                <div class="cal-action-group">
+                  <button type="button" class="cal-action-btn primary" data-cal-action="create-clip">업로드 MP4 만들기</button>
+                  <button type="button" class="cal-action-btn" data-cal-action="create-upload-jpegs">업로드 JPEG 만들기</button>
+                </div>
+                <div class="cal-action-group">
+                  <button type="button" class="cal-action-btn primary" data-cal-action="create-youtube-mp4">YouTube MP4 만들기</button>
+                  <button type="button" class="cal-action-btn" data-cal-action="create-youtube-jpegs">YouTube JPEG 만들기</button>
+                </div>
+              </div>
+              <div class="cal-clip-label-row">
+                <div class="cal-field">
+                  <label for="cal-clip-label">Clip Label</label>
+                  <input id="cal-clip-label" type="text" value="calibration_clip" data-cal-clip-label>
+                </div>
+              </div>
+              <div class="cal-progress" data-cal-asset-progress data-active="false">
+                <div class="cal-progress-track">
+                  <div class="cal-progress-fill" data-cal-asset-progress-fill></div>
+                </div>
+                <div class="cal-progress-meta">
+                  <span data-cal-asset-progress-label>대기 중</span>
+                  <span data-cal-asset-progress-percent>0%</span>
+                </div>
+              </div>
+              <div class="cal-action-row">
+                <span class="cal-mini-status" data-cal-clip-status>업로드 MP4 대기 중</span>
+                <span class="cal-mini-status" data-cal-youtube-status>YouTube 대기 중</span>
+              </div>
+              <div class="cal-action-row">
+                <a class="cal-action-btn" data-cal-clip-download hidden href="#">생성된 업로드 MP4 없음</a>
+                <a class="cal-action-btn" data-cal-youtube-download hidden href="#">생성된 YouTube 파일 없음</a>
+              </div>
+            </div>
+            <div class="cal-note" style="margin-top: 10px;">
+              <strong>업로드 안내</strong><br>
+              사진이나 영상을 올리면 자세를 확인할 수 있어요.
+              <span class="cal-mini-status" data-cal-upload-name style="display:block; margin-top:4px;">파일 없음</span>
+              <span class="cal-mini-status" data-cal-upload-kind style="display:block; margin-top:4px;">구분 없음</span>
+              <span class="cal-mini-status" data-cal-upload-status style="display:block; margin-top:8px;">업로드 없음</span>
+            </div>
+            <div class="cal-action-row" style="margin-top: 10px;">
+              <button type="button" class="cal-action-btn" data-cal-action="pick-upload">사진/영상 올리기</button>
+              <button type="button" class="cal-action-btn" data-cal-action="clear-upload">업로드 초기화</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Video & Skeleton</strong>
+              <span>왼쪽은 영상, 오른쪽은 디버그 오버레이 및 정보 자리</span>
+            </div>
+            <div class="cal-chip-row">
+              <span class="cal-chip" data-active="true">Pose View</span>
+              <span class="cal-chip" data-active="false">Feature Debug</span>
+            </div>
+          </div>
+
+          <div class="cal-stage">
+            <div class="cal-playback-bar" aria-label="Video playback controls">
+              <button type="button" class="cal-action-btn" data-cal-action="video-play">재생</button>
+              <button type="button" class="cal-action-btn" data-cal-action="video-pause">일시정지</button>
+              <button type="button" class="cal-action-btn" data-cal-action="video-replay">처음부터 다시</button>
+              <div class="cal-field">
+                <label for="cal-playback-rate">Playback Speed</label>
+                <select id="cal-playback-rate" data-cal-playback-rate>
+                  <option value="0.25">0.25x</option>
+                  <option value="0.5">0.5x</option>
+                  <option value="0.75">0.75x</option>
+                  <option value="1" selected>1x</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                  <option value="2">2x</option>
+                </select>
+              </div>
+            </div>
+            <div class="cal-stage-grid">
+              <div class="cal-video-column">
+                <div class="cal-video-shell">
+                  <video data-cal-video playsinline muted controls></video>
+                  <canvas class="cal-overlay" data-cal-overlay></canvas>
+                  <canvas class="cal-overlay" data-cal-debug-overlay hidden></canvas>
+                  <div class="cal-placeholder" data-cal-placeholder>
+                    <div>
+                      <strong>Webcam / Video Preview</strong>
+                      <span>여기에 MediaPipe 포즈 영상이 표시됩니다. 아직 연결 전이면 calibration.js가 붙을 때까지 이 안내가 유지됩니다.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <article class="cal-card cal-reference-card">
+                  <div class="cal-card-head">
+                    <div class="cal-card-title">
+                      <strong>Default 기준 자세</strong>
+                      <span>기본 Threshold가 의도하는 좋은 동작</span>
+                    </div>
+                  </div>
+                  <div class="cal-panel" data-cal-reference-guide>
+                    <div class="cal-empty">레슨을 선택하면 기본 기준 자세가 표시됩니다.</div>
+                  </div>
+                </article>
+              </div>
+
+              <div class="cal-workbench-side">
+              <aside class="cal-debug-shell">
+                <div class="cal-debug-title">
+                  <strong>Live Metrics</strong>
+                  <span class="cal-mini-status" data-cal-source-status>source: idle</span>
+                </div>
+
+                <div class="cal-pass-banner" data-cal-pass-banner data-state="idle">
+                  <div class="cal-pass-badge" data-cal-pass-badge>READY</div>
+                  <div class="cal-pass-note" data-cal-pass-note>
+                    자세가 들어오면 success / fail 상태를 여기서 바로 보여줍니다.
+                  </div>
+                </div>
+
+                <div class="cal-score-grid">
+                  <div class="cal-score">
+                    <label>accuracy</label>
+                    <strong data-cal-metric="accuracy">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>scoreDelta</label>
+                    <strong data-cal-metric="scoreDelta">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>postureScore</label>
+                    <strong data-cal-metric="postureScore">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>guardScore</label>
+                    <strong data-cal-metric="guardScore">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>balanceScore</label>
+                    <strong data-cal-metric="balanceScore">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>reactionScore</label>
+                    <strong data-cal-metric="reactionScore">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>combo</label>
+                    <strong data-cal-metric="combo">--</strong>
+                  </div>
+                  <div class="cal-score">
+                    <label>hp</label>
+                    <strong data-cal-metric="hp">--</strong>
+                  </div>
+                </div>
+
+                <div class="cal-empty">
+                  <strong>Debug fields</strong><br>
+                  mode, source, isRealPose, current threshold, feature snapshot, recommendation summary를 이 패널에서 확인합니다.
+                </div>
+              </aside>
+
+                <article class="cal-card">
+                  <div class="cal-card-head">
+                    <div class="cal-card-title">
+                      <strong>Failure Feedback</strong>
+                      <span>Why the current pose is failing thresholds</span>
+                    </div>
+                    <button type="button" class="cal-action-btn" data-cal-action="toggle-failure-lock">피드백 고정</button>
+                  </div>
+                  <div class="cal-panel">
+                    <div class="cal-empty" data-cal-failure-empty>
+                      No failure reason yet. Once a pose is detected, the unmet checks will appear here.
+                    </div>
+                    <ul class="cal-list failure-list" data-cal-failure-list hidden></ul>
+                  </div>
+                </article>
+
+                <article class="cal-card">
+                  <div class="cal-card-head">
+                    <div class="cal-card-title">
+                      <strong>Thresholds</strong>
+                      <span>Adjust lesson thresholds beside the video</span>
+                    </div>
+                  </div>
+                  <div class="cal-panel">
+                    <div class="cal-threshold-grid" data-cal-threshold-grid>
+                      <div class="cal-empty">threshold inputs will render here</div>
+                    </div>
+                    <div class="cal-action-row">
+                      <button type="button" class="cal-action-btn primary" data-cal-action="save-thresholds">Save</button>
+                      <button type="button" class="cal-action-btn" data-cal-action="reset-thresholds">Reset defaults</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="cal-col cal-secondary-grid">
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Feature Snapshot</strong>
+              <span>Current lesson feature values</span>
+            </div>
+          </div>
+          <div class="cal-panel">
+            <div class="cal-empty" data-cal-features-empty>
+              아직 feature 데이터가 없습니다. pose가 들어오면 feature key/value가 표시됩니다.
+            </div>
+            <ul class="cal-list compact" data-cal-features-list hidden></ul>
+          </div>
+        </article>
+
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Failure Feedback</strong>
+              <span>Why the current pose is failing thresholds</span>
+            </div>
+          </div>
+          <div class="cal-panel">
+            <div class="cal-empty" data-cal-failure-empty>
+              No failure reason yet. Once a pose is detected, the unmet checks will appear here.
+            </div>
+            <ul class="cal-list failure-list" data-cal-failure-list hidden></ul>
+          </div>
+        </article>
+
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Thresholds</strong>
+              <span>레슨별 기준값을 확인하고 수동으로 조정합니다</span>
+            </div>
+          </div>
+          <div class="cal-panel">
+            <div class="cal-threshold-grid" data-cal-threshold-grid>
+              <div class="cal-empty">threshold inputs will render here</div>
+            </div>
+            <div class="cal-action-row">
+              <button type="button" class="cal-action-btn primary" data-cal-action="save-thresholds">저장</button>
+              <button type="button" class="cal-action-btn" data-cal-action="reset-thresholds">기본값 복구</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Accuracy Log</strong>
+              <span>correct / incorrect 샘플 누적 상태를 확인합니다</span>
+            </div>
+          </div>
+          <div class="cal-panel">
+            <ul class="cal-list">
+              <li>Correct samples <span data-cal-log-count="correct">0</span></li>
+              <li>Incorrect samples <span data-cal-log-count="incorrect">0</span></li>
+              <li>Total samples <span data-cal-log-count="total">0</span></li>
+            </ul>
+            <div class="cal-action-row">
+              <button type="button" class="cal-action-btn" data-cal-action="show-recommendations">추천값 보기</button>
+              <button type="button" class="cal-action-btn danger" data-cal-action="clear-current-logs">현재 레슨 로그 초기화</button>
+              <button type="button" class="cal-action-btn danger" data-cal-action="clear-all-logs">전체 로그 초기화</button>
+            </div>
+            <div class="cal-filter-row" aria-label="log filters">
+              <button type="button" class="cal-filter-btn" data-cal-filter="all" data-active="true">전체</button>
+              <button type="button" class="cal-filter-btn" data-cal-filter="correct">correct</button>
+              <button type="button" class="cal-filter-btn" data-cal-filter="incorrect">incorrect</button>
+              <button type="button" class="cal-filter-btn" data-cal-action="toggle-log-sort" data-active="false">최신순</button>
+              <button type="button" class="cal-filter-btn" data-cal-action="toggle-compare-view" data-active="false">비교 보기</button>
+              <button type="button" class="cal-filter-btn cal-detail-toggle" data-cal-action="toggle-log-detail" data-active="true">상세 접기</button>
+            </div>
+            <div class="cal-log-compare" data-cal-log-compare hidden>
+              <section class="cal-log-column">
+                <div class="cal-log-column-head">
+                  <strong>correct</strong>
+                  <span data-cal-compare-count="correct">0</span>
+                </div>
+                <div class="cal-log-column-list" data-cal-compare-list="correct"></div>
+              </section>
+              <section class="cal-log-column">
+                <div class="cal-log-column-head">
+                  <strong>incorrect</strong>
+                  <span data-cal-compare-count="incorrect">0</span>
+                </div>
+                <div class="cal-log-column-list" data-cal-compare-list="incorrect"></div>
+              </section>
+            </div>
+            <div class="cal-log-browser">
+              <div class="cal-log-list" data-cal-log-list></div>
+              <div class="cal-log-detail" data-cal-log-detail>
+                <div class="cal-log-detail-head">
+                  <div class="cal-card-title">
+                    <strong>Sample Detail</strong>
+                    <span data-cal-log-detail-position>0 / 0</span>
+                  </div>
+                  <div class="cal-log-nav">
+                    <button type="button" class="cal-action-btn" data-cal-action="log-prev">이전</button>
+                    <button type="button" class="cal-action-btn" data-cal-action="log-next">다음</button>
+                  </div>
+                </div>
+                <div class="cal-log-detail-body" data-cal-log-detail-body hidden>
+                  <img data-cal-log-detail-image hidden alt="selected sample preview">
+                  <div class="cal-empty" data-cal-log-detail-meta hidden></div>
+                  <pre data-cal-log-detail-json hidden></pre>
+                  <div class="cal-action-row" style="justify-content:flex-end;">
+                    <button type="button" class="cal-action-btn danger" data-cal-action="delete-selected-log" hidden>선택 샘플 삭제</button>
+                  </div>
+                </div>
+                <div class="cal-log-detail-empty" data-cal-log-detail-empty>
+                  아직 선택된 샘플이 없습니다. 왼쪽에서 샘플을 선택하면 썸네일, 메타데이터, 삭제 버튼이 표시됩니다.
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="cal-card">
+          <div class="cal-card-head">
+            <div class="cal-card-title">
+              <strong>Recommendation</strong>
+              <span>correct / incorrect 샘플을 비교한 추천 threshold preview</span>
+            </div>
+          </div>
+          <div class="cal-panel">
+            <div class="cal-empty" data-cal-recommendation-empty>
+              아직 추천 데이터가 없습니다. correct / incorrect 샘플이 충분하면 여기에서 추천값을 확인할 수 있습니다.
+            </div>
+            <ul class="cal-list recommendation-list" data-cal-recommendation-list hidden></ul>
+            <div class="cal-note" data-cal-recommendation-note>
+              추천값은 자동으로 반영되지 않습니다. 적용 버튼을 눌렀을 때만 threshold가 저장됩니다.
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="cal-footer">
+      <p>
+        calibration 모드는 훈련 본체를 대체하지 않습니다. 실제 pose 샘플만 수집하고,
+        추천 threshold는 사람이 확인한 뒤 적용하세요.
+      </p>
+      <div class="cal-action-row">
+        <button type="button" class="cal-action-btn" data-cal-action="export-json">샘플 내보내기</button>
+        <button type="button" class="cal-action-btn" data-cal-action="import-json">JSON 가져오기</button>
+        <button type="button" class="cal-action-btn" data-cal-action="open-training">훈련 화면으로</button>
+      </div>
+      <input type="file" accept="application/json,.json" hidden data-cal-import-input>
+    </footer>
+  </main>
+  <script>
+    window.IM_BOXER_MEDIA_PIPE_MODEL_URL = "./assets/models/pose_landmarker_full.task";
+    window.IM_BOXER_MEDIA_PIPE_WASM_URL = "./vendor/tasks-vision/wasm";
+    window.IM_BOXER_MEDIA_PIPE_IMPORT_CANDIDATES = [
+      "./vendor/tasks-vision/vision_bundle.mjs"
+    ];
+  </script>
+  <script type="module" src="./js/pages/calibration.js?v=20260512-local-vendor-path"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+---
+description: Figma 수치 고정 및 Flex/Grid 레이아웃 강제
+alwaysApply: true
+---
+
+# Figma 수치·레이아웃 준수 규칙
+
+## 절대 수치 준수 (필수)
+- 디자인의 `padding`, `margin`, `gap` 값은 임의 추정하지 않는다.
+- 반드시 Figma Dev Mode에서 확인한 정확한 `px` 수치만 사용한다.
+- 값이 불명확하면 추정 구현 대신 Figma 값을 다시 확인한 뒤 반영한다.
+
+## 레이아웃 방식 강제 (필수)
+- 요소 배치는 항상 `display: flex` 또는 `display: grid`를 우선 사용한다.
+- 불필요한 절대 좌표 남용을 피하고, 정렬/간격은 레이아웃 속성으로 제어한다.
+- 컨테이너 경계를 넘는 UI가 생기지 않도록 `overflow` 동작을 명시한다 (`hidden`, `auto`, `clip` 중 목적에 맞게 선택).
+
+## 적용 예시
+```css
+/* ❌ BAD: 추정 간격 + 절대배치 남용 */
+.card-list {
+  margin-top: 18px; /* 근거 불명 */
+}
+.card {
+  position: absolute;
+}
+
+/* ✅ GOOD: Figma 수치 + Flex 레이아웃 */
+.card-list {
+  display: flex;
+  gap: 24px;      /* Figma 확인값 */
+  padding: 32px;  /* Figma 확인값 */
+  overflow: hidden;
+}
+```

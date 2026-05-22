@@ -1,0 +1,1292 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, initial-scale=1.0" />
+    <title>BOXER - Training Room</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <style>
+      @font-face {
+        font-family: "Paperlogy Medium";
+        src: url("./font/Paperlogy-5Medium.ttf") format("truetype");
+        font-weight: 500;
+      }
+      @font-face {
+        font-family: "Paperlogy SemiBold";
+        src: url("./font/Paperlogy-6SemiBold.ttf") format("truetype");
+        font-weight: 600;
+      }
+      @font-face {
+        font-family: "Paperlogy Bold";
+        src: url("./font/Paperlogy-7Bold.ttf") format("truetype");
+        font-weight: 700;
+      }
+      @font-face {
+        font-family: "KBL Jump";
+        src: url("./font/KBLJump_EB_Extended.otf") format("opentype");
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: "Urban Shadow Sans Serif";
+        src: url("./font/Urban Shadow Sans Serif.otf") format("opentype");
+        font-weight: 400;
+      }
+
+      * { box-sizing: border-box; }
+      html, body, .stage-viewport {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      body { font-family: "Paperlogy SemiBold", sans-serif; color: #fff; }
+      .app-viewport {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: #000;
+      }
+      .stage-container { position: relative; width: 1920px; height: 1080px; background: #000; }
+
+      /* State 2 */
+      #state-2-training {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        z-index: 10;
+      }
+      #training-left-bg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1380px;
+        height: 1080px;
+        /* 트레이너 영상을 살짝 축소했을 때도 자연스럽게 보이도록 블랙 톤으로 통일 */
+        background: #000;
+      }
+      #trainer-video {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1380px; /* 우측 540px 패널을 침범하지 않는 안전 구역으로 제한 */
+        height: 1080px;
+        object-fit: contain; /* 🚨 cover 대신 contain을 써서 영상(자막 포함)이 잘림 없이 100% 다 보이게 함 */
+        object-position: center; /* 정중앙에 배치 */
+        background: transparent;
+        z-index: 1;
+      }
+      .accuracy-gauge-container {
+        position: absolute;
+        top: 120px; /* 기존 50px에서 아래로 더 내림 */
+        right: 590px;
+        width: 160px;
+        height: 160px;
+        background: #111;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        z-index: 12;
+      }
+
+      .video-controls-wrap {
+        position: absolute;
+        bottom: 50px;
+        left: 50px;
+        width: 1280px; /* 왼쪽 영상 영역에 맞게 조절 */
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: rgba(0, 0, 0, 0.85); /* 더 어둡게 해서 시인성 확보 */
+        padding: 15px 30px;
+        border-radius: 100px;
+        z-index: 99999 !important;
+        pointer-events: auto; /* 클릭 무조건 활성화 */
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .control-btn {
+        background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; min-width: 40px;
+      }
+      .timeline-slider { flex-grow: 1; height: 8px; cursor: pointer; accent-color: #ed1d32; }
+      .volume-slider { width: 120px; height: 8px; cursor: pointer; accent-color: #ccff00; }
+      .timeline-slider, .volume-slider {
+        pointer-events: auto;
+        position: relative;
+        z-index: 100000;
+      }
+      #currentTimeDisplay, #durationDisplay { font-size: 16px; color: #fff; min-width: 50px; text-align: center; }
+      .volume-icon {
+        font-size: 20px;
+      }
+      .jump-time-input {
+        width: 74px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(0, 0, 0, 0.45);
+        color: #fff;
+        text-align: center;
+        font-size: 13px;
+      }
+      .jump-time-btn {
+        height: 30px;
+        border: 0;
+        border-radius: 8px;
+        padding: 0 10px;
+        background: #ed1d32;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .accuracy-svg {
+        position: absolute;
+        inset: 0;
+        transform: rotate(-90deg);
+        overflow: visible; /* 두꺼운 테두리가 SVG 박스를 벗어나도 잘리지 않게 보호 */
+      }
+      .accuracy-bg {
+        fill: none;
+        stroke: #333;
+        stroke-width: 8;
+      }
+      .accuracy-progress {
+        fill: none;
+        stroke: #00ffa3;
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 440;
+        transition: stroke-dashoffset 0.3s ease-out;
+      }
+      .accuracy-text-wrap {
+        text-align: center;
+        color: #fff;
+        z-index: 2;
+      }
+      .accuracy-number {
+        font-family: "KBL Jump", sans-serif;
+        font-size: 55px;
+        font-weight: 900;
+        line-height: 1;
+        color: #00ffa3;
+      }
+      .accuracy-percent {
+        font-size: 30px;
+        font-weight: 700;
+        color: #00ffa3;
+      }
+      .accuracy-label {
+        margin: 0;
+        font-size: 16px;
+        color: #fff;
+        font-weight: 600;
+      }
+      #state2-right-red {
+        position: absolute;
+        left: 1380px;
+        top: 0;
+        width: 540px;
+        height: 1080px;
+        background: #ed1d32;
+        box-shadow: 2000px 0 0 0 #ed1c33;
+      }
+      #state2-right-white {
+        position: absolute;
+        left: 1380px;
+        top: 0;
+        width: 540px;
+        height: 674px;
+        background: #fff;
+      }
+      #user-cam-box {
+        position: absolute;
+        left: 1380px;
+        top: 0;
+        width: 540px;
+        height: 674px;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      /* 1920px 풀스크린 영상 위 우측 패널이 확실히 덮어쓰도록 z-index 고정 */
+      #state2-right-red,
+      #state2-right-white,
+      #user-cam-box,
+      #feedback-box {
+        z-index: 10;
+      }
+      #webcamFeed {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+      }
+      #poseCanvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        transform: scaleX(-1);
+      }
+      #feedback-box {
+        position: absolute;
+        left: 1380px;
+        top: 694px;
+        width: 540px;
+        height: 386px;
+        background: transparent;
+        padding: 0 0 0 20px;
+      }
+      #feedback-box.danger-active {
+        background: rgba(237, 29, 50, 0.2);
+        box-shadow: inset 0 0 0 2px rgba(255, 77, 79, 0.65), 0 0 18px rgba(255, 77, 79, 0.45);
+      }
+      #feedback-box h2 {
+        margin: 0;
+        font-family: "Urban Shadow Sans Serif", sans-serif;
+        font-size: 30px;
+        line-height: 36px;
+        letter-spacing: 3px;
+      }
+      #feedback-msg {
+        margin-top: 12px;
+        font-size: 22px;
+        line-height: 1.4;
+      }
+      #detected-objects-wrap {
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.35);
+      }
+      #detected-objects-title {
+        font-size: 16px;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 8px;
+      }
+      #detected-objects-list {
+        min-height: 24px;
+        font-size: 18px;
+        line-height: 1.35;
+        color: #fff;
+        word-break: keep-all;
+      }
+      .detected-item {
+        display: inline-block;
+        margin-right: 8px;
+        margin-bottom: 4px;
+      }
+      .detected-item-danger {
+        color: #ff4d4f;
+        font-weight: 700;
+      }
+      .detected-item-normal {
+        color: #ffffff;
+      }
+      #danger-alert-overlay {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        pointer-events: none;
+        border: 10px solid rgba(255, 77, 79, 0);
+        box-sizing: border-box;
+        z-index: 30;
+        display: none;
+      }
+      #danger-alert-overlay.active {
+        display: block;
+        border-color: rgba(255, 77, 79, 0.92);
+        box-shadow: inset 0 0 100px rgba(255, 77, 79, 0.25);
+        animation: dangerPulse 0.8s ease-in-out infinite;
+      }
+      #danger-alert-text {
+        position: absolute;
+        left: 50%;
+        top: 34px;
+        transform: translateX(-50%);
+        font-family: "KBL Jump", sans-serif;
+        font-size: 42px;
+        letter-spacing: 3px;
+        color: #ff4d4f;
+        text-shadow: 0 0 14px rgba(255, 77, 79, 0.8);
+      }
+      @keyframes dangerPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.62; }
+      }
+
+      /* ── 튜토리얼 전용 임시 감지 UI (제거: 스크립트의 TUTORIAL_LIVE_DETECT_UI_ENABLED=false 또는 이 블록·#tutorial-live-detect-ui 삭제) ── */
+      #tutorial-live-detect-ui {
+        position: absolute;
+        inset: 0;
+        z-index: 25;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      #tutorial-detecting-banner {
+        align-self: stretch;
+        padding: 10px 14px;
+        text-align: center;
+        font-size: 15px;
+        letter-spacing: 0.12em;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.35) 100%);
+        color: #fff;
+        font-family: "Paperlogy SemiBold", sans-serif;
+        opacity: 0;
+        transition: opacity 0.12s ease;
+      }
+      #tutorial-detecting-banner.is-active {
+        opacity: 1;
+      }
+      #tutorial-detecting-banner .dot {
+        display: inline-block;
+        animation: tutorialDetectPulse 0.9s ease-in-out infinite;
+      }
+      @keyframes tutorialDetectPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.35; }
+      }
+      #tutorial-live-labels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+        padding: 10px 12px 14px;
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.65) 0%, transparent 100%);
+        align-content: flex-end;
+        min-height: 48px;
+      }
+      .tutorial-live-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        color: #fff;
+        letter-spacing: 0.02em;
+      }
+      .tutorial-live-chip.tutorial-live-chip--danger {
+        background: rgba(255, 77, 79, 0.35);
+        border-color: rgba(255, 180, 180, 0.65);
+        color: #ffe8e8;
+      }
+      .tutorial-live-chip .tutorial-live-score {
+        margin-left: 6px;
+        font-weight: 600;
+        font-size: 11px;
+        opacity: 0.88;
+      }
+      #tutorial-bbox-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 23;
+        pointer-events: none;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="stage-viewport">
+      <div class="stage-container with-fixed-hero-nav" id="stage-container">
+      <div id="state-2-training">
+        <div id="danger-alert-overlay">
+          <div id="danger-alert-text">⚠ 위험물체 감지</div>
+        </div>
+        <div id="training-left-bg"></div>
+        <video id="trainer-video" loop playsinline src=""></video>
+        <div class="accuracy-gauge-container">
+          <svg class="accuracy-svg" width="160" height="160" viewBox="0 0 160 160">
+            <circle class="accuracy-bg" cx="80" cy="80" r="70"></circle>
+            <circle class="accuracy-progress" cx="80" cy="80" r="70"></circle>
+          </svg>
+          <div class="accuracy-text-wrap">
+            <span id="accuracyValue" class="accuracy-number">0</span><span class="accuracy-percent">%</span>
+            <p class="accuracy-label">자세 정확도</p>
+          </div>
+        </div>
+        <div id="state2-right-red"></div>
+        <div id="state2-right-white"></div>
+        <div id="user-cam-box">
+          <video id="webcamFeed" autoplay playsinline muted></video>
+          <canvas id="poseCanvas"></canvas>
+          <canvas id="tutorial-bbox-canvas" aria-hidden="true"></canvas>
+          <!-- 튜토리얼 임시: 서버 YOLO 감지 중 배너 + 프레임 라벨 칩 + bbox (끄기: TUTORIAL_LIVE_DETECT_UI_ENABLED) -->
+          <div id="tutorial-live-detect-ui" hidden>
+            <div id="tutorial-detecting-banner" aria-live="polite">
+              <span class="dot">●</span> 감지 중 <span class="dot">●</span>
+            </div>
+            <div id="tutorial-live-labels"></div>
+          </div>
+        </div>
+        <div id="feedback-box">
+          <h2>FEED BACK</h2>
+          <div id="feedback-msg">자세 분석 중...</div>
+          <div id="detected-objects-wrap">
+            <div id="detected-objects-title">감지된 물체</div>
+            <div id="detected-objects-list">감지 대기 중...</div>
+          </div>
+        </div>
+
+        <div class="video-controls-wrap">
+          <button id="playPauseBtn" class="control-btn">⏸</button>
+          <span id="currentTimeDisplay">00:00</span>
+          <input
+            type="range"
+            id="videoTimeline"
+            class="timeline-slider"
+            min="0"
+            max="100"
+            value="0"
+          />
+          <span id="durationDisplay">00:00</span>
+          <input type="text" id="jumpTimeInput" class="jump-time-input" placeholder="mm:ss" />
+          <button id="jumpTimeBtn" class="jump-time-btn">이동</button>
+          <span class="volume-icon">🔊</span>
+          <input
+            type="range"
+            id="videoVolume"
+            class="volume-slider"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.5"
+          />
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <script src="js/config/boxer-video-local.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        /**
+         * 튜토리얼(tutorial2) 전용 임시 UI: 웹캠 위에 "감지 중" + 이번 프레임 클래스 라벨.
+         * 추후 제거: false 로 두거나 아래 번들(상수·함수·HTML/CSS 블록)을 삭제.
+         */
+        const TUTORIAL_LIVE_DETECT_UI_ENABLED = true;
+
+        const tutorialLiveDetectRoot = document.getElementById("tutorial-live-detect-ui");
+        const tutorialDetectingBanner = document.getElementById("tutorial-detecting-banner");
+        const tutorialLiveLabelsEl = document.getElementById("tutorial-live-labels");
+        const tutorialBboxCanvas = document.getElementById("tutorial-bbox-canvas");
+        let lastTutorialBboxDetections = [];
+        let tutorialBboxResizeObserver = null;
+
+        function tutorialLiveDetectUiApplyEnabled() {
+          if (!tutorialLiveDetectRoot) return;
+          if (!TUTORIAL_LIVE_DETECT_UI_ENABLED) {
+            tutorialLiveDetectRoot.remove();
+            document.getElementById("tutorial-bbox-canvas")?.remove();
+            if (tutorialBboxResizeObserver) {
+              tutorialBboxResizeObserver.disconnect();
+              tutorialBboxResizeObserver = null;
+            }
+            return;
+          }
+          tutorialLiveDetectRoot.hidden = false;
+          const camBox = document.getElementById("user-cam-box");
+          if (camBox && typeof ResizeObserver !== "undefined") {
+            tutorialBboxResizeObserver = new ResizeObserver(() => {
+              if (lastTutorialBboxDetections.length && TUTORIAL_LIVE_DETECT_UI_ENABLED) {
+                const video = document.getElementById("webcamFeed");
+                if (video && camBox) tutorialDrawBboxesOnCanvas(lastTutorialBboxDetections, video, camBox, true);
+              }
+            });
+            tutorialBboxResizeObserver.observe(camBox);
+          }
+        }
+
+        function tutorialSetDetectingBanner(active) {
+          if (!TUTORIAL_LIVE_DETECT_UI_ENABLED || !tutorialDetectingBanner) return;
+          tutorialDetectingBanner.classList.toggle("is-active", !!active);
+        }
+
+        function tutorialRenderLiveLabelsFromDetections(items) {
+          if (!TUTORIAL_LIVE_DETECT_UI_ENABLED || !tutorialLiveLabelsEl) return;
+          if (!items || items.length === 0) {
+            tutorialLiveLabelsEl.innerHTML = "";
+            return;
+          }
+          const sorted = [...items].sort((a, b) => (b.score || 0) - (a.score || 0));
+          tutorialLiveLabelsEl.innerHTML = sorted
+            .map((item) => {
+              const pct = Math.round((Number(item.score) || 0) * 100);
+              const danger = !!item.danger;
+              const cls = danger ? "tutorial-live-chip tutorial-live-chip--danger" : "tutorial-live-chip";
+              return `<span class="${cls}">${item.label}<span class="tutorial-live-score">${pct}%</span></span>`;
+            })
+            .join("");
+        }
+
+        function inferFrameSizeForApi(video) {
+          const inferW = 640;
+          const inferH = Math.max(360, Math.round((video.videoHeight / Math.max(1, video.videoWidth)) * inferW));
+          return { inferW, inferH };
+        }
+
+        /**
+         * bbox: 서버가 준 추론 프레임(640×inferH) 좌표 → 웹캠 박스(object-fit:cover) 픽셀.
+         * #webcamFeed 가 scaleX(-1) 이므로 화면과 맞추려면 좌우 반전 적용.
+         */
+        function mapBboxToCamBoxPixels(bbox, video, camBoxEl, mirrorX) {
+          if (!bbox || bbox.length < 4) return null;
+          const vx = Number(bbox[0]);
+          const vy = Number(bbox[1]);
+          const vx2 = Number(bbox[2]);
+          const vy2 = Number(bbox[3]);
+          const vw = video.videoWidth;
+          const vh = video.videoHeight;
+          const { inferW, inferH } = inferFrameSizeForApi(video);
+          const W = camBoxEl.clientWidth;
+          const H = camBoxEl.clientHeight;
+          if (!vw || !vh || !W || !H) return null;
+
+          let sx1 = (vx / inferW) * vw;
+          let sy1 = (vy / inferH) * vh;
+          let sx2 = (vx2 / inferW) * vw;
+          let sy2 = (vy2 / inferH) * vh;
+
+          const scale = Math.max(W / vw, H / vh);
+          const dispW = vw * scale;
+          const dispH = vh * scale;
+          const offX = (W - dispW) / 2;
+          const offY = (H - dispH) / 2;
+
+          sx1 = offX + sx1 * scale;
+          sy1 = offY + sy1 * scale;
+          sx2 = offX + sx2 * scale;
+          sy2 = offY + sy2 * scale;
+
+          if (mirrorX) {
+            const osx1 = sx1;
+            const osx2 = sx2;
+            sx1 = W - osx2;
+            sx2 = W - osx1;
+          }
+
+          const x = Math.min(sx1, sx2);
+          const y = Math.min(sy1, sy2);
+          const w = Math.abs(sx2 - sx1);
+          const h = Math.abs(sy2 - sy1);
+          return { x, y, w, h };
+        }
+
+        function tutorialClearBboxCanvas() {
+          const c = document.getElementById("tutorial-bbox-canvas");
+          if (!c) return;
+          const ctx = c.getContext("2d");
+          if (ctx) ctx.clearRect(0, 0, c.width, c.height);
+        }
+
+        function tutorialDrawBboxesOnCanvas(detections, video, camBoxEl, mirrorX) {
+          const c = tutorialBboxCanvas || document.getElementById("tutorial-bbox-canvas");
+          if (!c || !TUTORIAL_LIVE_DETECT_UI_ENABLED) return;
+          const ctx = c.getContext("2d");
+          if (!ctx || !video || !camBoxEl) return;
+
+          const bw = camBoxEl.clientWidth;
+          const bh = camBoxEl.clientHeight;
+          if (bw < 2 || bh < 2) return;
+          if (c.width !== bw || c.height !== bh) {
+            c.width = bw;
+            c.height = bh;
+          }
+          ctx.clearRect(0, 0, bw, bh);
+
+          const withBox = (detections || []).filter((d) => d.bbox && d.bbox.length >= 4);
+          if (withBox.length === 0) return;
+
+          ctx.lineWidth = 2;
+          ctx.font = '600 12px "Paperlogy SemiBold", Pretendard, sans-serif';
+          ctx.textBaseline = "bottom";
+
+          for (const item of withBox) {
+            const rect = mapBboxToCamBoxPixels(item.bbox, video, camBoxEl, mirrorX);
+            if (!rect || rect.w < 1 || rect.h < 1) continue;
+            const { x, y, w, h } = rect;
+            const danger = !!item.danger;
+            const stroke = danger ? "rgba(255, 77, 79, 0.95)" : "rgba(0, 255, 163, 0.92)";
+            const fillBar = danger ? "rgba(255, 77, 79, 0.88)" : "rgba(0, 0, 0, 0.72)";
+
+            const pct = Math.round((Number(item.score) || 0) * 100);
+            const label = `${item.label} ${pct}%`;
+            const padX = 6;
+            const padY = 3;
+            const tw = ctx.measureText(label).width;
+            const barH = 20;
+            let barTop = y - barH - 2;
+            if (barTop < 2) barTop = y + 2;
+
+            ctx.fillStyle = fillBar;
+            ctx.fillRect(Math.round(x), Math.round(barTop), Math.ceil(tw + padX * 2), barH);
+            ctx.fillStyle = "#fff";
+            ctx.fillText(label, Math.round(x + padX), Math.round(barTop + barH - padY));
+
+            ctx.strokeStyle = stroke;
+            ctx.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, Math.round(w), Math.round(h));
+          }
+        }
+
+        tutorialLiveDetectUiApplyEnabled();
+
+        let objectDetectionRunning = false;
+        let objectDetectionRafId = null;
+        let lastObjectDetectAtMs = 0;
+        const OBJECT_DETECT_INTERVAL_MS = 450; // 서버 추론 호출 간격
+        const DETECT_API_CONF = 0.25;
+        const DETECT_API_IMGSZ = 640;
+        const DETECT_FRAME_JPEG_QUALITY = 0.75;
+        let detectCaptureCanvas = null;
+        let detectApiFailureCount = 0;
+        let detectObstacleBackoffUntil = 0;
+        let detectApiWarnedOnce = false;
+        const OBJECT_HOLD_MS = 1800; // 잠깐 미검출이어도 목록 유지
+        const OBJECT_FORGET_MS = 5000; // 오래 안 보인 항목은 메모리에서 제거
+        const OBJECT_MIN_STABLE_COUNT = 2; // 최소 2회 연속 감지 후 표시
+        const objectMemory = new Map(); // key: 영문 class, value: {label,danger,lastSeenMs,seenCount}
+        // desk-v1 모델 클래스 기준 위험물체만 유지 (chair, desk, keyboard, laptop, mouse, person, tv)
+        // person은 사용자 본인이므로 경고 대상에서 제외
+        const DANGER_CLASSES_EN = new Set([
+          "chair",
+          "desk",
+          "keyboard",
+          "laptop",
+          "mouse",
+          "tv",
+        ]);
+        const DANGER_NOTIFY_COOLDOWN_MS = 6000;
+        let lastNotifyAtMs = 0;
+        let dangerBeepTimer = null;
+        const OBJECT_LABEL_KO = {
+          person: "사람",
+          knife: "칼",
+          scissors: "가위",
+          "baseball bat": "야구방망이",
+          bottle: "병",
+          fork: "포크",
+          cup: "컵",
+          couch: "소파",
+          "dining table": "책상",
+          cellphone: "휴대폰",
+          "cell phone": "휴대폰",
+          laptop: "노트북",
+          keyboard: "키보드",
+          mouse: "마우스",
+          tv: "TV",
+          book: "책",
+          chair: "의자",
+          backpack: "가방",
+          umbrella: "우산",
+          car: "자동차",
+          bus: "버스",
+          motorcycle: "오토바이",
+          bicycle: "자전거",
+          dog: "강아지",
+          cat: "고양이",
+        };
+
+        function toKoreanLabel(label) {
+          return OBJECT_LABEL_KO[label] || label;
+        }
+
+        function updateDetectedObjectsText(items) {
+          const listEl = document.getElementById("detected-objects-list");
+          if (!listEl) return;
+          if (!items || items.length === 0) {
+            listEl.textContent = "없음";
+            return;
+          }
+          if (typeof items[0] === "string") {
+            listEl.textContent = items.join(", ");
+            return;
+          }
+          listEl.innerHTML = items
+            .map(
+              (item) =>
+                `<span class="detected-item ${item.danger ? "detected-item-danger" : "detected-item-normal"}">${item.danger ? "⚠ " : ""}${item.label}</span>`
+            )
+            .join("");
+        }
+
+        function beepDanger() {
+          try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.value = 980;
+            gain.gain.value = 0.05;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.12);
+            osc.onended = () => ctx.close();
+          } catch (_) {}
+        }
+
+        function setDangerAlertState(active, dangerLabels = []) {
+          const overlay = document.getElementById("danger-alert-overlay");
+          const feedbackBox = document.getElementById("feedback-box");
+          const feedbackMsg = document.getElementById("feedback-msg");
+          if (overlay) overlay.classList.toggle("active", !!active);
+          if (feedbackBox) feedbackBox.classList.toggle("danger-active", !!active);
+          if (feedbackMsg && active && dangerLabels.length) {
+            feedbackMsg.textContent = `위험물체 경고: ${dangerLabels.join(", ")}`;
+          }
+
+          if (active) {
+            if (!dangerBeepTimer) {
+              beepDanger();
+              dangerBeepTimer = setInterval(beepDanger, 900);
+            }
+          } else if (dangerBeepTimer) {
+            clearInterval(dangerBeepTimer);
+            dangerBeepTimer = null;
+          }
+        }
+
+        function maybeNotifyDanger(dangerLabels) {
+          if (!("Notification" in window)) return;
+          if (Notification.permission !== "granted") return;
+          const now = performance.now();
+          if (now - lastNotifyAtMs < DANGER_NOTIFY_COOLDOWN_MS) return;
+          lastNotifyAtMs = now;
+          try {
+            new Notification("위험물체 감지", {
+              body: dangerLabels.length ? dangerLabels.join(", ") : "위험물체가 감지되었습니다.",
+            });
+          } catch (_) {}
+        }
+
+        function updateObjectMemory(detectedItems, nowMs) {
+          for (const item of detectedItems) {
+            const prev = objectMemory.get(item.cls);
+            if (prev) {
+              prev.lastSeenMs = nowMs;
+              prev.seenCount = Math.min(prev.seenCount + 1, 99);
+              prev.label = item.label;
+              prev.danger = item.danger;
+            } else {
+              objectMemory.set(item.cls, {
+                label: item.label,
+                danger: item.danger,
+                lastSeenMs: nowMs,
+                seenCount: 1,
+              });
+            }
+          }
+
+          // 너무 오래 안 보인 클래스는 정리
+          for (const [cls, mem] of objectMemory.entries()) {
+            if (nowMs - mem.lastSeenMs > OBJECT_FORGET_MS) {
+              objectMemory.delete(cls);
+            }
+          }
+        }
+
+        function getStableVisibleItems(nowMs) {
+          const visible = [];
+          for (const [, mem] of objectMemory.entries()) {
+            const isRecent = nowMs - mem.lastSeenMs <= OBJECT_HOLD_MS;
+            const isStable = mem.seenCount >= OBJECT_MIN_STABLE_COUNT;
+            if (isRecent && isStable) {
+              visible.push({ label: mem.label, danger: mem.danger });
+            }
+          }
+          return visible;
+        }
+
+        function getDetectCanvas(video) {
+          if (!detectCaptureCanvas) detectCaptureCanvas = document.createElement("canvas");
+          const targetW = 640;
+          const targetH = Math.max(360, Math.round((video.videoHeight / Math.max(1, video.videoWidth)) * targetW));
+          detectCaptureCanvas.width = targetW;
+          detectCaptureCanvas.height = targetH;
+          return detectCaptureCanvas;
+        }
+
+        async function detectObjectsViaApi(video) {
+          if (performance.now() < detectObstacleBackoffUntil) return [];
+          try {
+            const canvas = getDetectCanvas(video);
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return [];
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const blob = await new Promise((resolve) =>
+              canvas.toBlob(resolve, "image/jpeg", DETECT_FRAME_JPEG_QUALITY)
+            );
+            if (!blob) return [];
+
+            const formData = new FormData();
+            formData.append("frame", blob, "frame.jpg");
+
+            const data = await api.postForm(
+              `/api/detect/obstacles?conf=${DETECT_API_CONF}&imgsz=${DETECT_API_IMGSZ}`,
+              formData
+            );
+            const detections = Array.isArray(data?.detections) ? data.detections : [];
+            return detections.map((d) => {
+              const bboxRaw = d.bbox;
+              const bbox =
+                Array.isArray(bboxRaw) && bboxRaw.length >= 4
+                  ? bboxRaw.map((n) => Number(n))
+                  : null;
+              return {
+                cls: String(d.class_name || ""),
+                label: toKoreanLabel(String(d.class_name || "")),
+                danger: DANGER_CLASSES_EN.has(String(d.class_name || "")),
+                score: Number(d.confidence || 0),
+                bbox,
+              };
+            });
+          } catch {
+            detectObstacleBackoffUntil = performance.now() + 60000;
+            if (!detectApiWarnedOnce) {
+              detectApiWarnedOnce = true;
+              updateDetectedObjectsText([
+                "감지 API(포트 8000)에 연결되지 않아 잠시 건너뜁니다. 백엔드를 켜면 다시 시도됩니다.",
+              ]);
+            }
+            return [];
+          }
+        }
+
+        function stopObjectDetection() {
+          objectDetectionRunning = false;
+          if (objectDetectionRafId) {
+            cancelAnimationFrame(objectDetectionRafId);
+            objectDetectionRafId = null;
+          }
+          if (TUTORIAL_LIVE_DETECT_UI_ENABLED) {
+            tutorialSetDetectingBanner(false);
+            tutorialRenderLiveLabelsFromDetections([]);
+            lastTutorialBboxDetections = [];
+            tutorialClearBboxCanvas();
+          }
+        }
+
+        async function startObjectDetectionLoop() {
+          const webcam = document.getElementById("webcamFeed");
+          if (!webcam || objectDetectionRunning) return;
+
+          objectDetectionRunning = true;
+          const loop = async () => {
+            if (!objectDetectionRunning) return;
+            try {
+              if (webcam.readyState >= 2) {
+                const now = performance.now();
+                if (now - lastObjectDetectAtMs >= OBJECT_DETECT_INTERVAL_MS) {
+                  lastObjectDetectAtMs = now;
+                  if (TUTORIAL_LIVE_DETECT_UI_ENABLED) tutorialSetDetectingBanner(true);
+                  let filtered = [];
+                  try {
+                    filtered = await detectObjectsViaApi(webcam);
+                  } finally {
+                    if (TUTORIAL_LIVE_DETECT_UI_ENABLED) tutorialSetDetectingBanner(false);
+                  }
+                  if (TUTORIAL_LIVE_DETECT_UI_ENABLED) {
+                    tutorialRenderLiveLabelsFromDetections(filtered);
+                    lastTutorialBboxDetections = filtered;
+                    const camBox = document.getElementById("user-cam-box");
+                    if (camBox && webcam) {
+                      tutorialDrawBboxesOnCanvas(filtered, webcam, camBox, true);
+                    }
+                  }
+                  const uniqueMap = new Map();
+                  for (const item of filtered) {
+                    if (!uniqueMap.has(item.label)) uniqueMap.set(item.label, item);
+                  }
+                  const unique = [...uniqueMap.values()];
+                  const nowForMemory = performance.now();
+                  updateObjectMemory(unique, nowForMemory);
+                  const visibleItems = getStableVisibleItems(nowForMemory);
+                  updateDetectedObjectsText(visibleItems);
+                  const dangerLabels = visibleItems.filter((v) => v.danger).map((v) => v.label);
+                  const activeDanger = dangerLabels.length > 0;
+                  setDangerAlertState(activeDanger, dangerLabels);
+                  if (activeDanger) maybeNotifyDanger(dangerLabels);
+                  detectApiFailureCount = 0;
+                }
+              }
+            } catch (_) {
+              detectApiFailureCount += 1;
+              if (detectApiFailureCount >= 3) {
+                updateDetectedObjectsText(["서버 감지 연결 확인 필요"]);
+                if (TUTORIAL_LIVE_DETECT_UI_ENABLED) {
+                  lastTutorialBboxDetections = [];
+                  tutorialClearBboxCanvas();
+                }
+              }
+            }
+            objectDetectionRafId = requestAnimationFrame(loop);
+          };
+          objectDetectionRafId = requestAnimationFrame(loop);
+        }
+
+        // 1. URL 파라미터 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentLesson = urlParams.get("lesson") || "beginner-stance";
+
+        // 2. 레벨별 하드코딩 데이터베이스
+        const lessonData = {
+          "beginner-stance": {
+            levelTitle: "초급레벨",
+            bgMark: "BEGINNER",
+            heroImg: "./image/cache/1yWuXksGdsDFRHVgGUNLQy5I8mP9JoWi5.png",
+            rightTitle: "BOXER READY STANCE",
+          },
+          "intermediate-slip": {
+            levelTitle: "중급레벨",
+            bgMark: "INTERMEDIATE",
+            heroImg: "./image/cache/1yWuXksGdsDFRHVgGUNLQy5I8mP9JoWi5.png",
+            rightTitle: "SLIP & WEAVING",
+          },
+          "advanced-combo": {
+            levelTitle: "고급레벨",
+            bgMark: "ADVANCED",
+            heroImg: "./image/cache/1yWuXksGdsDFRHVgGUNLQy5I8mP9JoWi5.png",
+            rightTitle: "PRO COMBO SPARRING",
+          },
+        };
+
+        // 3. 현재 레벨 데이터 뽑기 (매칭 안 되면 무조건 초급으로 Fallback)
+        const data = lessonData[currentLesson] || lessonData["beginner-stance"];
+
+        // 4. 네가 짠 HTML 요소들에 데이터 강제 주입 (클래스명이나 ID는 네 HTML 구조에 맞춰서 연결해)
+        // 예시:
+        // document.querySelector('.level-title').innerText = data.levelTitle;
+        // document.querySelector('.bg-watermark').innerText = data.bgMark;
+        // document.querySelector('.center-hero-img').src = data.heroImg;
+        // document.querySelector('.red-box-title').innerText = data.rightTitle;
+        const Vv = window.BOXER_VIDEO || {};
+        const trainerVideoMap = {
+          "beginner-stance": Vv.boxingStance || "",
+          "intermediate-slip": Vv.boxingWeaving || "",
+          "advanced-combo": Vv.boxingPro || "",
+        };
+        const trainerEl0 = document.getElementById("trainer-video");
+        trainerEl0.src = trainerVideoMap[currentLesson] || trainerVideoMap["beginner-stance"];
+        trainerEl0.addEventListener("error", () => {
+          const fb = document.getElementById("feedback-msg");
+          if (fb) {
+            fb.innerText =
+              "트레이너 영상을 불러오지 못했습니다. frontend/video/ 폴더에 해당 mp4가 있는지 확인하세요.";
+          }
+        });
+
+        // [비디오 컨트롤러 및 타임라인 로직 - 충돌 방지 버전]
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const videoTimeline = document.getElementById("videoTimeline");
+        const currentTimeDisplay = document.getElementById("currentTimeDisplay");
+        const durationDisplay = document.getElementById("durationDisplay");
+        const trainerVideo = document.getElementById("trainer-video");
+        const volSlider = document.getElementById("videoVolume");
+        const jumpTimeInput = document.getElementById("jumpTimeInput");
+        const jumpTimeBtn = document.getElementById("jumpTimeBtn");
+        let isDragging = false; // 드래그 상태 확인용
+
+        function formatTime(seconds) {
+          const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+          const s = Math.floor(seconds % 60).toString().padStart(2, "0");
+          return `${m}:${s}`;
+        }
+
+        function parseJumpTimeToSeconds(raw) {
+          const text = String(raw || "").trim();
+          if (!text) return NaN;
+          if (text.includes(":")) {
+            const [m, s] = text.split(":");
+            const mm = Number(m);
+            const ss = Number(s);
+            if (!Number.isFinite(mm) || !Number.isFinite(ss)) return NaN;
+            return mm * 60 + ss;
+          }
+          const sec = Number(text);
+          return Number.isFinite(sec) ? sec : NaN;
+        }
+
+        if (trainerVideo && videoTimeline) {
+          // 메타데이터 로드 시 전체 시간 세팅
+          trainerVideo.addEventListener("loadedmetadata", () => {
+            if (durationDisplay) durationDisplay.textContent = formatTime(trainerVideo.duration);
+            videoTimeline.max = Math.floor(trainerVideo.duration);
+          });
+
+          // 🚨 마우스/터치로 타임라인을 잡았을 때
+          videoTimeline.addEventListener("mousedown", () => (isDragging = true));
+          videoTimeline.addEventListener("touchstart", () => (isDragging = true));
+
+          // 🚨 마우스/터치에서 손을 뗐을 때
+          videoTimeline.addEventListener("mouseup", () => (isDragging = false));
+          videoTimeline.addEventListener("touchend", () => (isDragging = false));
+
+          // 타임라인 드래그 시 영상 시간 강제 이동
+          videoTimeline.addEventListener("input", (e) => {
+            trainerVideo.currentTime = e.target.value;
+            if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(e.target.value);
+          });
+
+          // 영상 재생 중 타임라인 갱신 (드래그 중이 아닐 때만!)
+          trainerVideo.addEventListener("timeupdate", () => {
+            if (currentTimeDisplay && !isDragging) {
+              currentTimeDisplay.textContent = formatTime(trainerVideo.currentTime);
+            }
+            if (!isDragging) {
+              videoTimeline.value = Math.floor(trainerVideo.currentTime);
+            }
+          });
+
+          if (volSlider) {
+            // 초기 볼륨 설정
+            trainerVideo.volume = volSlider.value;
+            // 볼륨 조절 이벤트
+            volSlider.addEventListener("input", (e) => {
+              trainerVideo.volume = e.target.value;
+              trainerVideo.muted = e.target.value == 0;
+            });
+          }
+
+          // 재생/일시정지 버튼
+          if (playPauseBtn) {
+            playPauseBtn.addEventListener("click", () => {
+              if (trainerVideo.paused) {
+                trainerVideo.play();
+                playPauseBtn.textContent = "⏸";
+              } else {
+                trainerVideo.pause();
+                playPauseBtn.textContent = "▶";
+              }
+            });
+          }
+
+          if (jumpTimeBtn && jumpTimeInput) {
+            const jumpNow = () => {
+              const targetSec = parseJumpTimeToSeconds(jumpTimeInput.value);
+              if (!Number.isFinite(targetSec)) return;
+              const max = Number(trainerVideo.duration || 0);
+              const clamped = Math.max(0, Math.min(targetSec, max));
+              trainerVideo.currentTime = clamped;
+              if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(clamped);
+              videoTimeline.value = Math.floor(clamped);
+            };
+            jumpTimeBtn.addEventListener("click", jumpNow);
+            jumpTimeInput.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") jumpNow();
+            });
+          }
+        }
+
+        // 포즈 비교 모드 활성화: pose.js 기본 문구 갱신 대신 아래 커스텀 피드백을 사용
+        window.__customPoseFeedbackActive = true;
+
+        /**
+         * 세 점 각도 계산 (0~180도)
+         * ArcTan2 기반 벡터 각도 차이로 계산해 방향 반전에 강함.
+         */
+        function calculateAngle(a, b, c) {
+          if (!a || !b || !c) return null;
+          const abAngle = Math.atan2((a.y ?? 0) - (b.y ?? 0), (a.x ?? 0) - (b.x ?? 0));
+          const cbAngle = Math.atan2((c.y ?? 0) - (b.y ?? 0), (c.x ?? 0) - (b.x ?? 0));
+          let deg = Math.abs(((cbAngle - abAngle) * 180) / Math.PI);
+          if (deg > 180) deg = 360 - deg;
+          return deg;
+        }
+
+        function getCoreJointAngles(lm) {
+          if (!lm) return null;
+          const rightElbow = calculateAngle(lm[12], lm[14], lm[16]); // Shoulder-Elbow-Wrist
+          const leftElbow = calculateAngle(lm[11], lm[13], lm[15]); // Shoulder-Elbow-Wrist
+          const rightShoulder = calculateAngle(lm[24], lm[12], lm[14]); // Hip-Shoulder-Elbow
+          const leftShoulder = calculateAngle(lm[23], lm[11], lm[13]); // Hip-Shoulder-Elbow
+          if ([rightElbow, leftElbow, rightShoulder, leftShoulder].some((v) => v == null || !Number.isFinite(v))) {
+            return null;
+          }
+          return { rightElbow, leftElbow, rightShoulder, leftShoulder };
+        }
+
+        function getAgreementRate(trainerAngles, userAngles) {
+          const diffs = [
+            Math.abs(trainerAngles.rightElbow - userAngles.rightElbow),
+            Math.abs(trainerAngles.leftElbow - userAngles.leftElbow),
+            Math.abs(trainerAngles.rightShoulder - userAngles.rightShoulder),
+            Math.abs(trainerAngles.leftShoulder - userAngles.leftShoulder),
+          ];
+          const avgDiff = diffs.reduce((sum, d) => sum + d, 0) / diffs.length;
+          const score = Math.max(0, Math.min(100, 100 - (avgDiff / 90) * 100));
+          return { score, diffs };
+        }
+
+        function buildFeedback(trainerAngles, userAngles) {
+          const joints = [
+            {
+              key: "rightElbow",
+              label: "오른쪽 팔꿈치",
+              tooOpenMsg: "오른쪽 팔을 더 굽히세요!",
+              tooClosedMsg: "오른쪽 팔을 조금 더 펴세요!",
+            },
+            {
+              key: "leftElbow",
+              label: "왼쪽 팔꿈치",
+              tooOpenMsg: "왼쪽 팔을 더 굽히세요!",
+              tooClosedMsg: "왼쪽 팔을 조금 더 펴세요!",
+            },
+            {
+              key: "rightShoulder",
+              label: "오른쪽 어깨",
+              tooOpenMsg: "오른쪽 어깨 가드를 더 올리세요!",
+              tooClosedMsg: "오른쪽 어깨가 과하게 올라갔어요. 힘을 조금 빼세요.",
+            },
+            {
+              key: "leftShoulder",
+              label: "왼쪽 어깨",
+              tooOpenMsg: "왼손 가드를 올리세요!",
+              tooClosedMsg: "왼쪽 어깨 긴장을 조금 풀고 자연스럽게 유지하세요.",
+            },
+          ];
+
+          let biggest = null;
+          for (const joint of joints) {
+            const diff = Math.abs((trainerAngles[joint.key] ?? 0) - (userAngles[joint.key] ?? 0));
+            if (!biggest || diff > biggest.diff) {
+              biggest = { ...joint, diff };
+            }
+          }
+
+          if (!biggest || biggest.diff < 12) {
+            return "좋아요! 트레이너 자세와 거의 일치합니다.";
+          }
+
+          const trainer = trainerAngles[biggest.key];
+          const user = userAngles[biggest.key];
+          return user > trainer ? biggest.tooOpenMsg : biggest.tooClosedMsg;
+        }
+
+        let trainerPose = null;
+        let latestTrainerPoseLandmarks = null;
+        let poseCompareTimer = null;
+
+        async function initTrainerPoseTracking() {
+          const trainerVideo = document.getElementById("trainer-video");
+          if (!trainerVideo) return;
+          if (typeof Pose === "undefined") return;
+
+          trainerPose = new Pose({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+          });
+          trainerPose.setOptions({
+            modelComplexity: 1,
+            smoothLandmarks: true,
+            enableSegmentation: false,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
+          });
+          trainerPose.onResults((results) => {
+            latestTrainerPoseLandmarks = results?.poseLandmarks || null;
+          });
+
+          const runTrainerPoseLoop = async () => {
+            if (!trainerPose || !trainerVideo || trainerVideo.paused || trainerVideo.ended) return;
+            if (trainerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+              await trainerPose.send({ image: trainerVideo });
+            }
+          };
+
+          trainerVideo.addEventListener("play", () => {
+            if (poseCompareTimer) return;
+            poseCompareTimer = setInterval(async () => {
+              await runTrainerPoseLoop();
+
+              const userLandmarks = window.__latestUserPoseLandmarks;
+              if (!latestTrainerPoseLandmarks || !userLandmarks) return;
+
+              const trainerAngles = getCoreJointAngles(latestTrainerPoseLandmarks);
+              const userAngles = getCoreJointAngles(userLandmarks);
+              if (!trainerAngles || !userAngles) return;
+
+              const { score } = getAgreementRate(trainerAngles, userAngles);
+              window.updateAccuracyUI?.(score);
+
+              const feedbackText = buildFeedback(trainerAngles, userAngles);
+              const msgEl = document.getElementById("feedback-msg");
+              if (msgEl) msgEl.innerText = feedbackText;
+            }, 120);
+          });
+
+          trainerVideo.addEventListener("pause", () => {
+            if (poseCompareTimer) {
+              clearInterval(poseCompareTimer);
+              poseCompareTimer = null;
+            }
+          });
+          trainerVideo.addEventListener("ended", () => {
+            if (poseCompareTimer) {
+              clearInterval(poseCompareTimer);
+              poseCompareTimer = null;
+            }
+          });
+        }
+
+        // 🚨 준비 화면 없이 즉시 실행!
+        if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission().catch(() => {});
+        }
+        try {
+          const trainerVideo = document.getElementById("trainer-video");
+          if (trainerVideo) {
+            await trainerVideo.play();
+          }
+        } catch (error) {
+           const trainerVideo = document.getElementById("trainer-video");
+           if(trainerVideo) {
+             trainerVideo.muted = true;
+             trainerVideo.play().catch(()=>{});
+           }
+        }
+
+        try {
+          stopObjectDetection();
+          setDangerAlertState(false, []);
+          await window.initPoseTracking?.({
+            videoId: "webcamFeed",
+            canvasId: "poseCanvas",
+          });
+          await initTrainerPoseTracking();
+          await startObjectDetectionLoop();
+        } catch (err) {
+          const msgEl = document.getElementById("feedback-msg");
+          if(msgEl) msgEl.innerText = "웹캠 권한을 허용해주세요!";
+          updateDetectedObjectsText(["웹캠 권한 필요"]);
+        }
+      });
+    </script>
+    <script src="js/core/api.js"></script>
+    <script src="js/core/auth.js"></script>
+    <script src="js/core/pose.js"></script>
+    <script src="js/ui/auto-scale.js"></script>
+  </body>
+</html>

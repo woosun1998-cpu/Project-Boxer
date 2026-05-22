@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - 마이페이지</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/mypage.css" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  </head>
+  <body class="mypage-body">
+    <nav class="hero-nav" aria-label="메인 내비게이션">
+      <a href="index.html">홈</a>
+      <a href="tutorial-new.html">트레이닝</a>
+      <a href="diet-boxing.html">다이어트 복싱</a>
+      <a href="sparring.html">스파링</a>
+      <a href="stretch.html">스트레칭</a>
+      <button id="navLoginBtn" type="button" class="drawer-auth-link">
+        <span id="userLabel">로그인</span>
+      </button>
+    </nav>
+
+    <section class="mp-top">
+      <div class="mp-top-inner">
+        <div class="mp-avatar-wrap">
+          <img crossorigin="anonymous" id="profileImage"
+            class="mp-avatar"
+            src="./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png"
+            alt="프로필"
+          />
+        </div>
+
+        <div class="mp-profile-info">
+          <div class="mp-logo-row">
+            <img crossorigin="anonymous" class="mp-logo" src="./image/cache/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8.png" alt="BOXER 로고" />
+            <span class="day-counter" id="dayCounter">+1일차</span>
+          </div>
+          <h1 class="mp-name" id="nicknameText">유저 닉네임님</h1>
+          <p class="mp-sub">오늘도 열심히 운동 해요!</p>
+          <div class="mp-links">
+            <button type="button" id="editProfileBtn" onclick="openProfileModal()">프로필 수정</button>
+            <button type="button" id="logoutBtn">로그아웃</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mp-dashboard">
+      <div class="mp-dashboard-inner">
+        <div class="gauge-panel">
+          <div class="gauge-item" data-stat="highestScore" data-score="0" data-unit="점">
+            <div class="svg-container" style="position: relative; width: 100%; height: 140px;">
+              <svg viewBox="0 0 200 120" style="width: 100%; height: 100%;">
+                <path
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#f0f0f0"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                  pathLength="100"
+                ></path>
+                <path
+                  class="progress-path"
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#ed1d32"
+                  stroke-width="14"
+                  stroke-linecap="butt"
+                  pathLength="100"
+                  stroke-dasharray="0 100"
+                  stroke-dashoffset="0"
+                ></path>
+              </svg>
+              <img crossorigin="anonymous" src="./image/cache/1hnbZ5TvvwjMi2Z9MkR08kSRYKAb2FIWa.png"
+                class="gauge-icon"
+                alt="아이콘"
+                style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
+              />
+            </div>
+            <div class="gauge-text" style="text-align: center; margin-top: -10px;">
+              <div class="gauge-value" style="font-size: 28px; font-weight: 800; color: #ffffff;">0점</div>
+              <div class="gauge-label" style="font-size: 16px; font-weight: 400; color: #d4d4d4; margin-top: 4px;">최고 점수</div>
+            </div>
+          </div>
+
+          <div class="gauge-item" data-stat="highestCombo" data-score="0" data-unit="점">
+            <div class="svg-container" style="position: relative; width: 100%; height: 140px;">
+              <svg viewBox="0 0 200 120" style="width: 100%; height: 100%;">
+                <path
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#f0f0f0"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                  pathLength="100"
+                ></path>
+                <path
+                  class="progress-path"
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#ed1d32"
+                  stroke-width="14"
+                  stroke-linecap="butt"
+                  pathLength="100"
+                  stroke-dasharray="0 100"
+                  stroke-dashoffset="0"
+                ></path>
+              </svg>
+              <img crossorigin="anonymous" src="./image/cache/14SGqNnOWakQhHrWgC4kkEaoCLhqE_WCF.png"
+                class="gauge-icon"
+                alt="아이콘"
+                style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
+              />
+            </div>
+            <div class="gauge-text" style="text-align: center; margin-top: -10px;">
+              <div class="gauge-value" style="font-size: 28px; font-weight: 800; color: #ffffff;">0점</div>
+              <div class="gauge-label" style="font-size: 16px; font-weight: 400; color: #d4d4d4; margin-top: 4px;">최고 콤보</div>
+            </div>
+          </div>
+
+          <div class="gauge-item" data-stat="evasionRate" data-score="0" data-unit="%">
+            <div class="svg-container" style="position: relative; width: 100%; height: 140px;">
+              <svg viewBox="0 0 200 120" style="width: 100%; height: 100%;">
+                <path
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#f0f0f0"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                  pathLength="100"
+                ></path>
+                <path
+                  class="progress-path"
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#ed1d32"
+                  stroke-width="14"
+                  stroke-linecap="butt"
+                  pathLength="100"
+                  stroke-dasharray="0 100"
+                  stroke-dashoffset="0"
+                ></path>
+              </svg>
+              <img crossorigin="anonymous" src="./image/cache/1OPOr1iYXWhvTx_1smfQIR_bDes6YExev.png"
+                class="gauge-icon"
+                alt="아이콘"
+                style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
+              />
+            </div>
+            <div class="gauge-text" style="text-align: center; margin-top: -10px;">
+              <div class="gauge-value" style="font-size: 28px; font-weight: 800; color: #ffffff;">0%</div>
+              <div class="gauge-label" style="font-size: 16px; font-weight: 400; color: #d4d4d4; margin-top: 4px;">회피율</div>
+            </div>
+          </div>
+
+          <div class="gauge-item" data-stat="totalWorkouts" data-score="0" data-unit="회">
+            <div class="svg-container" style="position: relative; width: 100%; height: 140px;">
+              <svg viewBox="0 0 200 120" style="width: 100%; height: 100%;">
+                <path
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#f0f0f0"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                  pathLength="100"
+                ></path>
+                <path
+                  class="progress-path"
+                  d="M 20 100 A 80 80 0 0 1 180 100"
+                  fill="none"
+                  stroke="#ed1d32"
+                  stroke-width="14"
+                  stroke-linecap="butt"
+                  pathLength="100"
+                  stroke-dasharray="0 100"
+                  stroke-dashoffset="0"
+                ></path>
+              </svg>
+              <img crossorigin="anonymous" src="./image/cache/11g8e8zCQ8VsBJM0J0b96nW8taq2BFSzj.png"
+                class="gauge-icon"
+                alt="아이콘"
+                style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); width: 50px;"
+              />
+            </div>
+            <div class="gauge-text" style="text-align: center; margin-top: -10px;">
+              <div class="gauge-value" style="font-size: 28px; font-weight: 800; color: #ffffff;">0회</div>
+              <div class="gauge-label" style="font-size: 16px; font-weight: 400; color: #d4d4d4; margin-top: 4px;">운동 횟수</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="graph-box">
+          <h2 class="graph-title">최근 퍼포먼스</h2>
+          <div id="mpPerformanceChart"></div>
+          <p class="graph-feedback" id="aiFeedback"></p>
+        </div>
+      </div>
+    </section>
+
+    <div id="profileModal" class="auth-modal-overlay" onclick="closeProfileModalOnOverlay(event)">
+      <div class="auth-modal profile-edit-modal" role="dialog" aria-modal="true" aria-label="프로필 수정">
+        <h3 class="modal-title">프로필 수정</h3>
+        <div class="profile-image-edit">
+          <img crossorigin="anonymous" id="profileModalPreview" src="./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png" alt="프로필 미리보기" />
+          <input id="profileImageInput" type="file" accept="image/*" />
+        </div>
+
+        <div class="profile-form-grid">
+          <label class="modal-field">
+            <span>이메일(아이디)</span>
+            <input id="profileEmailInput" type="email" readonly />
+          </label>
+          <label class="modal-field">
+            <span>이름</span>
+            <input id="profileNameInput" type="text" />
+          </label>
+          <label class="modal-field">
+            <span>전화번호</span>
+            <input id="profilePhoneInput" type="text" />
+          </label>
+        </div>
+        <p id="profileModalError" class="modal-error"></p>
+
+        <div class="modal-btn-row">
+          <button type="button" class="auth-btn-main profile-save-btn" onclick="saveProfileChanges()">저장</button>
+          <button type="button" class="auth-btn-main profile-password-btn" onclick="openPasswordVerifyModal()">비밀번호 수정</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="passwordVerifyModal" class="auth-modal-overlay" onclick="closePasswordVerifyOnOverlay(event)">
+      <div class="auth-modal password-modal" role="dialog" aria-modal="true" aria-label="현재 비밀번호 확인">
+        <h3 class="modal-title">현재 비밀번호 확인</h3>
+        <label class="modal-field">
+          <span>현재 비밀번호</span>
+          <input id="currentPasswordInput" type="password" placeholder="현재 비밀번호 입력" />
+        </label>
+        <p id="passwordVerifyError" class="modal-error"></p>
+        <div class="modal-btn-row">
+          <button type="button" class="auth-btn-main profile-save-btn" onclick="verifyCurrentPassword()">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="passwordChangeModal" class="auth-modal-overlay" onclick="closePasswordChangeOnOverlay(event)">
+      <div class="auth-modal password-modal" role="dialog" aria-modal="true" aria-label="새 비밀번호 변경">
+        <h3 class="modal-title">새 비밀번호 변경</h3>
+        <label class="modal-field">
+          <span>새 비밀번호</span>
+          <input id="newPasswordInput" type="password" placeholder="새 비밀번호 입력" />
+        </label>
+        <label class="modal-field">
+          <span>새 비밀번호 확인</span>
+          <input id="newPasswordConfirmInput" type="password" placeholder="새 비밀번호 다시 입력" />
+        </label>
+        <p id="passwordChangeError" class="modal-error"></p>
+        <div class="modal-btn-row">
+          <button type="button" class="auth-btn-main profile-save-btn" onclick="changePassword()">변경 완료</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/core/api.js?v=8000"></script>
+    <script src="js/core/auth.js?v=8000"></script>
+    <script>
+      (function () {
+        /*
+         * =============================================================================
+         * [대시보드 데이터 · 운영/로컬 동작 안내 — 한글]
+         * =============================================================================
+         * 일단(API 전)
+         *   • `FORCE_DUMMY_DASHBOARD === true` 이면 주소와 관계없이 항상 `dummyUserData`로 표시합니다.
+         *
+         * API 연동 후(운영·일반 접속)
+         *   • `FORCE_DUMMY_DASHBOARD` 를 `false` 로 바꾸면 `loadDashboardFromApi()` 가 호출됩니다.
+         *   • `api.get("/api/user/stats")` → 성공 시 `renderDashboardData(매핑된 객체)`
+         *   • 엔드포인트가 없거나 오류면 `emptyDashboardData`(전부 0·빈 차트)로 그립니다.
+         *
+         * 로컬 보조(UI 샘플: FORCE 가 false 일 때만 의미 있음)
+         *   • localhost / 127.0.0.1 + 주소에 `?dashboard=dummy` → 더미 적용
+         *
+         * 운영 배포 전 정리
+         *   • 실서비스에서는 `FORCE_DUMMY_DASHBOARD: false`, 필요 시 `dummyUserData` 제거
+         *   • 백엔드 필드명이 다르면 `mapStatsPayload()` 안의 매핑만 수정하면 됩니다.
+         * =============================================================================
+         */
+
+        /** 무엇: true면 마이페이지 진입 시 항상 더미 수치 표시 · false면 API(또는 쿼리 더미) */
+        /** 왜: 지금 단계에서는 DB 없이 UI를 채워 두기 위해 */
+        const FORCE_DUMMY_DASHBOARD = true;
+
+        /** 무엇: FORCE 가 false 일 때 로컬에서만 ?dashboard=dummy 로 더미 켜기 */
+        const USE_DUMMY_DASHBOARD =
+          (location.hostname === "localhost" || location.hostname === "127.0.0.1") &&
+          new URLSearchParams(location.search).get("dashboard") === "dummy";
+
+        /** API 실패·미구현 시 보여 줄 빈 대시보드(가짜 수치 없음) */
+        const emptyDashboardData = {
+          highestScore: 0,
+          highestCombo: 0,
+          evasionRate: 0,
+          totalWorkouts: 0,
+          recentPerformance: [],
+        };
+
+        // [임시 더미] FORCE_DUMMY_DASHBOARD 가 true 인 동안 기본 표시값. API 붙이면 FORCE 를 false 로.
+        const dummyUserData = {
+          highestScore: 80,
+          highestCombo: 62,
+          evasionRate: 71,
+          totalWorkouts: 45,
+          recentPerformance: [20, 60, 35, 48, 25, 75, 32, 50, 78, 90, 75],
+        };
+
+        let selectedProfileImageData = "";
+        /** ApexCharts 재렌더 시 이전 인스턴스 해제용 */
+        let performanceChartInstance = null;
+        /** 차트 시리즈( renderDashboardData가 갱신 ) */
+        let currentPerformanceSeries = [];
+
+        /** 퍼포먼스 막대/영역 차트 포인트 수( x축 01~11과 동일 길이 ) */
+        function normalizePerformanceSeries(raw) {
+          const targetLen = 11;
+          const out = [];
+          if (!Array.isArray(raw)) {
+            while (out.length < targetLen) out.push(0);
+            return out;
+          }
+          for (let i = 0; i < targetLen; i++) {
+            const n = Number(raw[i]);
+            out.push(Number.isNaN(n) ? 0 : n);
+          }
+          return out;
+        }
+
+        function clampGaugePercent(value) {
+          const n = Math.round(Number(value));
+          if (Number.isNaN(n) || n < 0) return 0;
+          return Math.min(100, n);
+        }
+
+        /**
+         * 무엇: 대시보드 전역 데이터를 받아 게이지·차트·피드백을 한 번에 반영한다.
+         * 왜: API 연동 시 fetch 한 번 후 이 함수만 호출하면 되도록 책임을 한곳으로 모으기 위해
+         */
+        function renderDashboardData(data) {
+          const src =
+            data && typeof data === "object"
+              ? data
+              : {
+                  highestScore: 0,
+                  highestCombo: 0,
+                  evasionRate: 0,
+                  totalWorkouts: 0,
+                  recentPerformance: [],
+                };
+
+          document.querySelectorAll(".gauge-item[data-stat]").forEach(function (item) {
+            const key = item.getAttribute("data-stat");
+            let raw = Number(src[key]);
+            if (Number.isNaN(raw) || raw < 0) raw = 0;
+
+            let arcScore;
+            let text;
+
+            if (key === "totalWorkouts") {
+              const workouts = Math.round(raw);
+              arcScore = Math.min(100, Math.max(0, workouts));
+              text = `${workouts}회`;
+            } else if (key === "evasionRate") {
+              arcScore = clampGaugePercent(raw);
+              text = `${arcScore}%`;
+            } else {
+              arcScore = clampGaugePercent(raw);
+              text = `${arcScore}점`;
+            }
+
+            item.setAttribute("data-score", String(arcScore));
+
+            const valueEl = item.querySelector(".gauge-value");
+            if (valueEl) valueEl.textContent = text;
+          });
+
+          currentPerformanceSeries = normalizePerformanceSeries(src.recentPerformance);
+
+          applyGaugeProgressAnimation();
+          updateFeedback(currentPerformanceSeries);
+          renderPerformanceChart();
+        }
+
+        /** 무엇: data-score(0~100)를 진행 호에 반영하고 애니메이션 */
+        /** 왜: HTML에는 초기 상태만 두고 숫자는 JS가 단일 규칙으로 맞추기 위해 */
+        function applyGaugeProgressAnimation() {
+          document.querySelectorAll(".gauge-item").forEach(function (item) {
+            const score = Math.max(
+              0,
+              Math.min(100, parseInt(item.getAttribute("data-score"), 10) || 0),
+            );
+            const progress = item.querySelector(".progress-path");
+            if (progress) {
+              // 무엇: dash 첫 세그먼트만 score만큼 그려 왼쪽→오른쪽 채움
+              // 왜: 라운드 캡은 끝을 부드럽게 하되, 길이 0일 때 라운드 점만 남는 것은 butt로 막음
+              progress.setAttribute(
+                "stroke-linecap",
+                score > 0 ? "round" : "butt",
+              );
+              progress.setAttribute("stroke-dashoffset", "0");
+              progress.setAttribute("stroke-dasharray", "0 100");
+              requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                  progress.setAttribute("stroke-dasharray", `${score} 100`);
+                });
+              });
+            }
+          });
+        }
+
+        // 무엇: 시작일을 기준으로 +N일차 계산
+        // 왜: 사용자의 누적 운동 일차를 자동 표기하기 위해
+        function updateDayCounter() {
+          const key = "boxer_start_date";
+          let startDate = localStorage.getItem(key);
+          if (!startDate) {
+            startDate = new Date().toISOString().slice(0, 10);
+            localStorage.setItem(key, startDate);
+          }
+          const start = new Date(startDate + "T00:00:00");
+          const today = new Date();
+          start.setHours(0, 0, 0, 0);
+          today.setHours(0, 0, 0, 0);
+          const diffDays = Math.floor((today - start) / 86400000);
+          const day = Math.max(0, diffDays) + 1;
+          document.getElementById("dayCounter").textContent = `+${day}일차`;
+        }
+
+        // 무엇: 로컬 사용자 데이터로 상단 프로필 갱신
+        // 왜: 로그인 사용자 정보를 시안 구조에 맞게 반영하기 위해
+        function updateProfileHeader() {
+          const profile = auth.normalizeDriveProfileImageUrl(
+            localStorage.getItem("boxer_profile_image")
+          );
+          document.getElementById("profileImage").src =
+            profile || "./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png";
+
+          const user =
+            typeof auth !== "undefined" && auth.getCachedUser
+              ? auth.getCachedUser()
+              : null;
+          const raw = (user?.username || "유저 닉네임").trim();
+          const text = raw.endsWith("님") ? raw : `${raw}님`;
+          document.getElementById("nicknameText").textContent = text;
+          document.getElementById("userLabel").textContent = text;
+          document.getElementById("userLabel").style.color = "#ed1d32";
+        }
+
+        // 무엇: localStorage와 auth 캐시에서 프로필 원본 데이터 구성
+        // 왜: 모달 열 때 입력창을 기존 값으로 미리 채우기 위해
+        function getProfileSourceData() {
+          const localUserRaw = localStorage.getItem("boxer_user");
+          let localUser = null;
+          try {
+            localUser = localUserRaw ? JSON.parse(localUserRaw) : null;
+          } catch {
+            localUser = null;
+          }
+          const authUser =
+            typeof auth !== "undefined" && auth.getCachedUser ? auth.getCachedUser() : null;
+          const user = { ...(authUser || {}), ...(localUser || {}) };
+          return {
+            email: user.email || "",
+            name: user.name || "",
+            phone: user.phone || "",
+            username: user.username || "유저 닉네임",
+            profileImage:
+              auth.normalizeDriveProfileImageUrl(
+                localStorage.getItem("boxer_profile_image")
+              ) ||
+              "./image/cache/1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18.png",
+          };
+        }
+
+        // 무엇: 프로필 수정 모달 열기
+        // 왜: 프로필 수정 버튼 클릭 시 실제 수정 UI를 띄우기 위해
+        function openProfileModal() {
+          const profile = getProfileSourceData();
+          selectedProfileImageData = "";
+          document.getElementById("profileEmailInput").value = profile.email;
+          document.getElementById("profileNameInput").value = profile.name;
+          document.getElementById("profilePhoneInput").value = profile.phone;
+          document.getElementById("profileModalPreview").src = profile.profileImage;
+          document.getElementById("profileImageInput").value = "";
+          document.getElementById("profileModalError").textContent = "";
+          document.getElementById("profileModal").classList.add("open");
+        }
+
+        function closeProfileModal() {
+          document.getElementById("profileModal").classList.remove("open");
+        }
+
+        function closeProfileModalOnOverlay(event) {
+          if (event.target.id === "profileModal") closeProfileModal();
+        }
+
+        // 무엇: 프로필 정보 저장
+        // 왜: 수정값을 localStorage에 반영하고 상단 UI를 즉시 갱신하기 위해
+        function saveProfileChanges() {
+          const err = document.getElementById("profileModalError");
+          err.textContent = "";
+          const existingRaw = localStorage.getItem("boxer_user");
+          let existing = {};
+          try {
+            existing = existingRaw ? JSON.parse(existingRaw) : {};
+          } catch {
+            existing = {};
+          }
+
+          const updated = {
+            ...existing,
+            email: document.getElementById("profileEmailInput").value.trim(),
+            name: document.getElementById("profileNameInput").value.trim(),
+            phone: document.getElementById("profilePhoneInput").value.trim(),
+          };
+          localStorage.setItem("boxer_user", JSON.stringify(updated));
+          if (selectedProfileImageData) {
+            localStorage.setItem("boxer_profile_image", selectedProfileImageData);
+          }
+          updateProfileHeader();
+          closeProfileModal();
+        }
+
+        // 무엇: 비밀번호 확인 모달 열기
+        // 왜: 비밀번호 수정 전 현재 비밀번호 이중 검증을 수행하기 위해
+        function openPasswordVerifyModal() {
+          document.getElementById("passwordVerifyError").textContent = "";
+          document.getElementById("currentPasswordInput").value = "";
+          document.getElementById("passwordVerifyModal").classList.add("open");
+        }
+
+        function closePasswordVerifyModal() {
+          document.getElementById("passwordVerifyModal").classList.remove("open");
+        }
+
+        function closePasswordVerifyOnOverlay(event) {
+          if (event.target.id === "passwordVerifyModal") closePasswordVerifyModal();
+        }
+
+        // 무엇: 현재 비밀번호 검증
+        // 왜: 테스트 환경에서 1차 인증 후에만 새 비밀번호 변경 화면을 열기 위해
+        function verifyCurrentPassword() {
+          const input = document.getElementById("currentPasswordInput").value;
+          const err = document.getElementById("passwordVerifyError");
+          err.textContent = "";
+
+          // 테스트 검증 로직: 실제 서버 인증 대신 localStorage 값과 비교
+          const savedPassword = localStorage.getItem("boxer_password") || "12345678";
+          if (input !== savedPassword) {
+            err.textContent = "비밀번호가 일치하지 않습니다.";
+            return;
+          }
+          closePasswordVerifyModal();
+          openPasswordChangeModal();
+        }
+
+        function openPasswordChangeModal() {
+          document.getElementById("newPasswordInput").value = "";
+          document.getElementById("newPasswordConfirmInput").value = "";
+          document.getElementById("passwordChangeError").textContent = "";
+          document.getElementById("passwordChangeModal").classList.add("open");
+        }
+
+        function closePasswordChangeModal() {
+          document.getElementById("passwordChangeModal").classList.remove("open");
+        }
+
+        function closePasswordChangeOnOverlay(event) {
+          if (event.target.id === "passwordChangeModal") closePasswordChangeModal();
+        }
+
+        // 무엇: 새 비밀번호 저장
+        // 왜: 이중 확인값이 일치할 때만 안전하게 비밀번호를 갱신하기 위해
+        function changePassword() {
+          const newPw = document.getElementById("newPasswordInput").value;
+          const confirmPw = document.getElementById("newPasswordConfirmInput").value;
+          const err = document.getElementById("passwordChangeError");
+          err.textContent = "";
+
+          if (!newPw || newPw.length < 8) {
+            err.textContent = "새 비밀번호는 8자 이상이어야 합니다.";
+            return;
+          }
+          if (newPw !== confirmPw) {
+            err.textContent = "새 비밀번호 확인 값이 일치하지 않습니다.";
+            return;
+          }
+          localStorage.setItem("boxer_password", newPw);
+          closePasswordChangeModal();
+          closeProfileModal();
+        }
+
+        // 무엇: 최근 퍼포먼스 시리즈로 하단 안내 문구 갱신
+        // 왜: 차트 데이터와 문구가 항상 같은 출처(currentPerformanceSeries)를 쓰게 하기 위해
+        function updateFeedback(series) {
+          const bar = document.getElementById("aiFeedback");
+          if (!bar) return;
+
+          const s = Array.isArray(series)
+            ? series.map(function (v) {
+                const n = Number(v);
+                return Number.isNaN(n) ? null : n;
+              })
+            : [];
+
+          const nums = s.filter(function (v) {
+            return v !== null;
+          });
+
+          if (nums.length < 2) {
+            bar.textContent =
+              "변화량을 계산할 퍼포먼스 데이터가 더 필요합니다. 훈련을 이어 가면 피드백이 표시됩니다.";
+            return;
+          }
+
+          const last = nums[nums.length - 1];
+          const prev = nums[nums.length - 2];
+          const delta = last - prev;
+
+          let feedback =
+            "💪 강철 같은 밸런스! 80% 이상의 높은 회피율을 유지 중이라면 그대로 유지해 보세요.";
+          if (delta > 0) {
+            feedback = "🔥 지난 훈련 대비 방어력이 상승했습니다. 완벽한 폼입니다!";
+          } else if (delta <= -5) {
+            feedback =
+              "⚡ 피로가 누적된 것 같습니다. 오늘은 무리하지 말고 폼에 집중해 보세요.";
+          }
+          bar.textContent = feedback;
+        }
+
+        function yLabelFormat(value) {
+          const normalized = Math.round((value / 100) * 11) + 1;
+          return String(Math.max(1, Math.min(12, normalized))).padStart(2, "0");
+        }
+
+        function renderPerformanceChart() {
+          const el = document.querySelector("#mpPerformanceChart");
+          if (!el || typeof ApexCharts === "undefined") return;
+
+          if (performanceChartInstance) {
+            performanceChartInstance.destroy();
+            performanceChartInstance = null;
+          }
+          el.innerHTML = "";
+
+          const chartDataSeries = normalizePerformanceSeries(currentPerformanceSeries);
+
+          const options = {
+            chart: {
+              type: "area",
+              height: 370,
+              toolbar: { show: false },
+              zoom: { enabled: false },
+              background: "transparent",
+              fontFamily: "Paperlogy, Pretendard, Malgun Gothic, sans-serif",
+            },
+            series: [
+              {
+                name: "Performance",
+                data: chartDataSeries,
+              },
+            ],
+            colors: ["#ccff33"],
+            stroke: {
+              curve: "smooth",
+              width: 6,
+              lineCap: "round",
+            },
+            fill: {
+              type: "gradient",
+              gradient: {
+                shade: "dark",
+                type: "vertical",
+                shadeIntensity: 1,
+                opacityFrom: 0.85,
+                opacityTo: 0.06,
+                stops: [0, 92, 100],
+              },
+            },
+            dataLabels: { enabled: false },
+            grid: {
+              show: true,
+              borderColor: "rgba(255,255,255,0.12)",
+              strokeDashArray: 2,
+            },
+            xaxis: {
+              categories: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"],
+              labels: {
+                show: true,
+                style: { colors: "#c9c9c9", fontSize: "13px" },
+              },
+              axisBorder: { show: false },
+              axisTicks: { show: false },
+            },
+            yaxis: {
+              show: true,
+              min: 0,
+              max: 100,
+              tickAmount: 11,
+              labels: {
+                show: true,
+                formatter: yLabelFormat,
+                style: { colors: "#c9c9c9", fontSize: "13px" },
+              },
+            },
+            legend: { show: false },
+            tooltip: { theme: "dark" },
+          };
+
+          performanceChartInstance = new ApexCharts(el, options);
+          performanceChartInstance.render();
+        }
+
+        /**
+         * 무엇: 백엔드 JSON 한 덩어리를 renderDashboardData에 맞는 키로 바꿈
+         * 왜: 스네이크/카멜 혼용·래핑 { data: ... } 는 api._handleResponse에서 이미 풀림
+         */
+        function mapStatsPayload(body) {
+          if (!body || typeof body !== "object") return emptyDashboardData;
+          const perf = Array.isArray(body.recent_performance)
+            ? body.recent_performance
+            : Array.isArray(body.recentPerformance)
+              ? body.recentPerformance
+              : [];
+          return {
+            highestScore: Number(body.highest_score ?? body.highestScore ?? 0),
+            highestCombo: Number(body.highest_combo ?? body.highestCombo ?? 0),
+            evasionRate: Number(body.evasion_rate ?? body.evasionRate ?? 0),
+            totalWorkouts: Number(body.total_workouts ?? body.totalWorkouts ?? 0),
+            recentPerformance: perf,
+          };
+        }
+
+        /**
+         * 무엇: 실제 통계 API를 호출해 대시보드 갱신
+         * 왜: 기본 진입 경로에서는 더미 대신 여기만 타게 하기 위해
+         */
+        async function loadDashboardFromApi() {
+          if (typeof api === "undefined" || typeof api.get !== "function") {
+            renderDashboardData(emptyDashboardData);
+            return;
+          }
+          try {
+            const body = await api.get("/api/user/stats");
+            renderDashboardData(mapStatsPayload(body));
+          } catch (e) {
+            console.warn("[mypage] /api/user/stats 호출 실패 — 빈 대시보드로 표시:", e);
+            renderDashboardData(emptyDashboardData);
+          }
+        }
+
+        async function boot() {
+          if (typeof auth === "undefined") {
+            window.location.href = "index.html";
+            return;
+          }
+          let loggedIn = false;
+          if (
+            typeof auth.handlePageLoadSessionCheck === "function" &&
+            !auth.handlePageLoadSessionCheck()
+          ) {
+            loggedIn = false;
+          } else if (typeof auth.validateSession === "function") {
+            try {
+              loggedIn = await auth.validateSession();
+            } catch {
+              loggedIn = false;
+            }
+          } else if (typeof auth.isLoggedIn === "function") {
+            loggedIn = auth.isLoggedIn();
+          }
+
+          if (!loggedIn) {
+            window.location.href = "index.html";
+            return;
+          }
+
+          updateDayCounter();
+          updateProfileHeader();
+
+          if (FORCE_DUMMY_DASHBOARD || USE_DUMMY_DASHBOARD) {
+            renderDashboardData(dummyUserData);
+          } else {
+            await loadDashboardFromApi();
+          }
+        }
+
+        document.getElementById("navLoginBtn").addEventListener("click", function () {
+          window.location.href = "mypage.html";
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", function () {
+          if (typeof auth !== "undefined" && typeof auth.logout === "function") {
+            auth.logout({ redirect: false });
+          }
+          window.location.href = "index.html";
+        });
+
+        document
+          .getElementById("profileImageInput")
+          .addEventListener("change", function (event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function () {
+              selectedProfileImageData = String(reader.result || "");
+              document.getElementById("profileModalPreview").src =
+                selectedProfileImageData;
+            };
+            reader.readAsDataURL(file);
+          });
+
+        window.openProfileModal = openProfileModal;
+        window.closeProfileModalOnOverlay = closeProfileModalOnOverlay;
+        window.saveProfileChanges = saveProfileChanges;
+        window.openPasswordVerifyModal = openPasswordVerifyModal;
+        window.closePasswordVerifyOnOverlay = closePasswordVerifyOnOverlay;
+        window.verifyCurrentPassword = verifyCurrentPassword;
+        window.closePasswordChangeOnOverlay = closePasswordChangeOnOverlay;
+        window.changePassword = changePassword;
+
+        boot();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOXER - Tutorial</title>
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700;800;900&family=Urban+Shadow&display=swap" />
+    <style>
+      :root {
+        --bg-image: url("https://www.figma.com/api/mcp/asset/99a799bf-060b-4a17-86bb-cfd92b241326");
+        --card-border: #ffffff;
+        --accent: #ed1c33;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Pretendard", "Noto Sans KR", sans-serif;
+        background: #000;
+      }
+
+      .tutorial-screen {
+        position: relative;
+        width: 100%;
+        min-height: 100vh;
+        overflow: hidden;
+        background-image: var(--bg-image);
+        background-size: cover;
+        background-position: center;
+      }
+
+      .top-nav {
+        position: absolute;
+        top: 20px;
+        right: 50px;
+        width: 509px;
+        height: 70px;
+        border-radius: 100px;
+        background: #fff;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        z-index: 4;
+      }
+
+      .top-nav a {
+        color: #000;
+        font-size: 20px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      /* 슬라이더 전체 레이아웃입니다. -> 가운데 카드 기준으로 위/아래 카드를 배치하려고 */
+      .slider-shell {
+        position: absolute;
+        left: 70px;
+        top: 96px;
+        width: 760px;
+        height: 880px;
+        display: grid;
+        grid-template-rows: 56px 1fr 56px;
+        align-items: center;
+        z-index: 3;
+      }
+
+      .arrow-btn {
+        width: 48px;
+        height: 30px;
+        margin: 0 auto;
+        display: block;
+        cursor: pointer;
+        border: 0;
+        background: transparent;
+        padding: 0;
+      }
+
+      .arrow-btn img {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .arrow-down img {
+        transform: rotate(180deg);
+      }
+
+      .slider-viewport {
+        position: relative;
+        width: 100%;
+        height: 760px;
+        overflow: hidden;
+      }
+
+      .level-card {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 640px;
+        height: 242px;
+        border-radius: 20px;
+        border: 4px solid var(--card-border);
+        overflow: hidden;
+        background: #0a0f19;
+        transform: translate(-50%, -50%);
+        transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+      }
+
+      .level-card.diet-card::before {
+        display: none;
+      }
+
+      .level-card img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .level-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.1) 100%);
+        z-index: 1;
+      }
+
+      .level-content {
+        position: absolute;
+        left: 20px;
+        top: 16px;
+        width: 62%;
+        color: #fff;
+        z-index: 2;
+      }
+
+      .level-title {
+        margin: 0;
+        font-family: "Urbanist", "Pretendard", sans-serif;
+        font-size: 58px;
+        line-height: 0.9;
+        font-weight: 900;
+        letter-spacing: -1.8px;
+      }
+
+      .level-desc {
+        margin: 10px 0 0;
+        font-size: 18px;
+        line-height: 1.08;
+        font-weight: 600;
+        letter-spacing: -0.6px;
+        white-space: pre-line;
+      }
+
+      .level-eng {
+        margin: 12px 0 0;
+        font-family: "Urban Shadow", "Urbanist", sans-serif;
+        color: var(--accent);
+        font-size: 44px;
+        line-height: 1;
+        font-weight: 400;
+        text-transform: uppercase;
+      }
+
+      .is-active {
+        opacity: 1;
+        filter: blur(0);
+        width: 686px;
+        transform: translate(-50%, -50%) translateY(0) scale(1);
+        box-shadow:
+          0 0 0 1px rgba(237, 28, 51, 0.65),
+          0 0 18px rgba(237, 28, 51, 0.45),
+          0 0 38px rgba(237, 28, 51, 0.25);
+        z-index: 3;
+      }
+
+      .is-prev {
+        opacity: 0.42;
+        filter: blur(3.4px) brightness(0.85);
+        transform: translate(-50%, -50%) translateY(-268px) scale(0.9);
+        z-index: 2;
+      }
+
+      .is-next {
+        opacity: 0.42;
+        filter: blur(3.4px) brightness(0.85);
+        transform: translate(-50%, -50%) translateY(268px) scale(0.9);
+        z-index: 2;
+      }
+
+      .is-hidden {
+        opacity: 0;
+        filter: blur(7px);
+        transform: translate(-50%, -50%) translateY(420px) scale(0.88);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* 카드 이미지 안에 이미 텍스트가 포함되어 있어 오버레이/텍스트는 숨깁니다. */
+      .level-card::before,
+      .level-content {
+        display: none;
+      }
+
+      @media (max-width: 1280px) {
+        .tutorial-screen {
+          min-width: 1280px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="tutorial-screen">
+      <nav class="top-nav">
+        <a href="index.html">홈</a>
+        <a href="tutorial.html">트레이닝</a>
+        <a href="sparring.html">아케이드</a>
+        <a href="dashboard.html">랭킹</a>
+        <a href="index.html">로그인</a>
+      </nav>
+
+      <section class="slider-shell">
+        <button class="arrow-btn arrow-up" id="slide-up" type="button" aria-label="이전 카드 보기">
+          <img src="https://www.figma.com/api/mcp/asset/80be064c-122e-45a8-8825-f8841ea02d29" alt="" />
+        </button>
+
+        <div class="slider-viewport" id="slider-viewport">
+          <article class="level-card" data-index="0">
+            <img src="./image/복싱중급자레벨.png" alt="복싱 중급자 레벨 카드" />
+          </article>
+
+          <article class="level-card" data-index="1">
+            <img src="./image/복싱초급자레벨.png" alt="복싱 초급자 레벨 카드" />
+          </article>
+
+          <article class="level-card" data-index="2">
+            <img src="./image/복싱고급자레벨.png" alt="복싱 고급자 레벨 카드" />
+          </article>
+
+          <article class="level-card diet-card" data-index="3">
+            <img src="./image/다이어트 복싱 이미지.png" alt="다이어트 복싱 카드" />
+          </article>
+        </div>
+
+        <button class="arrow-btn arrow-down" id="slide-down" type="button" aria-label="다음 카드 보기">
+          <img src="https://www.figma.com/api/mcp/asset/5390ece0-3f9b-413d-aca4-f4825daf3174" alt="" />
+        </button>
+      </section>
+    </main>
+
+    <script>
+      // 슬라이더 상태를 갱신합니다. -> 가운데/위/아래/숨김 클래스를 계산해서 적용하려고
+      (function initCardSlider() {
+        const cards = Array.from(document.querySelectorAll(".level-card"));
+        const upButton = document.getElementById("slide-up");
+        const downButton = document.getElementById("slide-down");
+        let activeIndex = 1;
+
+        function normalizeIndex(index) {
+          const count = cards.length;
+          return (index + count) % count;
+        }
+
+        function updateCards() {
+          cards.forEach((card, index) => {
+            card.classList.remove("is-active", "is-prev", "is-next", "is-hidden");
+            const prevIndex = normalizeIndex(activeIndex - 1);
+            const nextIndex = normalizeIndex(activeIndex + 1);
+
+            if (index === activeIndex) {
+              card.classList.add("is-active");
+            } else if (index === prevIndex) {
+              card.classList.add("is-prev");
+            } else if (index === nextIndex) {
+              card.classList.add("is-next");
+            } else {
+              card.classList.add("is-hidden");
+            }
+          });
+        }
+
+        upButton.addEventListener("click", () => {
+          activeIndex = normalizeIndex(activeIndex - 1);
+          updateCards();
+        });
+
+        downButton.addEventListener("click", () => {
+          activeIndex = normalizeIndex(activeIndex + 1);
+          updateCards();
+        });
+
+        updateCards();
+      })();
+    </script>
+  <script src="js/ui/auto-scale.js"></script>
+</body>
+</html>

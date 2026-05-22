@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER Admin | Users Manager</title>
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/admin-shell.css">
+  <style>
+    [hidden] { display: none !important; }
+    .adm-section-label,
+    .adm-field-label,
+    .kpi-label,
+    .detail-stat-label {
+      color: rgba(255,255,255,0.72);
+    }
+    .kpi-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .kpi-card { background: var(--s2); padding: 16px 18px; }
+    .kpi-label { font-size: 0.54rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 5px; }
+    .kpi-val { font-family: var(--fm); font-size: 1.6rem; letter-spacing: 0.04em; color: var(--t1); line-height: 1; }
+    .kpi-val.ice { color: var(--ice); }
+    .kpi-val.amber { color: var(--amber); }
+    .kpi-val.red { color: var(--red); }
+    .usr-filter-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .usr-filter-btn {
+      padding: 6px 13px;
+      border: 1px solid var(--border-2);
+      background: transparent;
+      color: rgba(255,255,255,0.68);
+      font-family: var(--fp);
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .usr-filter-btn.active { border-color: var(--ice); color: var(--ice); background: rgba(0,194,255,0.06); }
+    .usr-filter-btn:hover:not(.active) { color: var(--t1); }
+    .usr-search { flex: 1; max-width: 300px; }
+    .tier-badge,
+    .act-badge {
+      display: inline-flex;
+      padding: 3px 8px;
+      font-size: 0.56rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid;
+      background: rgba(255,255,255,0.03);
+    }
+    .tier-badge.free { color: rgba(255,255,255,0.72); border-color: rgba(255,255,255,0.24); }
+    .tier-badge.premium { color: var(--amber); border-color: rgba(245,166,35,0.44); }
+    .tier-badge.admin { color: var(--ice); border-color: rgba(0,194,255,0.44); }
+    .act-badge.on { color: var(--green); border-color: rgba(57,211,83,0.44); }
+    .act-badge.off { color: rgba(255,255,255,0.58); border-color: rgba(255,255,255,0.18); }
+    .adm-loading { display: flex; align-items: center; gap: 10px; padding: 40px 0; font-size: 0.8rem; color: rgba(255,255,255,0.62); }
+    .adm-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.08); border-top-color: var(--ice); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .usr-row { cursor: pointer; }
+    .usr-row:hover td { background: rgba(255,255,255,0.03); }
+    .usr-empty { padding: 48px 24px; text-align: center; font-size: 0.84rem; color: rgba(255,255,255,0.52); }
+    .api-err-banner { padding: 10px 16px; background: rgba(232,0,13,0.06); border: 1px solid rgba(232,0,13,0.28); font-size: 0.78rem; color: #ff6b72; margin-bottom: 16px; }
+    .success-banner { padding: 10px 16px; background: rgba(57,211,83,0.06); border: 1px solid rgba(57,211,83,0.24); font-size: 0.78rem; color: var(--green); margin-bottom: 16px; }
+    .usr-table .adm-table th { color: rgba(255,255,255,0.74); background: #191919; }
+    .usr-table .adm-table td { color: rgba(255,255,255,0.72); }
+    .usr-id-cell,
+    .usr-skill-cell,
+    .usr-date-cell { color: rgba(255,255,255,0.72); font-size: 0.74rem; font-weight: 700; }
+    .usr-email-cell {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.74rem;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .detail-stat-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .detail-stat { flex: 1; background: var(--s3); border: 1px solid var(--border); padding: 12px 10px; text-align: center; }
+    .detail-stat-val { font-family: var(--fm); font-size: 1.4rem; color: var(--t1); }
+    .detail-stat-label { font-size: 0.56rem; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+    @media (max-width: 860px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 540px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <header class="adm-topbar">
+    <div class="adm-topbar-left">
+      <a class="adm-brand" href="../admin.html">IM_BOXER <em>ADMIN</em></a>
+      <span class="adm-env-badge" id="envBadge">LOCAL</span>
+    </div>
+    <div class="adm-topbar-right">
+      <span class="adm-admin-label">관리자</span>
+      <span data-admin-name class="adm-admin-name">-</span>
+      <a class="adm-topbar-link" href="../admin.html">Overview</a>
+      <button class="adm-btn-logout" type="button" data-logout-button>로그아웃</button>
+    </div>
+  </header>
+
+  <div class="adm-mobile-nav">
+    <a class="adm-mobile-nav-item" href="../admin.html">Overview</a>
+    <a class="adm-mobile-nav-item active" href="./users.html">Users</a>
+    <a class="adm-mobile-nav-item" href="./gyms.html">Boxing Gyms</a>
+  </div>
+
+  <div class="adm-shell">
+    <aside class="adm-sidebar">
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">OVERVIEW</div>
+        <a class="adm-nav-item" href="../admin.html">Operation Overview</a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">CONTENT</div>
+        <a class="adm-nav-item" href="./tutorials.html">Tutorial Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./sparring.html">Sparring Manager <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="../sparring_start.html?mode=beginner&admin=1">Sparring Tuning <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./timestamp-editor.html">Timestamp Editor <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./audio.html">Audio Manager <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">MEDIA</div>
+        <a class="adm-nav-item" href="../admin-dataset.html">AI Dataset <span class="adm-nav-badge legacy">LEGACY</span></a>
+        <a class="adm-nav-item" href="./media-library.html">Media Library <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">BUSINESS</div>
+        <a class="adm-nav-item active" href="./users.html">Users <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./premium.html">Premium <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./gyms.html">Boxing Gyms <span class="adm-nav-badge live">LIVE</span></a>
+      </div>
+      <div class="adm-nav-group">
+        <div class="adm-nav-section-label">SYSTEM</div>
+        <a class="adm-nav-item" href="./analytics.html">Analytics <span class="adm-nav-badge live">LIVE</span></a>
+        <a class="adm-nav-item" href="./settings.html">Settings <span class="adm-nav-badge">PREVIEW</span></a>
+      </div>
+    </aside>
+
+    <main class="adm-main">
+      <div class="adm-breadcrumb">Admin <span>/ Business /</span> <span>Users</span></div>
+
+      <div class="adm-page-header">
+        <div>
+          <h1 class="adm-page-title">Users Manager</h1>
+          <p class="adm-page-sub">사용자 조회, tier 관리, 활성/비활성 상태 변경</p>
+        </div>
+      </div>
+
+      <div class="api-err-banner" id="apiBanner" hidden></div>
+      <div class="success-banner" id="successBanner" hidden></div>
+
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">USER KPI</span>
+          <div class="adm-section-line"></div>
+        </div>
+        <div class="kpi-strip">
+          <div class="kpi-card"><div class="kpi-label">Total Users</div><div class="kpi-val ice" id="kpiTotal">-</div></div>
+          <div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-val" id="kpiActive">-</div></div>
+          <div class="kpi-card"><div class="kpi-label">Suspended</div><div class="kpi-val red" id="kpiSuspended">-</div></div>
+          <div class="kpi-card"><div class="kpi-label">Premium</div><div class="kpi-val amber" id="kpiPremium">-</div></div>
+          <div class="kpi-card"><div class="kpi-label">Admin</div><div class="kpi-val red" id="kpiAdmin">-</div></div>
+        </div>
+      </section>
+
+      <section class="adm-section">
+        <div class="adm-section-header">
+          <span class="adm-section-label">USER TABLE</span>
+          <div class="adm-section-line"></div>
+          <span class="adm-status-dot live">LIVE</span>
+        </div>
+
+        <div class="usr-filter-bar">
+          <button class="usr-filter-btn active" data-filter="all">전체</button>
+          <button class="usr-filter-btn" data-filter="active">Active</button>
+          <button class="usr-filter-btn" data-filter="suspended">Suspended</button>
+          <button class="usr-filter-btn" data-filter="premium">Premium</button>
+          <button class="usr-filter-btn" data-filter="admin">Admin</button>
+          <input class="adm-input usr-search" id="usrSearch" type="text" placeholder="검색(username, email)">
+        </div>
+
+        <div class="adm-loading" id="usrLoading">
+          <div class="adm-spinner"></div>
+          <span>사용자를 불러오는 중...</span>
+        </div>
+
+        <div id="usrTableWrap" hidden>
+          <div class="adm-table-wrap usr-table">
+            <table class="adm-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Username</th><th>Email</th><th>Tier</th>
+                  <th>Level</th><th>Skill</th><th>Active</th><th>최근 접속</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="usrTbody"></tbody>
+            </table>
+          </div>
+          <p class="usr-empty" id="usrEmpty" hidden>조건에 맞는 사용자가 없습니다.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="adm-drawer-overlay" id="drawerOverlay"></div>
+  <div class="adm-drawer" id="usrDrawer" role="dialog" aria-modal="true">
+    <div class="adm-drawer-header">
+      <h2 class="adm-drawer-title" id="drawerTitle">사용자 상세</h2>
+      <button class="adm-drawer-close" id="drawerClose" type="button" aria-label="닫기">×</button>
+    </div>
+    <div class="adm-drawer-body">
+      <input type="hidden" id="dUserId">
+      <div class="detail-stat-row">
+        <div class="detail-stat"><div class="detail-stat-val" id="dTraining">-</div><div class="detail-stat-label">Training</div></div>
+        <div class="detail-stat"><div class="detail-stat-val" id="dSparring">-</div><div class="detail-stat-label">Sparring</div></div>
+        <div class="detail-stat"><div class="detail-stat-val" id="dCoins">-</div><div class="detail-stat-label">Coins</div></div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label">Username</label>
+        <input class="adm-input" id="dUsername" type="text" readonly style="width:100%;opacity:0.72">
+      </div>
+      <div class="adm-field">
+        <label class="adm-field-label">Email</label>
+        <input class="adm-input" id="dEmail" type="text" readonly style="width:100%;opacity:0.72">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="adm-field">
+          <label class="adm-field-label">Level</label>
+          <input class="adm-input" id="dLevel" type="text" readonly style="width:100%;opacity:0.72">
+        </div>
+        <div class="adm-field">
+          <label class="adm-field-label">Skill Level</label>
+          <input class="adm-input" id="dSkill" type="text" readonly style="width:100%;opacity:0.72">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="adm-field">
+          <label class="adm-field-label">가입일</label>
+          <input class="adm-input" id="dCreated" type="text" readonly style="width:100%;opacity:0.72">
+        </div>
+        <div class="adm-field">
+          <label class="adm-field-label">최근 접속</label>
+          <input class="adm-input" id="dLastLogin" type="text" readonly style="width:100%;opacity:0.72">
+        </div>
+      </div>
+      <div class="adm-field" style="margin-top:6px">
+        <label class="adm-field-label" for="dTier">Tier 변경</label>
+        <select class="adm-select" id="dTier">
+          <option value="free">free</option>
+          <option value="premium">premium</option>
+          <option value="admin">admin</option>
+        </select>
+      </div>
+      <div class="adm-toggle-row" style="border-bottom:none">
+        <span class="adm-toggle-label">활성 상태(is_active)</span>
+        <label class="adm-toggle">
+          <input type="checkbox" id="dIsActive">
+          <span class="adm-toggle-track"><span class="adm-toggle-thumb"></span></span>
+        </label>
+      </div>
+    </div>
+    <div class="adm-drawer-footer">
+      <button class="adm-btn-primary" id="drawerSaveTier" type="button">Tier 저장</button>
+      <button class="adm-btn-ghost" id="drawerToggleActive" type="button">활성 상태 변경</button>
+      <div style="flex:1"></div>
+      <button class="adm-btn-ghost" id="drawerDelete" type="button" style="border-color:rgba(232,0,13,0.34);color:#ff6b72">삭제</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initAdminShell, API_BASE_URL, authHeaders } from '../js/pages/admin-shell.js';
+
+    let users = [];
+    let currentFilter = 'all';
+    let searchTerm = '';
+
+    const apiBanner = document.getElementById('apiBanner');
+    const successBanner = document.getElementById('successBanner');
+    const usrLoading = document.getElementById('usrLoading');
+    const usrTableWrap = document.getElementById('usrTableWrap');
+    const usrTbody = document.getElementById('usrTbody');
+    const usrEmpty = document.getElementById('usrEmpty');
+    const drawer = document.getElementById('usrDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const dUserId = document.getElementById('dUserId');
+    const dUsername = document.getElementById('dUsername');
+    const dEmail = document.getElementById('dEmail');
+    const dLevel = document.getElementById('dLevel');
+    const dSkill = document.getElementById('dSkill');
+    const dCreated = document.getElementById('dCreated');
+    const dLastLogin = document.getElementById('dLastLogin');
+    const dTier = document.getElementById('dTier');
+    const dIsActive = document.getElementById('dIsActive');
+    const dTraining = document.getElementById('dTraining');
+    const dSparring = document.getElementById('dSparring');
+    const dCoins = document.getElementById('dCoins');
+
+    function showErr(msg) {
+      apiBanner.textContent = msg;
+      apiBanner.hidden = false;
+      successBanner.hidden = true;
+    }
+    function showSuccess(msg) {
+      successBanner.textContent = msg;
+      successBanner.hidden = false;
+      apiBanner.hidden = true;
+      setTimeout(() => { successBanner.hidden = true; }, 2500);
+    }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[ch]));
+    }
+    function fmtDate(value) {
+      return value ? String(value).slice(0, 10) : '-';
+    }
+    function tierBadge(tier) {
+      const value = tier || 'free';
+      const cls = ['free', 'premium', 'admin'].includes(value) ? value : 'free';
+      return `<span class="tier-badge ${cls}">${escapeHtml(value)}</span>`;
+    }
+
+    async function loadUsers() {
+      usrLoading.hidden = false;
+      usrTableWrap.hidden = true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users`, { headers: authHeaders() });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        users = Array.isArray(data) ? data : (data.items ?? data.users ?? []);
+        apiBanner.hidden = true;
+        renderKPIs(data.metrics);
+        renderTable();
+      } catch (err) {
+        users = [];
+        renderKPIs();
+        renderTable();
+        showErr(`사용자 API 로드 실패 (${err.message})`);
+      } finally {
+        usrLoading.hidden = true;
+      }
+    }
+
+    function renderKPIs(metrics) {
+      document.getElementById('kpiTotal').textContent = metrics?.total_users ?? users.length;
+      document.getElementById('kpiActive').textContent = metrics?.active_users ?? users.filter(user => user.is_active).length;
+      document.getElementById('kpiSuspended').textContent = metrics?.suspended_users ?? users.filter(user => !user.is_active).length;
+      document.getElementById('kpiPremium').textContent = metrics?.premium_users ?? users.filter(user => user.tier === 'premium').length;
+      document.getElementById('kpiAdmin').textContent = metrics?.admin_users ?? users.filter(user => user.tier === 'admin').length;
+    }
+
+    function filteredUsers() {
+      return users.filter(user => {
+        if (currentFilter === 'active' && !user.is_active) return false;
+        if (currentFilter === 'suspended' && user.is_active) return false;
+        if (currentFilter === 'premium' && user.tier !== 'premium') return false;
+        if (currentFilter === 'admin' && user.tier !== 'admin') return false;
+        if (searchTerm) {
+          const q = searchTerm.toLowerCase();
+          return String(user.username || '').toLowerCase().includes(q) || String(user.email || '').toLowerCase().includes(q);
+        }
+        return true;
+      });
+    }
+
+    function renderTable() {
+      const rows = filteredUsers();
+      usrTbody.innerHTML = '';
+      usrEmpty.hidden = rows.length > 0;
+      rows.forEach((user, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'usr-row';
+        tr.innerHTML = `
+          <td class="usr-id-cell">${index + 1}</td>
+          <td style="font-weight:800;color:var(--t1)">${escapeHtml(user.username || '-')}</td>
+          <td class="usr-email-cell">${escapeHtml(user.email || '-')}</td>
+          <td>${tierBadge(user.tier)}</td>
+          <td style="font-family:var(--fm);color:var(--ice)">${escapeHtml(user.level ?? '-')}</td>
+          <td class="usr-skill-cell">${escapeHtml(user.skill_level || '-')}</td>
+          <td>${user.is_active ? '<span class="act-badge on">ON</span>' : '<span class="act-badge off">OFF</span>'}</td>
+          <td class="usr-date-cell">${fmtDate(user.last_login_at)}</td>
+          <td><button class="adm-btn-ghost" style="font-size:0.7rem;padding:4px 10px">상세</button></td>
+        `;
+        tr.addEventListener('click', () => openDrawer(user));
+        usrTbody.appendChild(tr);
+      });
+      usrTableWrap.hidden = false;
+    }
+
+    async function loadDetail(id) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, { headers: authHeaders() });
+        if (!res.ok) return null;
+        return res.json();
+      } catch {
+        return null;
+      }
+    }
+
+    async function saveTier(id, tier) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}/tier`, {
+          method: 'PATCH',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        showSuccess('Tier가 저장되었습니다.');
+        await loadUsers();
+      } catch (err) {
+        showErr(`Tier 저장 실패: ${err.message}`);
+      }
+    }
+
+    async function setActive(id, isActive) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}/active`, {
+          method: 'PATCH',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_active: isActive }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        showSuccess('활성 상태가 변경되었습니다.');
+        await loadUsers();
+      } catch (err) {
+        showErr(`활성 상태 변경 실패: ${err.message}`);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('이 사용자를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        closeDrawer();
+        showSuccess('사용자가 삭제되었습니다.');
+        await loadUsers();
+      } catch (err) {
+        showErr(`삭제 실패: ${err.message}`);
+      }
+    }
+
+    async function openDrawer(user) {
+      drawerTitle.textContent = user.username || '사용자 상세';
+      dUserId.value = user.id;
+      dUsername.value = user.username || '';
+      dEmail.value = user.email || '';
+      dLevel.value = user.level ?? '-';
+      dSkill.value = user.skill_level || '-';
+      dCreated.value = fmtDate(user.created_at);
+      dLastLogin.value = fmtDate(user.last_login_at);
+      dTier.value = user.tier || 'free';
+      dIsActive.checked = Boolean(user.is_active);
+      dTraining.textContent = user.recent_training_count ?? '-';
+      dSparring.textContent = user.recent_sparring_count ?? '-';
+      dCoins.textContent = user.coins ?? '-';
+      document.getElementById('drawerToggleActive').textContent = user.is_active ? '비활성화' : '활성화';
+      drawer.classList.add('open');
+      drawerOverlay.classList.add('open');
+
+      const detail = await loadDetail(user.id);
+      if (detail) {
+        dTraining.textContent = detail.recent_training_count ?? '-';
+        dSparring.textContent = detail.recent_sparring_count ?? '-';
+        dCoins.textContent = detail.coins ?? '-';
+      }
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+    }
+
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') closeDrawer();
+    });
+    document.getElementById('drawerSaveTier').addEventListener('click', () => {
+      const id = Number(dUserId.value);
+      if (id) saveTier(id, dTier.value);
+    });
+    document.getElementById('drawerToggleActive').addEventListener('click', () => {
+      const id = Number(dUserId.value);
+      if (id) setActive(id, !dIsActive.checked);
+    });
+    document.getElementById('dIsActive').addEventListener('change', () => {
+      const id = Number(dUserId.value);
+      if (id) setActive(id, dIsActive.checked);
+    });
+    document.getElementById('drawerDelete').addEventListener('click', () => {
+      const id = Number(dUserId.value);
+      if (id) deleteUser(id);
+    });
+    document.querySelectorAll('.usr-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.usr-filter-btn').forEach(item => item.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderTable();
+      });
+    });
+    document.getElementById('usrSearch').addEventListener('input', event => {
+      searchTerm = event.target.value.trim();
+      renderTable();
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initAdminShell().catch(() => { window.location.href = '../login.html'; });
+      loadUsers();
+    });
+  </script>
+</body>
+</html>

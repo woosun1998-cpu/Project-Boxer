@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <!-- 무엇: 파이썬 산출물 선로드 / 왜: Live Server(5500) 루트 기준 ./backend/extracted_attacks.js -->
+  <script src="./backend/extracted_attacks.js" onerror="window.__EXTRACTED_ATTACKS_SCRIPT_FAILED__=true"></script>
+  <title>BOXER - 타격 타임스탬프 정밀 추출기 v3</title>
+  <style>
+    body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+    video { max-width: 800px; width: 100%; border: 2px solid #00ffcc; border-radius: 8px; display: block; margin: 0 auto; }
+    .video-wrap { max-width: 800px; margin: 0 auto; text-align: left; }
+    .dashboard {
+      background: #222;
+      padding: 12px 14px;
+      margin: 10px auto;
+      max-width: 800px;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #ff0055;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px 20px;
+    }
+    .dashboard label { color: #e0e0e0; font-size: 14px; margin: 0; }
+    .dashboard select {
+      min-width: 260px;
+      padding: 8px 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #1a1a1a;
+      color: #fff;
+      cursor: pointer;
+    }
+    .save-badge {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0d3d2e;
+      background: #3dffcc;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #00ffcc;
+      white-space: nowrap;
+    }
+    .save-badge.warn {
+      background: #553311;
+      color: #ffcc88;
+      border-color: #aa7722;
+    }
+    .ai-autoload-badge {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+      border: 1px solid #555;
+      background: #333;
+      color: #aaa;
+    }
+    .ai-autoload-badge.ok {
+      color: #062;
+      background: #8f8;
+      border-color: #2a5;
+    }
+    .btn-reset {
+      background: #442222;
+      color: #ffaaaa;
+      border: 1px solid #884444;
+      padding: 8px 14px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-reset:hover { background: #662222; color: #fff; }
+    .timeline-track {
+      position: relative;
+      height: 32px;
+      background: #2a2a2a;
+      border-radius: 6px;
+      border: 1px solid #444;
+      margin-bottom: 10px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .timeline-track-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .timeline-playhead {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: #fff;
+      box-shadow: 0 0 6px #fff;
+      pointer-events: none;
+      z-index: 3;
+      transform: translateX(-1px);
+    }
+    .timeline-marker {
+      position: absolute;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      margin-top: -5px;
+      margin-left: -5px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.45);
+      cursor: pointer;
+      z-index: 2;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .timeline-marker:hover { transform: scale(1.25); z-index: 4; }
+    .timeline-marker--focus {
+      box-shadow: 0 0 0 3px #fff, 0 0 10px rgba(255,255,255,0.7);
+      transform: scale(1.35);
+      z-index: 5;
+    }
+    textarea { width: 80%; max-width: 800px; height: 200px; background: #1a1a1a; color: #00ffcc; font-family: monospace; font-size: 14px; padding: 10px; border-radius: 4px; display: block; margin: 0 auto; }
+    kbd { background: #333; padding: 3px 8px; border-radius: 4px; border: 1px solid #777; font-weight: bold; color: #fff; }
+    .legend { margin-bottom: 15px; line-height: 1.8; }
+    button { background: #00ffcc; color: #000; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #00cc99; }
+  </style>
+</head>
+<body>
+  <h2>🥊 BOXER 타격점 정밀 추출기 v3 (풀 공격 리스트 탑재)</h2>
+  <div class="dashboard">
+    <label for="videoSelect">난이도·영상</label>
+    <select id="videoSelect" title="추출할 코치 영상 선택"></select>
+    <span id="aiAutoLoadBadge" class="ai-autoload-badge" style="display: none">🤖 AI 자동 기록 로드 중…</span>
+    <span id="saveBadge" class="save-badge" title="브라우저 localStorage에 즉시 저장됩니다">💾 실시간 자동 저장 중</span>
+    <button type="button" id="btnResetLabels" class="btn-reset" title="이 영상에만 저장된 라벨만 삭제">🗑️ 현재 영상 기록 초기화</button>
+    <span>|</span>
+    <span>재생 속도: <span id="speedDisplay">1.0</span>x</span>
+    <span>|</span>
+    <span>기록된 타격점: <span id="countDisplay">0</span>개</span>
+  </div>
+  <div class="legend">
+    <kbd>J</kbd> 잽 &nbsp;|&nbsp; <kbd>C</kbd> 크로스 &nbsp;|&nbsp; <kbd>H</kbd> 훅 &nbsp;|&nbsp; <kbd>U</kbd> 어퍼컷 &nbsp;|&nbsp; <kbd>B</kbd> 바디샷 &nbsp;|&nbsp; <kbd>O</kbd> 오버핸드<br>
+    ⚡ <kbd>[</kbd> 느리게 &nbsp;|&nbsp; <kbd>]</kbd> 빠르게 &nbsp;|&nbsp; <kbd>⬅️</kbd> 3초 되감기 &nbsp;|&nbsp; <kbd>Z</kbd> 마지막 타격 취소 &nbsp;|&nbsp; <kbd>Del</kbd> / <kbd>⌫</kbd> 재생 위치에 가장 가까운 타격점 삭제
+  </div>
+
+  <div class="video-wrap">
+    <div id="timelineTrack" class="timeline-track" title="클릭 시 해당 시각으로 이동">
+      <div id="timelineInner" class="timeline-track-inner"></div>
+    </div>
+    <video id="vid" controls></video>
+  </div>
+  <br>
+  <button type="button" onclick="exportData()">✨ 완성된 배열 복사하기</button><br><br>
+  <textarea id="output" readonly></textarea>
+
+  <script>
+    const video = document.getElementById("vid");
+    const output = document.getElementById("output");
+    const speedDisplay = document.getElementById("speedDisplay");
+    const countDisplay = document.getElementById("countDisplay");
+    const videoSelect = document.getElementById("videoSelect");
+    const saveBadge = document.getElementById("saveBadge");
+    const aiAutoLoadBadge = document.getElementById("aiAutoLoadBadge");
+    const btnResetLabels = document.getElementById("btnResetLabels");
+    const timelineTrack = document.getElementById("timelineTrack");
+    const timelineInner = document.getElementById("timelineInner");
+
+    /** 무엇: 타입별 타임라인 색 / 왜: 한눈에 펀치 종류 구분 */
+    var TYPE_COLORS = {
+      jab: "#00e6c3",
+      cross: "#66b3ff",
+      hook: "#ff6644",
+      uppercut: "#ffcc00",
+      body_shot: "#c77dff",
+      overhand: "#e0e0e0",
+    };
+
+    /** 무엇: 재생 시각과 너무 먼 타격은 삭제 대상에서 제외 / 왜: 오동작 방지 */
+    var NEAREST_HIT_MAX_DELTA_SEC = 0.75;
+
+    const VIDEO_CHOICES = [
+      { label: "초보 (스파링초보.mp4)", file: "스파링초보.mp4" },
+      { label: "보통 (스파링보통.mp4)", file: "스파링보통.mp4" },
+      { label: "어려움 (스파링어려움.mp4)", file: "스파링어려움.mp4" },
+      { label: "프로 (복싱프로.mp4)", file: "복싱프로.mp4" },
+    ];
+
+    function storageKeyForFile(fileName) {
+      return "boxer_logger_" + String(fileName || "");
+    }
+
+    function parseStoredTimestamps(raw) {
+      if (!raw || typeof raw !== "string") return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .map(function (x) {
+            if (!x || x.type == null) return null;
+            var t =
+              typeof x.time === "number"
+                ? x.time
+                : parseFloat(String(x.time).replace(",", "."));
+            if (Number.isNaN(t)) return null;
+            return { time: t, type: String(x.type) };
+          })
+          .filter(function (x) {
+            return x !== null;
+          });
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function peekTimestampsFromLocal(fileName) {
+      try {
+        var raw = localStorage.getItem(storageKeyForFile(fileName));
+        if (raw === null) return null;
+        return parseStoredTimestamps(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function persistTimestampsToLocal(fileName, list) {
+      try {
+        localStorage.setItem(storageKeyForFile(fileName), JSON.stringify(list));
+        saveBadge.classList.remove("warn");
+        saveBadge.textContent = "💾 실시간 자동 저장 중";
+        saveBadge.title = "마지막 저장: " + new Date().toLocaleTimeString("ko-KR");
+      } catch (e) {
+        saveBadge.classList.add("warn");
+        saveBadge.textContent = "⚠ 저장 실패(용량·비공개 모드 등)";
+        saveBadge.title = String(e && e.message ? e.message : e);
+      }
+    }
+
+    function buildVideoSrc(fileName) {
+      return "./frontend/video/" + encodeURIComponent(fileName);
+    }
+
+    /** 무엇: fetch로 받은 .js 문자열에서 배열만 안전 추출 / 왜: <script src> 실패·경로 불일치 시 보조 로드 */
+    function parseExtractedAttacksFromJsText(text) {
+      if (!text || typeof text !== "string") return [];
+      try {
+        var fn = new Function(
+          text +
+            "\nreturn (typeof window !== 'undefined' && window.EXTRACTED_ATTACKS && Array.isArray(window.EXTRACTED_ATTACKS)) ? window.EXTRACTED_ATTACKS.slice() : " +
+            "((typeof EXTRACTED_ATTACKS !== 'undefined' && Array.isArray(EXTRACTED_ATTACKS)) ? EXTRACTED_ATTACKS.slice() : []);"
+        );
+        return fn();
+      } catch (e) {
+        return [];
+      }
+    }
+
+    /** 무엇: 전역·fetch 보조까지 합쳐 원본 배열 참조(길이 0 포함) / 왜: 스크립트 실행 여부 판별 */
+    function readRawExtractedAttacks() {
+      try {
+        if (typeof window !== "undefined" && Array.isArray(window.EXTRACTED_ATTACKS)) {
+          return window.EXTRACTED_ATTACKS;
+        }
+      } catch (e0) {
+        /* 무시 */
+      }
+      try {
+        if (typeof EXTRACTED_ATTACKS !== "undefined" && Array.isArray(EXTRACTED_ATTACKS)) {
+          return EXTRACTED_ATTACKS;
+        }
+      } catch (e1) {
+        /* 무시 */
+      }
+      try {
+        if (typeof window !== "undefined" && Array.isArray(window.__EXTRACTED_ATTACKS_PARSED)) {
+          return window.__EXTRACTED_ATTACKS_PARSED;
+        }
+      } catch (e2) {
+        /* 무시 */
+      }
+      return null;
+    }
+
+    /** 무엇: <script src> 실패 시 여러 URL로 fetch / 왜: 루트·하위 폴더에서 Live Server 열 때 경로 차이 */
+    function ensureExtractedAttacksLoaded() {
+      return new Promise(function (resolve) {
+        var raw = readRawExtractedAttacks();
+        if (raw && Array.isArray(raw)) {
+          resolve(true);
+          return;
+        }
+        var bases = [
+          "./backend/extracted_attacks.js",
+          "backend/extracted_attacks.js",
+          "../backend/extracted_attacks.js",
+        ];
+        var i = 0;
+        function tryNext() {
+          if (i >= bases.length) {
+            resolve(false);
+            return;
+          }
+          var url = new URL(bases[i++], window.location.href).toString();
+          fetch(url, { cache: "no-store" })
+            .then(function (r) {
+              if (!r.ok) throw new Error("http");
+              return r.text();
+            })
+            .then(function (text) {
+              var arr = parseExtractedAttacksFromJsText(text);
+              if (typeof window !== "undefined") {
+                window.__EXTRACTED_ATTACKS_PARSED = arr;
+              }
+              resolve(true);
+            })
+            .catch(function () {
+              tryNext();
+            });
+        }
+        tryNext();
+      });
+    }
+
+    function cloneNormalizedAiAttacks() {
+      var raw = readRawExtractedAttacks();
+      var src = raw && Array.isArray(raw) ? raw : [];
+      var out = [];
+      for (var i = 0; i < src.length; i++) {
+        var a = src[i];
+        if (!a) continue;
+        var t = typeof a.time === "number" ? a.time : parseFloat(String(a.time).replace(",", "."));
+        if (Number.isNaN(t)) continue;
+        t = Math.round(t * 100) / 100;
+        out.push({ time: t, type: String(a.type || "jab") });
+      }
+      return out;
+    }
+
+    /** 무엇: AI 로드 뱃지 / 왜: 사용자에게 자동 반영 여부 표시 */
+    function setAiAutoLoadBadge(aiCount) {
+      if (!aiAutoLoadBadge) return;
+      aiAutoLoadBadge.style.display = "inline-block";
+      if (aiCount > 0) {
+        aiAutoLoadBadge.textContent = "🤖 AI 자동 기록 로드 완료 (" + aiCount + "건)";
+        aiAutoLoadBadge.className = "ai-autoload-badge ok";
+        aiAutoLoadBadge.title = "extracted_attacks.js → timestamps 덮어쓰기 완료";
+      } else {
+        aiAutoLoadBadge.textContent = "🤖 AI 데이터 없음 (extracted_attacks.js 비어 있음)";
+        aiAutoLoadBadge.className = "ai-autoload-badge";
+        aiAutoLoadBadge.title = "파이썬 추출 후 다시 열거나 경로를 확인하세요";
+      }
+    }
+
+    /** 무엇: AI가 있으면 항상 timestamps 덮어쓰기 / 왜: 수동보다 추출 결과를 100% 우선 반영 */
+    function syncTimestampsFromSources(fileName) {
+      return ensureExtractedAttacksLoaded().then(function () {
+        var ai = cloneNormalizedAiAttacks();
+        if (ai.length > 0) {
+          timestamps = ai.slice();
+        } else {
+          var loc = peekTimestampsFromLocal(fileName);
+          timestamps = loc !== null ? loc.slice() : [];
+        }
+        normalizeTimestampOrder();
+        updateOutput();
+        updateDash();
+        setAiAutoLoadBadge(ai.length);
+        refreshTimelineMarkers();
+        requestAnimationFrame(function () {
+          updateOutput();
+          refreshTimelineMarkers();
+          updateTimelinePlayheadAndFocus();
+        });
+      });
+    }
+
+    let timestamps = [];
+    let committedVideoFile = VIDEO_CHOICES[0].file;
+
+    function normalizeTimestampOrder() {
+      timestamps.sort(function (a, b) {
+        return a.time - b.time;
+      });
+    }
+
+    function getNearestHitIndex(curTime) {
+      if (!timestamps.length) return -1;
+      var best = -1;
+      var bestD = Infinity;
+      for (var i = 0; i < timestamps.length; i++) {
+        var d = Math.abs(timestamps[i].time - curTime);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+      if (bestD > NEAREST_HIT_MAX_DELTA_SEC) return -1;
+      return best;
+    }
+
+    function markerColorForType(type) {
+      var t = String(type || "").toLowerCase();
+      return TYPE_COLORS[t] || "#888888";
+    }
+
+    var playheadEl = null;
+
+    function ensurePlayhead() {
+      if (playheadEl) return playheadEl;
+      playheadEl = document.createElement("div");
+      playheadEl.className = "timeline-playhead";
+      timelineInner.appendChild(playheadEl);
+      return playheadEl;
+    }
+
+    function refreshTimelineMarkers() {
+      var dur = video.duration;
+      if (!Number.isFinite(dur) || dur <= 0) {
+        timelineInner.innerHTML = "";
+        playheadEl = null;
+        return;
+      }
+
+      var sorted = timestamps.slice().sort(function (a, b) {
+        return a.time - b.time;
+      });
+
+      timelineInner.innerHTML = "";
+      playheadEl = null;
+
+      for (var i = 0; i < sorted.length; i++) {
+        var t = sorted[i];
+        var pct = Math.max(0, Math.min(100, (t.time / dur) * 100));
+        var el = document.createElement("span");
+        el.className = "timeline-marker";
+        el.style.left = pct + "%";
+        el.style.background = markerColorForType(t.type);
+        el.dataset.time = String(t.time);
+        el.dataset.type = t.type;
+        el.title = t.time + "s · " + t.type;
+        (function (sec) {
+          el.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            video.currentTime = sec;
+            video.focus();
+          });
+        })(t.time);
+        timelineInner.appendChild(el);
+      }
+      ensurePlayhead();
+      updateTimelinePlayheadAndFocus();
+    }
+
+    function updateTimelinePlayheadAndFocus() {
+      var dur = video.duration;
+      var cur = video.currentTime;
+      if (!Number.isFinite(dur) || dur <= 0) return;
+      ensurePlayhead();
+      playheadEl.style.left = Math.max(0, Math.min(100, (cur / dur) * 100)) + "%";
+
+      var j = getNearestHitIndex(cur);
+      var markers = timelineInner.querySelectorAll(".timeline-marker");
+      for (var m = 0; m < markers.length; m++) {
+        markers[m].classList.toggle("timeline-marker--focus", m === j);
+      }
+    }
+
+    video.addEventListener("timeupdate", function () {
+      updateTimelinePlayheadAndFocus();
+    });
+    video.addEventListener("seeked", function () {
+      updateTimelinePlayheadAndFocus();
+    });
+    video.addEventListener("loadedmetadata", function () {
+      refreshTimelineMarkers();
+    });
+    video.addEventListener("durationchange", function () {
+      refreshTimelineMarkers();
+    });
+
+    timelineTrack.addEventListener("click", function (e) {
+      if (e.target.classList.contains("timeline-marker")) return;
+      var dur = video.duration;
+      if (!Number.isFinite(dur) || dur <= 0) return;
+      var rect = timelineInner.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var ratio = Math.max(0, Math.min(1, x / rect.width));
+      video.currentTime = ratio * dur;
+    });
+
+    for (const c of VIDEO_CHOICES) {
+      const opt = document.createElement("option");
+      opt.value = c.file;
+      opt.textContent = c.label;
+      videoSelect.appendChild(opt);
+    }
+    videoSelect.value = committedVideoFile;
+    video.src = buildVideoSrc(committedVideoFile);
+
+    function bootstrapApp() {
+      syncTimestampsFromSources(committedVideoFile);
+    }
+    bootstrapApp();
+
+    videoSelect.addEventListener("change", function () {
+      const nextFile = videoSelect.value;
+      if (nextFile === committedVideoFile) return;
+
+      committedVideoFile = nextFile;
+      video.src = buildVideoSrc(nextFile);
+      video.currentTime = 0;
+      try {
+        video.load();
+      } catch (e) {
+        /* 무시 */
+      }
+      syncTimestampsFromSources(nextFile);
+    });
+
+    btnResetLabels.addEventListener("click", function () {
+      const msg =
+        "현재 영상의 저장된 라벨링 기록을 완전히 삭제하고 처음부터 다시 시작하시겠습니까?";
+      if (!window.confirm(msg)) return;
+      try {
+        localStorage.removeItem(storageKeyForFile(committedVideoFile));
+      } catch (e) {
+        /* 무시 */
+      }
+      syncTimestampsFromSources(committedVideoFile);
+    });
+
+    window.addEventListener("keydown", function (e) {
+      if (document.activeElement === output) return;
+
+      if (e.key === "[") {
+        video.playbackRate = Math.max(0.2, video.playbackRate - 0.1);
+        updateDash();
+        return;
+      }
+      if (e.key === "]") {
+        video.playbackRate = Math.min(2.0, video.playbackRate + 0.1);
+        updateDash();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        video.currentTime = Math.max(0, video.currentTime - 3);
+        return;
+      }
+
+      if (e.key === "Delete" || e.key === "Backspace") {
+        var idx = getNearestHitIndex(video.currentTime);
+        if (idx < 0) return;
+        e.preventDefault();
+        timestamps.splice(idx, 1);
+        normalizeTimestampOrder();
+        updateOutput();
+        refreshTimelineMarkers();
+        return;
+      }
+
+      const time = parseFloat(video.currentTime.toFixed(2));
+      let type = "";
+
+      const key = e.key.toLowerCase();
+      if (key === "j") type = "jab";
+      else if (key === "c") type = "cross";
+      else if (key === "h") type = "hook";
+      else if (key === "u") type = "uppercut";
+      else if (key === "b") type = "body_shot";
+      else if (key === "o") type = "overhand";
+      else if (key === "z") {
+        timestamps.pop();
+        normalizeTimestampOrder();
+        updateOutput();
+        refreshTimelineMarkers();
+        return;
+      }
+
+      if (type) {
+        timestamps.push({ time: time, type: type });
+        normalizeTimestampOrder();
+        updateOutput();
+        refreshTimelineMarkers();
+      }
+    });
+
+    function updateDash() {
+      speedDisplay.innerText = video.playbackRate.toFixed(1);
+    }
+
+    function updateOutput() {
+      countDisplay.innerText = String(timestamps.length);
+      persistTimestampsToLocal(committedVideoFile, timestamps);
+      if (!timestamps.length) {
+        output.value = "";
+        refreshTimelineMarkers();
+        return;
+      }
+      output.value =
+        "const CPU_ATTACKS = [\n" +
+        timestamps.map(function (t) {
+          return '  { time: ' + t.time + ', type: "' + t.type + '" },';
+        }).join("\n") +
+        "\n];";
+      output.scrollTop = output.scrollHeight;
+      refreshTimelineMarkers();
+    }
+
+    function exportData() {
+      output.select();
+      document.execCommand("copy");
+      alert("배열 복사 완료!");
+    }
+  </script>
+</body>
+</html>

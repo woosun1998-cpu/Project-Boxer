@@ -1,0 +1,18 @@
+/**
+ * 스파링 히어로 — 평행사변형@2x (.spar-hero-shape) 전용
+ * 무엇: 복서·모드 배경과 규칙을 나눠서 이 레이어만 left/top/width 등 조절 가능
+ * 왜: sparring.html 안 <style>에서는 .spar-hero-boxer와 묶여 있어 같이만 움직였음
+ */
+.spar-hero .spar-hero-shape {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  left: -180px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  max-width: none !important;
+  pointer-events: none;
+}

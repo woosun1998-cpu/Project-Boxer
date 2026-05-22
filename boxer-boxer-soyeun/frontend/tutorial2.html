@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOXER — 튜토리얼 2</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body{margin:0;background:linear-gradient(180deg,#f6f8fc 0%,#edf1f7 100%);color:#111827}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1.2rem;background:linear-gradient(90deg,#111827,#172033);color:#fff;box-shadow:0 12px 28px rgba(0,0,0,.16)}
+    .brand{display:flex;align-items:center;gap:.8rem;min-width:0}.brand-mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6a2b,#ff8c4a);font-size:1.15rem}.brand-copy{display:grid;gap:.1rem}.brand-copy strong{font-size:1rem}.brand-copy span{font-size:.8rem;opacity:.72}
+    .pill{max-width:min(54vw,760px);padding:.7rem 1.1rem;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .actions{display:flex;align-items:center;gap:.65rem}.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#c8d0de,#929baa);font-weight:800}
+    .page{max-width:1540px;margin:0 auto;padding:1.1rem 1.1rem 1.4rem;display:grid;gap:1rem}
+    .hero{text-align:center;display:grid;gap:.35rem;padding:.2rem 0 .15rem}
+    .hero-quote{font-size:clamp(1.1rem,2.15vw,1.95rem);font-weight:900;line-height:1.35}.hero-sub{color:#5d6472;font-size:.95rem}
+    .meta{display:flex;flex-wrap:wrap;justify-content:center;gap:.55rem}.chip{padding:.5rem .82rem;border-radius:999px;background:rgba(255,255,255,.72);border:1px solid rgba(17,24,39,.08);box-shadow:0 10px 20px rgba(15,23,42,.08);font-size:.83rem;font-weight:800}
+    .workspace{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(360px,430px);gap:1rem;align-items:start}
+    .panel{background:rgba(255,255,255,.9);border:1px solid rgba(17,24,39,.08);border-radius:26px;box-shadow:0 24px 60px rgba(15,23,42,.12);overflow:hidden}
+    .panel-head{display:flex;justify-content:space-between;gap:1rem;padding:1.2rem 1.25rem 1rem}.eyebrow{display:inline-flex;align-items:center;gap:.4rem;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:#ff6a2b;font-weight:900;margin-bottom:.4rem}.title{margin:0;font-size:clamp(1.45rem,2.6vw,2.2rem);line-height:1.08;letter-spacing:-.03em}.desc{margin:.55rem 0 0;color:#5d6472;font-size:.92rem;line-height:1.6;max-width:58ch}
+    .btns{display:flex;gap:.6rem;flex-shrink:0}.btn{border:0;border-radius:14px;padding:.84rem 1rem;font-weight:900;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}.btn:hover{transform:translateY(-1px)}.btn-dark{background:#1b2433;color:#fff}.btn-outline{background:rgba(255,255,255,.75);color:#111827;border:1px solid rgba(17,24,39,.12)}.btn-accent{background:linear-gradient(135deg,#ff6a2b,#ff8a40);color:#fff}
+    .shell{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,390px);gap:1rem;padding:0 1.25rem 1.25rem}
+    .stack{display:grid;gap:.9rem}.video-box{position:relative;aspect-ratio:9/16;min-height:min(70vh,840px);border-radius:26px;overflow:hidden;background:radial-gradient(circle at center,rgba(255,255,255,.08),rgba(6,10,20,.95) 72%);border:1px solid rgba(255,255,255,.14)}
+    .video-box::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.18)),radial-gradient(circle at center,transparent 45%,rgba(0,0,0,.34) 100%);pointer-events:none;z-index:3}
+    #tutorial-video,#webcam-video,#pose-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}#tutorial-video{display:none;background:#000}#pose-canvas{pointer-events:none}
+    .badge{position:absolute;top:1rem;left:1rem;z-index:4;padding:.55rem .8rem;border-radius:14px;background:rgba(17,24,39,.74);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.04em}
+    .placeholder,.camera-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;text-align:center;padding:1.25rem;color:rgba(255,255,255,.82);background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.5));z-index:2}
+    .placeholder strong,.camera-placeholder strong{font-size:1.1rem}.placeholder span,.camera-placeholder span{font-size:.84rem;line-height:1.55;color:rgba(255,255,255,.7);max-width:32ch}.hidden{display:none!important}
+    .notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}.note{background:rgba(255,255,255,.84);border:1px solid rgba(17,24,39,.08);border-radius:20px;padding:.95rem 1rem;box-shadow:0 10px 24px rgba(15,23,42,.08)}.note h4{margin:0 0 .55rem;font-size:.95rem}.note p,.note ul{margin:0;color:#5d6472;font-size:.86rem;line-height:1.6}.note ul{padding-left:1rem}
+    .side{display:grid;gap:1rem}.card{background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:24px;box-shadow:0 12px 28px rgba(15,23,42,.08);padding:1rem}.card h3{margin:0 0 .9rem;font-size:1rem}
+    .report{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:1rem;align-items:center}.stats{display:grid;gap:.7rem}.stat{padding:.85rem .9rem;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(246,248,252,.95));border:1px solid rgba(17,24,39,.08)}.label{display:block;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#5d6472;margin-bottom:.3rem}.value{font-size:.98rem;font-weight:800;line-height:1.45}
+    .ring{text-align:center}.ring canvas{width:112px;height:112px;display:block;margin:0 auto}.num{font-size:2rem;font-weight:900;line-height:1}.sub{font-size:.78rem;color:#5d6472}
+    .feedback{padding:.92rem 1rem;border-radius:18px;border:1px solid rgba(255,106,43,.18);background:linear-gradient(180deg,rgba(255,242,233,.95),rgba(255,255,255,.95));color:#8f3d10;font-weight:700;line-height:1.6;min-height:3.5rem}.meta-row{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.8rem}.mini{padding:.4rem .7rem;border-radius:999px;background:rgba(17,24,39,.05);border:1px solid rgba(17,24,39,.08);font-size:.78rem;font-weight:700}
+    .visual{display:grid;place-items:center;min-height:180px;border-radius:20px;border:1px solid rgba(17,24,39,.08);background:radial-gradient(circle at 50% 24%,rgba(255,106,43,.18),transparent 42%),linear-gradient(180deg,rgba(255,255,255,.96),rgba(243,246,250,.96))}.fig{display:grid;gap:.4rem;text-align:center;z-index:1;position:relative}.fig .t{font-size:.88rem;font-weight:900;color:#ff6a2b;letter-spacing:.08em;text-transform:uppercase}.fig .m{font-size:1.15rem;font-weight:900}.fig .s{font-size:.84rem;color:#5d6472;line-height:1.45;max-width:22ch}
+    .rules{margin:0;padding:0;list-style:none;display:grid;gap:.5rem}.rules li{padding-left:1rem;position:relative;color:#5d6472;line-height:1.55;font-size:.9rem}.rules li::before{content:'';position:absolute;left:0;top:.7rem;width:6px;height:6px;border-radius:50%;background:#ff6a2b}
+    .checklist{display:grid;gap:.65rem}.check{border-radius:18px;padding:.8rem .9rem;border:1px solid rgba(17,24,39,.08);background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(247,249,252,.96))}.check.ok{border-color:rgba(36,195,106,.35);background:rgba(36,195,106,.06)}.check.warn{border-color:rgba(255,188,0,.38);background:rgba(255,188,0,.07)}.check.fail{border-color:rgba(255,77,89,.35);background:rgba(255,77,89,.06)}.chead{display:flex;align-items:center;gap:.45rem;margin-bottom:.45rem}.cicon{font-size:.92rem}.cname{flex:1;font-size:.9rem;font-weight:800}.cpct{font-size:.75rem;color:#5d6472;font-weight:700}.bar{height:6px;border-radius:999px;background:rgba(17,24,39,.08);overflow:hidden}.fill{height:100%;width:0;background:#ff4d59;border-radius:999px;transition:width .2s ease}.cmsg{margin-top:.45rem;color:#5d6472;font-size:.82rem;line-height:1.45}
+    .hold .row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;font-size:.86rem;color:#5d6472}.holdbar{height:10px;border-radius:999px;background:rgba(17,24,39,.08);overflow:hidden}.holdfill{width:0;height:100%;background:linear-gradient(90deg,#24c36a,#50d36f);border-radius:999px;transition:width .12s linear}.cam-actions{display:grid;gap:.6rem;grid-template-columns:repeat(2,minmax(0,1fr))}.camframe{position:relative;aspect-ratio:9/16;min-height:420px;border-radius:20px;overflow:hidden;background:#070b12;border:1px solid rgba(255,255,255,.1)}
+    .rail{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.8rem}.step{background:rgba(255,255,255,.92);border:1px solid rgba(17,24,39,.08);border-radius:20px;padding:.9rem;box-shadow:0 10px 24px rgba(15,23,42,.08);cursor:pointer;display:grid;gap:.45rem;min-height:112px}.step.active{border-color:rgba(255,106,43,.55)}.step.done{border-color:rgba(36,195,106,.32)}.step .top{display:flex;align-items:center;justify-content:space-between;gap:.4rem}.step .rank{font-size:.73rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#ff6a2b}.step .name{font-size:.96rem;font-weight:900;line-height:1.25}.step .sub{font-size:.78rem;color:#5d6472;line-height:1.45}.step .file{font-size:.7rem;color:#5d6472;word-break:break-all}
+    .overlay{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(7,11,18,.66);backdrop-filter:blur(8px)}.overlay.show{display:flex}.complete{width:min(92vw,520px);background:linear-gradient(180deg,#fff,#f4f7fb);border:1px solid rgba(255,255,255,.32);border-radius:28px;box-shadow:0 28px 60px rgba(0,0,0,.24);padding:1.4rem;text-align:center}.complete .title{font-size:2rem;font-weight:900;letter-spacing:-.03em;margin-bottom:.35rem;color:#ff6a2b}.complete .exp{font-size:1rem;font-weight:800;margin-bottom:.8rem}.complete p{margin:0;color:#5d6472;line-height:1.6;font-size:.92rem}
+    @media (max-width:1280px){.workspace,.shell{grid-template-columns:1fr}.side{grid-template-columns:repeat(2,minmax(0,1fr))}.rail{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:920px){.topbar{flex-wrap:wrap}.pill{max-width:none;width:100%;order:3}.side{grid-template-columns:1fr}.notes{grid-template-columns:1fr}.rail{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:640px){.page{padding:.9rem .8rem 1rem}.panel-head{flex-direction:column}.cam-actions{grid-template-columns:1fr}.rail{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">🥊</div><div class="brand-copy"><strong>AI 복싱 트레이닝 센터</strong><span>tutorial 2.0 · detail-guided posture correction</span></div></div>
+    <div class="pill" id="top-stage-pill">LEVEL 1: 기본 중의 기본 (The Foundation)</div>
+    <div class="actions"><button class="btn btn-outline" onclick="location.href='tutorial.html'">전체 보기</button><div class="avatar" id="nav-avatar">U</div></div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-quote" id="hero-quote">"양발을 어깨너비로 벌리고, 뒷발 뒤꿈치를 살짝 들어 탄력을 유지하세요."</div>
+      <div class="hero-sub" id="hero-subquote">Open your feet shoulder-width and keep a light spring in your rear heel.</div>
+      <div class="meta"><span class="chip" id="hero-level-chip">초급 1</span><span class="chip" id="hero-mode-chip">Stance</span><span class="chip" id="hero-progress-chip">0/6 완료</span><span class="chip" id="hero-reward-chip">+100 EXP · +10 코인</span></div>
+    </section>
+
+    <section class="workspace">
+      <section class="panel">
+        <div class="panel-head">
+          <div><span class="eyebrow">Practice Deck</span><h1 class="title" id="stage-title">기본 중의 기본</h1><p class="desc" id="stage-desc">기본 스탠스부터 잽, 스트레이트, 훅, 더킹까지 6개의 동작을 차례대로 익히며, AI가 실시간으로 자세를 바로잡아 줍니다.</p></div>
+          <div class="btns"><button class="btn btn-outline" id="prev-stage-btn">이전 단계</button><button class="btn btn-dark" id="next-stage-btn">다음 단계</button></div>
+        </div>
+        <div class="shell">
+          <div class="stack">
+            <div class="video-box">
+              <div class="badge" id="video-badge">STAGE 1 · stance</div>
+              <video id="tutorial-video" playsinline controls muted loop></video>
+              <div class="placeholder" id="tutorial-video-placeholder"><strong id="video-placeholder-title">기본 자세 시범을 준비 중입니다</strong><span id="video-placeholder-desc">영상을 불러오지 못했을 때는 안내 카드가 보입니다. 영상 파일과 DB 경로를 확인해 주세요.</span></div>
+            </div>
+            <div class="notes">
+              <article class="note"><h4>핵심 포인트</h4><p id="note-focus">발 간격과 가드 높이를 먼저 맞춥니다.</p></article>
+              <article class="note"><h4>오늘의 미션</h4><ul id="note-mission"><li>정석 자세를 3초 이상 유지합니다.</li><li>자세가 흔들리면 즉시 복귀합니다.</li></ul></article>
+              <article class="note"><h4>게임다운 피드백</h4><p id="note-gameplay">정확도 85% 이상을 유지하면 단계 완료가 가까워집니다.</p></article>
+            </div>
+          </div>
+
+          <aside class="side">
+            <section class="card">
+              <h3>STATUS & FEEDBACK</h3>
+              <div class="report">
+                <div class="stats">
+                  <div class="stat"><span class="label">AI 판정 리포트</span><div class="value" id="report-status">대기 중</div></div>
+                  <div class="stat"><span class="label">라이브 코치</span><div class="value" id="feedback-box">카메라를 시작하면 실시간 피드백이 표시됩니다.</div></div>
+                </div>
+                <div class="ring"><canvas id="accuracy-canvas" width="112" height="112"></canvas><div class="num" id="accuracy-num">0%</div><div class="sub">정확도</div></div>
+              </div>
+              <div class="meta-row" id="report-meta"><span class="mini">세션 대기</span><span class="mini">모드: Training</span><span class="mini">Hold 3.0s</span></div>
+            </section>
+            <section class="card">
+              <h3>정석 자세</h3>
+              <div class="visual"><div class="fig"><div class="t" id="reference-stage-label">LEVEL 1</div><div class="m" id="reference-main-label">기본 중의 기본</div><div class="s" id="reference-sub-label">정면 스탠스 · 균형 · 가드 위치 · 시선 유지</div></div></div>
+              <ul class="rules" id="rule-list"></ul>
+            </section>
+
+            <section class="card hold">
+              <h3>홀드 체크</h3>
+              <div class="row"><span>정확도 85% 이상을 3초 유지하세요</span><strong id="hold-time">0.0s</strong></div>
+              <div class="holdbar"><div class="holdfill" id="hold-fill"></div></div>
+              <div class="cam-actions">
+                <button class="btn btn-accent" id="camera-start-btn">카메라 시작</button>
+                <button class="btn btn-outline hidden" id="manual-complete-btn">수동 완료</button>
+              </div>
+            </section>
+
+            <section class="card">
+              <h3>실시간 체크리스트</h3>
+              <div class="checklist" id="checklist"></div>
+            </section>
+
+            <section class="card">
+              <h3>웹캠 & 자세 추적</h3>
+              <div class="camframe">
+                <video id="webcam-video" autoplay playsinline muted></video>
+                <canvas id="pose-canvas"></canvas>
+                <div class="camera-placeholder" id="webcam-placeholder">
+                  <strong>카메라를 시작하세요</strong>
+                  <span>전신이 잘 보이는 환경에서 시작하면 자세 추적이 더 정확해집니다.</span>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </section>
+
+    <section class="rail" id="stage-rail"></section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <script src="js/core/api.js"></script>
+  <script src="js/core/auth.js"></script>
+<script src="js/ui/navbar.js"></script>
+  <script src="js/ui/sounds.js"></script>
+  <script src="js/tutorial/TutorialEngine.js"></script>
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,106,43,.16), transparent 28%),
+        radial-gradient(circle at 80% 8%, rgba(47,125,246,.14), transparent 24%),
+        linear-gradient(180deg, #070b12 0%, #0c1119 100%);
+      color: #f3f4f6;
+    }
+    .topbar { background: linear-gradient(90deg, #05070b, #0d1220); box-shadow: 0 16px 34px rgba(0,0,0,.35); }
+    .pill { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: #fff; }
+    .hero-quote, .title, .value, .fig .m { color: #fff; }
+    .hero-sub, .desc, .note p, .note ul, .sub, .rules li, .cmsg, .cpct, .label, .mini { color: rgba(255,255,255,.7); }
+    .chip, .card, .note, .step, .visual { background: rgba(17,24,39,.82); border-color: rgba(255,255,255,.08); box-shadow: 0 18px 38px rgba(0,0,0,.32); }
+    .panel { background: linear-gradient(180deg, rgba(14,18,28,.9), rgba(8,11,18,.96)); border-color: rgba(255,255,255,.08); }
+    .panel-head, .card h3, .eyebrow { color: #fff; }
+    .eyebrow { color: #ff8a40; }
+    .btn-outline { background: rgba(255,255,255,.06); color: #fff; border-color: rgba(255,255,255,.12); }
+    .btn-dark { background: #111827; color: #fff; }
+    .btn-accent { background: linear-gradient(135deg, #ff6a2b, #ff8a40); box-shadow: 0 12px 24px rgba(255,106,43,.22); }
+    .video-box { background: radial-gradient(circle at center, rgba(255,255,255,.04), rgba(5,8,14,.98) 72%); border-color: rgba(255,255,255,.1); }
+    .placeholder, .camera-placeholder { background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.7)); color: #fff; }
+    .badge { background: rgba(0,0,0,.72); }
+    .complete { background: linear-gradient(180deg, #101827, #0b1018); color: #fff; }
+    .complete .exp, .complete p { color: rgba(255,255,255,.74); }
+    .stat, .visual, .note, .card, .step { background: linear-gradient(180deg, rgba(17,24,39,.95), rgba(10,15,24,.9)); }
+    .check { background: linear-gradient(180deg, rgba(17,24,39,.96), rgba(10,15,24,.92)); border-color: rgba(255,255,255,.08); }
+    .check.ok { background: rgba(36,195,106,.08); }
+    .check.warn { background: rgba(255,188,0,.08); }
+    .check.fail { background: rgba(255,77,89,.08); }
+    .feedback { background: linear-gradient(180deg, rgba(255,106,43,.12), rgba(255,255,255,.04)); color: #ffd7c0; border-color: rgba(255,106,43,.2); }
+  </style>
+  <script>
+    auth.requireAuthAsync().then(u=>{ if(u?.nickname) document.getElementById('nav-avatar').textContent = String(u.nickname).slice(0,1).toUpperCase(); });
+    if(!auth.requireAuth()) throw new Error('redirect');
+
+    const HOLD_DURATION = 3000;
+    const POSE_SAVE_INTERVAL = 3000;
+    const STAGE_LIBRARY = [
+      {id:'beginner-1',level:'초급 1',fullTitle:'LEVEL 1: 기본 중의 기본 (The Foundation)',title:'기본 중의 기본',subtitle:'Boxing Stance',mode:'stance',match:['stance','boxing stance'],videoFile:'tutorial-level1-stance.mp4',dbPath:'/assets/videos/tutorial-level1-stance.mp4',quote:'양발을 어깨너비로 벌리고, 뒷발 뒤꿈치를 살짝 들어 탄력을 유지하세요.',quoteEn:'Open your feet shoulder-width and keep a light spring in your rear heel.',focus:'발 간격, 가드 높이, 턱 위치, 상체 기울기부터 안정화합니다.',mission:['앞발은 정면, 뒷발은 약 45도로 맞춥니다.','양손은 턱 옆에서 얼굴을 보호합니다.','어깨와 엉덩이 중심이 무너지지 않게 버팁니다.'],gameplay:'정확도와 균형이 동시에 올라가면 다음 단계가 열립니다.',reference:['앞발 정면, 뒷발 45도','가드 높이 유지','뒤꿈치 살짝 들기']},
+      {id:'beginner-2',level:'초급 2',fullTitle:'LEVEL 1-2: 빠른 선공, 잽 (Jab)',title:'잽으로 거리 잡기',subtitle:'Jab',mode:'jab',match:['jab'],videoFile:'tutorial-level1-jab.mp4',dbPath:'/assets/videos/tutorial-level1-jab.mp4',quote:'짧게 찌르고, 더 짧게 돌아오세요. 잽은 리듬과 복귀가 전부입니다.',quoteEn:'Strike short, return faster. Jab is all about rhythm and recovery.',focus:'앞손의 직선 궤적과 빠른 복귀를 가장 먼저 봅니다.',mission:['공격 후 뒷손 가드가 무너지지 않게 유지합니다.','앞손은 곧장 원래 가드 위치로 돌아옵니다.','짧게 내쉬는 호흡으로 타이밍을 잡습니다.'],gameplay:'연속 잽에서 복귀가 빠르면 콤보 보너스가 살아납니다.',reference:['앞손 직선','뒷손 가드 유지','복귀 속도']},
+      {id:'intermediate-1',level:'중급 1',fullTitle:'LEVEL 2-1: 거리와 회전, 스트레이트 (Straight)',title:'회전으로 뻗는 스트레이트',subtitle:'Straight / Cross',mode:'straight',match:['straight','cross'],videoFile:'tutorial-level2-straight.mp4',dbPath:'/assets/videos/tutorial-level2-straight.mp4',quote:'뒷발을 피벗하고, 골반과 어깨를 같이 돌려 힘을 실어주세요.',quoteEn:'Pivot the rear foot and rotate hips and shoulders together.',focus:'피벗, 체중 이동, 직선 타격의 연결을 살펴봅니다.',mission:['뒷발로 지면을 밀어 회전력을 만듭니다.','타격 순간에도 턱은 들지 않습니다.','상체만 나가지 않도록 코어를 고정합니다.'],gameplay:'피벗 타이밍이 맞으면 점수와 정확도 모두 크게 올라갑니다.',reference:['뒷발 피벗','체중 이동','코어 정렬']},
+      {id:'intermediate-2',level:'중급 2',fullTitle:'LEVEL 2-2: 옆으로 파고드는 훅 (Hook)',title:'훅의 수평 궤적',subtitle:'Hook',mode:'hook',match:['hook'],videoFile:'tutorial-level2-hook.mp4',dbPath:'/assets/videos/tutorial-level2-hook.mp4',quote:'크게 휘두르지 말고, 짧고 빠르게 수평으로 끊어 주세요.',quoteEn:'Do not swing wide. Keep the hook short, fast, and horizontal.',focus:'팔꿈치 각도와 수평 정렬, 반대손 가드가 핵심입니다.',mission:['팔꿈치는 약 90도로 접어 둡니다.','반대손은 턱 옆에 남겨 둡니다.','회전축이 무너지지 않게 짧게 돌립니다.'],gameplay:'훅은 궤도가 넓어지면 바로 판정이 흔들리니, 짧고 명확하게 움직입니다.',reference:['팔꿈치 90도','수평 궤적','반대손 가드']},
+      {id:'advanced-1',level:'상급 1',fullTitle:'LEVEL 3-1: 깊게 낮추고 빠져나가기 (Ducking)',title:'더킹과 위빙',subtitle:'Duck & Weave',mode:'ducking',match:['duck','weav'],videoFile:'tutorial-level3-ducking.mp4',dbPath:'/assets/videos/tutorial-level3-ducking.mp4',quote:'허리를 꺾지 말고, 무릎과 하체로 낮게 빠져 나가세요.',quoteEn:'Do not bend at the waist. Drop with your knees and legs.',focus:'코 높이 변화와 좌우 U자 이동이 잘 보이면 성공입니다.',mission:['회피 중에도 손은 턱 앞에 두세요.','시선은 아래가 아니라 상대를 향해 둡니다.','낮아진 후 바로 중심을 회복합니다.'],gameplay:'낮아진 상태에서 균형을 지키면 다음 반격이 훨씬 빨라집니다.',reference:['무릎으로 낮추기','U자 회피','가드 유지']},
+      {id:'advanced-2',level:'상급 2',fullTitle:'LEVEL 3-2: 공격과 회복을 연결하는 콤보 (Combo)',title:'콤보와 카운터',subtitle:'Combo & Counter',mode:'combo',match:['combo','counter'],videoFile:'tutorial-level3-combo.mp4',dbPath:'/assets/videos/tutorial-level3-combo.mp4',quote:'동작과 동작 사이의 딜레이를 줄이고, 한 번의 리듬으로 묶어 주세요.',quoteEn:'Reduce the delay between moves and link them into one rhythm.',focus:'연결 속도, 가드 복귀, 중심 회복을 종합적으로 봅니다.',mission:['한 동작이 끝나기 전에 다음 동작을 준비합니다.','연속 공격 후 즉시 기본 스탠스로 돌아갑니다.','호흡을 끊지 말고 리듬을 일정하게 유지합니다.'],gameplay:'콤보는 한 번에 몰아치는 대신, 자연스러운 흐름이 점수에 반영됩니다.',reference:['연결 속도','가드 복귀','중심 회복']}
+    ];
+    const CHECK_LABELS = {guard:'가드 높이',stance:'발 위치',balance:'체중 중심',chinTuck:'턱 위치',elbowIn:'팔꿈치 밀착',core:'상체 각도',recovery:'가드 복귀 속도',rotation:'회전력',hookLine:'수평 정렬',duckLevel:'낮아진 높이',headMovement:'머리 이동',comboFlow:'연결 속도'};
+
+    let tutorialItems = [], userProgress = {}, stageEntries = [], currentStageIndex = 0, currentStage = null, currentTutorial = null, currentTutorialSessionId = null, currentBlueprint = null, poseInstance = null, cameraInstance = null, holdStartTime = null, isCompleted = false, lastPoseSaveTime = 0;
+    const clamp = (v, min = 0, max = 1) => Math.min(Math.max(v, min), max);
+    const normalizeText = v => String(v || '').toLowerCase();
+    const resolveAssetPath = (p, f = '') => !p ? f : /^https?:\/\//i.test(p) ? p : p.startsWith('/assets/') ? `/frontend${p}` : p.startsWith('assets/') ? `/frontend/${p}` : p.startsWith('/frontend/') ? p : p;
+    const drawAccuracyRing = pct => { const c = document.getElementById('accuracy-canvas'), x = c.getContext('2d'), s = c.width, ctr = s/2, r = s*.36; x.clearRect(0,0,s,s); x.lineWidth = 12; x.lineCap = 'round'; x.beginPath(); x.strokeStyle = 'rgba(17,24,39,.08)'; x.arc(ctr,ctr,r,0,Math.PI*2); x.stroke(); x.beginPath(); x.strokeStyle = pct >= 85 ? '#24c36a' : pct >= 60 ? '#ffbc00' : '#ff4d59'; x.arc(ctr,ctr,r,-Math.PI/2,-Math.PI/2 + Math.PI*2*(pct/100)); x.stroke(); };
+
+    function findTutorialForStage(stage, used) {
+      const exact = tutorialItems.find(item => !used.has(item.id) && stage.match.some(f => normalizeText(item.title).includes(f)));
+      if (exact) { used.add(exact.id); return exact; }
+      const fallback = tutorialItems.find(item => !used.has(item.id));
+      if (fallback) used.add(fallback.id);
+      return fallback || null;
+    }
+
+    function attachTutorialData() {
+      const used = new Set();
+      stageEntries = STAGE_LIBRARY.map((stage, index) => {
+        const matched = findTutorialForStage(stage, used) || tutorialItems[index] || null;
+        return {...stage, tutorial: matched, tutorialId: matched?.id || null, rewardExp: matched?.reward_exp ?? 100, rewardCoins: matched?.reward_coins ?? 10, difficultyLevel: matched?.difficulty_level ?? Math.min(index + 1, 3), progress: matched ? userProgress[matched.id] : null, videoUrl: matched?.video_url || stage.dbPath};
+      });
+    }
+
+    function renderStageRail() {
+      document.getElementById('stage-rail').innerHTML = stageEntries.map((stage, index) => {
+        const done = !!stage.progress?.is_completed, active = index === currentStageIndex;
+        return `<button class="step ${active ? 'active' : ''} ${done ? 'done' : ''}" onclick="openStage(${index})"><div class="top"><span class="rank">${stage.level}</span><span>${done ? '✅' : active ? '▶' : '•'}</span></div><div class="name">${stage.title}</div><div class="sub">${stage.subtitle}</div><div class="file">${stage.videoFile}</div></button>`;
+      }).join('');
+    }
+
+    function renderOverallProgress() {
+      const total = stageEntries.length || 6;
+      const completed = stageEntries.filter(stage => stage.progress?.is_completed).length;
+      document.getElementById('hero-progress-chip').textContent = `${completed}/${total} 완료`;
+    }
+
+    function renderChecklist(mode) {
+      const profile = TutorialEngine.getProfile(mode);
+      document.getElementById('checklist').innerHTML = profile.priority.map(k => `<div class="check fail" id="check-${k}"><div class="chead"><span class="cicon">❌</span><span class="cname">${CHECK_LABELS[k] || profile.labels[k] || k}</span><span class="cpct" id="pct-${k}">0%</span></div><div class="bar"><div class="fill" id="bar-${k}"></div></div><div class="cmsg" id="msg-${k}">판정 대기 중</div></div>`).join('');
+    }
+
+    function resetChecklist(mode = 'stance') {
+      TutorialEngine.getProfile(mode).priority.forEach(k => {
+        const el = document.getElementById(`check-${k}`); if (!el) return;
+        el.classList.remove('ok', 'warn'); el.classList.add('fail');
+        const icon = el.querySelector('.cicon'); if (icon) icon.textContent = '❌';
+        const bar = document.getElementById(`bar-${k}`), pct = document.getElementById(`pct-${k}`), msg = document.getElementById(`msg-${k}`);
+        if (bar) bar.style.width = '0%'; if (pct) pct.textContent = '0%'; if (msg) msg.textContent = '판정 대기 중';
+      });
+    }
+
+    function updateChecklist(key, check) {
+      const el = document.getElementById(`check-${key}`); if (!el || !check) return;
+      const pct = Math.round((check.score || 0) * 100), bar = document.getElementById(`bar-${key}`), pp = document.getElementById(`pct-${key}`), msg = document.getElementById(`msg-${key}`), icon = el.querySelector('.cicon');
+      el.classList.remove('ok', 'warn', 'fail');
+      if (check.ok) { el.classList.add('ok'); if (icon) icon.textContent = '✅'; }
+      else if ((check.score || 0) >= .5) { el.classList.add('warn'); if (icon) icon.textContent = '🟡'; }
+      else { el.classList.add('fail'); if (icon) icon.textContent = '❌'; }
+      if (bar) { bar.style.width = pct + '%'; bar.style.background = check.ok ? '#24c36a' : (check.score >= .5 ? '#ffbc00' : '#ff4d59'); }
+      if (pp) pp.textContent = pct + '%';
+      if (msg) msg.textContent = check.message || '';
+    }
+
+    function updateReport({accuracy, feedback, mode, holdText, sessionState}) {
+      const pct = Math.round(accuracy * 100);
+      document.getElementById('accuracy-num').textContent = `${pct}%`;
+      document.getElementById('accuracy-num').style.color = pct >= 85 ? '#24c36a' : pct >= 60 ? '#b67f00' : '#ff4d59';
+      drawAccuracyRing(pct);
+      document.getElementById('feedback-box').textContent = feedback;
+      document.getElementById('report-status').textContent = sessionState || (pct >= 85 ? '안정적' : pct >= 60 ? '조정 필요' : '교정 중');
+      document.getElementById('report-meta').innerHTML = `<span class="mini">모드: ${mode || 'stance'}</span><span class="mini">정확도 ${pct}%</span><span class="mini">Hold ${holdText || '0.0s'}</span>`;
+    }
+
+    function renderStageDetails(stage) {
+      document.getElementById('top-stage-pill').textContent = stage.fullTitle;
+      document.getElementById('hero-quote').textContent = `"${stage.quote}"`;
+      document.getElementById('hero-subquote').textContent = stage.quoteEn;
+      document.getElementById('hero-level-chip').textContent = stage.level;
+      document.getElementById('hero-mode-chip').textContent = stage.subtitle;
+      document.getElementById('hero-reward-chip').textContent = `+${stage.rewardExp} EXP · +${stage.rewardCoins} 코인`;
+      document.getElementById('stage-title').textContent = stage.title;
+      document.getElementById('stage-desc').textContent = stage.focus;
+      document.getElementById('video-badge').textContent = `${stage.level} · ${stage.mode}`;
+      document.getElementById('reference-stage-label').textContent = stage.level.toUpperCase();
+      document.getElementById('reference-main-label').textContent = stage.title;
+      document.getElementById('reference-sub-label').textContent = stage.reference.join(' · ');
+      document.getElementById('note-focus').textContent = stage.focus;
+      document.getElementById('note-mission').innerHTML = stage.mission.map(i => `<li>${i}</li>`).join('');
+      document.getElementById('note-gameplay').textContent = stage.gameplay;
+      document.getElementById('rule-list').innerHTML = stage.reference.map(i => `<li>${i}</li>`).join('');
+    }
+
+    function resolveStageVideo(stage) { return resolveAssetPath(stage.tutorial?.video_url || stage.dbPath, `/frontend${stage.dbPath}`); }
+    function renderStageVideo(stage) {
+      const v = document.getElementById('tutorial-video'), p = document.getElementById('tutorial-video-placeholder'), pt = document.getElementById('video-placeholder-title'), pd = document.getElementById('video-placeholder-desc'), src = resolveStageVideo(stage);
+      v.pause(); v.removeAttribute('src'); v.load(); v.style.display = 'none'; p.style.display = 'flex';
+      if (!src) { pt.textContent = '비디오를 준비 중입니다'; pd.textContent = '영상 파일 경로를 확인하면 이 영역에 실제 튜토리얼 영상이 표시됩니다.'; return; }
+      v.src = src; v.style.display = 'block'; p.style.display = 'none';
+      v.onerror = () => { v.style.display = 'none'; p.style.display = 'flex'; pt.textContent = '영상을 찾을 수 없습니다'; pd.textContent = 'frontend/assets/videos/ 폴더와 파일명을 다시 확인해 주세요.'; };
+    }
+
+    function updateCurrentSessionState(stage) {
+      currentStage = stage; currentTutorial = stage.tutorial || null; currentBlueprint = stage; isCompleted = false; holdStartTime = null;
+      TutorialEngine.reset(stage.mode);
+      renderStageDetails(stage); renderChecklist(stage.mode); resetChecklist(stage.mode); renderStageRail(); renderStageVideo(stage);
+      document.getElementById('hold-fill').style.width = '0%'; document.getElementById('hold-time').textContent = '0.0s'; document.getElementById('complete-overlay').classList.remove('show');
+      document.getElementById('accuracy-num').textContent = '0%'; drawAccuracyRing(0);
+      updateReport({accuracy:0,feedback:'카메라를 시작하면 실시간 코치 피드백이 표시됩니다.',mode:stage.mode,holdText:'0.0s',sessionState:'대기 중'});
+      document.getElementById('webcam-placeholder').classList.remove('hidden'); document.getElementById('webcam-placeholder').style.display = 'flex';
+      document.getElementById('camera-start-btn').textContent = '카메라 시작'; document.getElementById('manual-complete-btn').classList.add('hidden');
+      initTutorialSession();
+    }
+
+    function openStage(index) {
+      if (!stageEntries.length) return;
+      currentStageIndex = Math.max(0, Math.min(index, stageEntries.length - 1));
+      updateCurrentSessionState(stageEntries[currentStageIndex]);
+      if (!cameraInstance) startCamera({ silent: true }).catch(() => {});
+    }
+
+    function goNextStage() {
+      closeCompleteOverlay();
+      if (currentStageIndex + 1 < stageEntries.length) openStage(currentStageIndex + 1);
+      else showToast('모든 단계 완료! 🎉', 'success');
+    }
+
+    function goPrevStage() {
+      if (currentStageIndex > 0) openStage(currentStageIndex - 1);
+    }
+
+    function closeCompleteOverlay() {
+      document.getElementById('complete-overlay')?.classList.remove('show');
+    }
+
+    async function initTutorialSession() {
+      currentTutorialSessionId = null;
+      if (!currentStage) return;
+      try {
+        const resp = await api.post('/api/sessions', { session_type: 'tutorial' });
+        currentTutorialSessionId = resp?.data?.id || resp?.id || null;
+      } catch (_) {}
+    }
+
+    async function loadTutorials() {
+      try {
+        const [list, prog] = await Promise.all([
+          api.get('/api/tutorials'),
+          api.get('/api/users/me/progress').catch(() => [])
+        ]);
+        tutorialItems = Array.isArray(list) ? list : (list.tutorials || list.items || list.data || []);
+        tutorialItems = tutorialItems.slice().sort((a, b) => (a.order_sequence || 0) - (b.order_sequence || 0));
+        if (Array.isArray(prog)) prog.forEach(r => userProgress[r.tutorial_id] = r);
+        else if (prog?.data) prog.data.forEach(r => userProgress[r.tutorial_id] = r);
+      } catch (err) {
+        showToast('튜토리얼 데이터를 불러오지 못했습니다. 페이지는 데모 모드로 동작합니다.', 'error');
+      }
+      attachTutorialData();
+      renderStageRail();
+      renderOverallProgress();
+      openStage(0);
+    }
+
+    async function startCamera({ silent = false } = {}) {
+      const video = document.getElementById('webcam-video');
+      const canvas = document.getElementById('pose-canvas');
+      const ph = document.getElementById('webcam-placeholder');
+      if (typeof Pose === 'undefined') {
+        if (!silent) showToast('MediaPipe Pose를 불러오지 못했습니다.', 'error');
+        throw new Error('MediaPipe 로드 실패');
+      }
+      if (cameraInstance) { try { cameraInstance.stop(); } catch (_) {} cameraInstance = null; }
+      if (poseInstance) { try { poseInstance.close?.(); } catch (_) {} poseInstance = null; }
+
+      ph.classList.add('hidden');
+      ph.style.display = 'none';
+
+      poseInstance = new Pose({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      poseInstance.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        enableSegmentation: false,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7
+      });
+      poseInstance.onResults(onPoseResults);
+
+      cameraInstance = new Camera(video, {
+        onFrame: async () => {
+          if (poseInstance) await poseInstance.send({ image: video });
+        },
+        width: 640,
+        height: 480
+      });
+      await cameraInstance.start();
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      document.getElementById('camera-start-btn').textContent = '카메라 재시작';
+      document.getElementById('manual-complete-btn').classList.add('hidden');
+      if (!silent) showToast('카메라가 연결되었습니다.', 'success');
+      return true;
+    }
+
+    function stopCamera() {
+      if (cameraInstance) { try { cameraInstance.stop(); } catch (_) {} cameraInstance = null; }
+      if (poseInstance) { try { poseInstance.close?.(); } catch (_) {} poseInstance = null; }
+      const video = document.getElementById('webcam-video');
+      if (video?.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+    }
+
+    function onPoseResults(results) {
+      const canvas = document.getElementById('pose-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!results.poseLandmarks) {
+        holdStartTime = null;
+        document.getElementById('hold-fill').style.width = '0%';
+        document.getElementById('hold-time').textContent = '0.0s';
+        updateReport({
+          accuracy: 0,
+          feedback: '자세가 감지되지 않습니다. 전신이 보이도록 카메라를 맞춰 주세요.',
+          mode: currentStage?.mode || 'stance',
+          holdText: '0.0s',
+          sessionState: '대기 중'
+        });
+        return;
+      }
+
+      const lm = results.poseLandmarks;
+      const mode = currentStage?.mode || 'stance';
+      const { checks, accuracy, feedback, profile } = TutorialEngine.analyze(lm, { mode });
+
+      TutorialEngine.drawColoredSkeleton(ctx, lm, checks);
+      profile.priority.forEach(key => updateChecklist(key, checks[key]));
+
+      const pct = Math.round(accuracy * 100);
+      if (accuracy >= 0.85) {
+        if (!holdStartTime) holdStartTime = Date.now();
+        const elapsed = Date.now() - holdStartTime;
+        const holdPct = Math.min((elapsed / HOLD_DURATION) * 100, 100);
+        document.getElementById('hold-fill').style.width = `${holdPct}%`;
+        document.getElementById('hold-time').textContent = `${(elapsed / 1000).toFixed(1)}s`;
+        if (elapsed >= HOLD_DURATION && !isCompleted) {
+          isCompleted = true;
+          triggerComplete(accuracy);
+        }
+      } else {
+        holdStartTime = null;
+        document.getElementById('hold-fill').style.width = '0%';
+        document.getElementById('hold-time').textContent = '0.0s';
+      }
+
+      updateReport({
+        accuracy,
+        feedback,
+        mode,
+        holdText: document.getElementById('hold-time').textContent,
+        sessionState: pct >= 85 ? '안정적' : pct >= 60 ? '조정 필요' : '교정 중'
+      });
+
+      savePoseCorrection(checks, accuracy);
+    }
+
+    function savePoseCorrection(checks, accuracy) {
+      if (!currentTutorialSessionId) return;
+      const now = Date.now();
+      if (now - lastPoseSaveTime < POSE_SAVE_INTERVAL) return;
+      lastPoseSaveTime = now;
+
+      const issueByKey = {
+        guard: { issueType: 'hands_too_low', severity: 'high' },
+        elbowIn: { issueType: 'elbow_out', severity: 'medium' },
+        stance: { issueType: 'stance_too_narrow', severity: 'medium' },
+        balance: { issueType: 'weight_off_center', severity: 'medium' },
+        chinTuck: { issueType: 'head_forward', severity: 'low' },
+        core: { issueType: 'core_weak', severity: 'low' },
+        recovery: { issueType: 'slow_guard_recovery', severity: 'high' },
+        rotation: { issueType: 'insufficient_rotation', severity: 'high' },
+        hookLine: { issueType: 'hook_alignment_off', severity: 'high' },
+        duckLevel: { issueType: 'insufficient_duck', severity: 'high' },
+        headMovement: { issueType: 'evade_range_too_small', severity: 'medium' },
+        comboFlow: { issueType: 'combo_timing_slow', severity: 'high' }
+      };
+      for (const key of TutorialEngine.getProfile(currentStage?.mode || 'stance').priority) {
+        if (checks[key] && !checks[key].ok) {
+          const issue = issueByKey[key] || { issueType: key, severity: 'medium' };
+          api.post('/api/sessions/pose-corrections', {
+            session_id: currentTutorialSessionId,
+            pose_type: key,
+            accuracy: Math.round(accuracy * 100),
+            issue_type: issue.issueType,
+            feedback_message: checks[key].message,
+            severity: issue.severity
+          }).catch(() => {});
+          break;
+        }
+      }
+    }
+
+    async function triggerComplete(accuracy) {
+      stopCamera();
+      document.getElementById('complete-overlay').classList.add('show');
+      document.getElementById('complete-exp').textContent = `+${currentStage.rewardExp} EXP · +${currentStage.rewardCoins} 코인`;
+      SoundSystem.tutorialComplete?.();
+      if (!currentTutorial?.id) {
+        showToast('튜토리얼 완료! (로컬 데모)', 'success');
+        return;
+      }
+      try {
+        const progress = userProgress[currentTutorial.id];
+        await api.post(`/api/tutorials/${currentTutorial.id}/complete`, {
+          accuracy: Math.round(accuracy * 100),
+          attempts: (progress?.attempts || 0) + 1
+        });
+        userProgress[currentTutorial.id] = {
+          ...progress,
+          is_completed: true,
+          best_accuracy: Math.max(progress?.best_accuracy || 0, Math.round(accuracy * 100))
+        };
+        attachTutorialData();
+        renderStageRail();
+        renderOverallProgress();
+        showToast('튜토리얼 완료! 🎉', 'success');
+      } catch (err) {
+        showToast('완료 저장 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function manualComplete() {
+      if (isCompleted) return;
+      isCompleted = true;
+      document.getElementById('complete-overlay').classList.add('show');
+      document.getElementById('complete-exp').textContent = `+${currentStage.rewardExp} EXP · +${currentStage.rewardCoins} 코인`;
+      if (currentTutorial?.id) {
+        try {
+          await api.post(`/api/tutorials/${currentTutorial.id}/complete`, { accuracy: 100, attempts: 1 });
+          showToast('튜토리얼 완료! 🎉', 'success');
+        } catch (err) {
+          showToast('완료 저장 실패: ' + err.message, 'error');
+        }
+      } else {
+        showToast('튜토리얼 완료! (로컬 데모)', 'success');
+      }
+    }
+
+    function closeCompleteOverlay() {
+      document.getElementById('complete-overlay')?.classList.remove('show');
+    }
+
+    document.getElementById('camera-start-btn').addEventListener('click', () => {
+      startCamera({ silent: false }).catch(err => {
+        document.getElementById('manual-complete-btn').classList.remove('hidden');
+        if (err?.message) showToast(`카메라 시작 실패: ${err.message}`, 'error');
+      });
+    });
+    document.getElementById('manual-complete-btn').addEventListener('click', manualComplete);
+    document.getElementById('prev-stage-btn').addEventListener('click', goPrevStage);
+    document.getElementById('next-stage-btn').addEventListener('click', goNextStage);
+    window.openStage = openStage;
+    window.goNextStage = goNextStage;
+    window.goPrevStage = goPrevStage;
+    window.closeCompleteOverlay = closeCompleteOverlay;
+    window.addEventListener('beforeunload', stopCamera);
+    loadTutorials();
+  </script>
+  <script src="js/ui/auto-scale.js"></script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boxer 타임스탬프 샘플러</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f1115;
+      color: #f3f5f8;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+    .muted {
+      color: #a8b0bd;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .panel {
+      background: #181c24;
+      border: 1px solid #2a3140;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .guide-list {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.6;
+      font-size: 13px;
+      color: #dbe2ef;
+    }
+    .guide-list li + li {
+      margin-top: 4px;
+    }
+    input, button, select, textarea {
+      background: #10141d;
+      color: #f3f5f8;
+      border: 1px solid #2f3748;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    input[type="number"] {
+      width: 110px;
+    }
+    button {
+      cursor: pointer;
+    }
+    button.primary {
+      background: #2d6dfa;
+      border-color: #2d6dfa;
+    }
+    button.warn {
+      background: #ad2f45;
+      border-color: #ad2f45;
+    }
+    video {
+      width: 100%;
+      max-height: 460px;
+      background: #000;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid #2a3140;
+      padding: 8px;
+      text-align: left;
+    }
+    .kbd {
+      display: inline-block;
+      border: 1px solid #3a4356;
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 2px 6px;
+      background: #111722;
+      font-size: 12px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 170px;
+      margin-top: 8px;
+      font-family: Consolas, monospace;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>타임스탬프 샘플러</h1>
+    <div class="muted">
+      영상 재생 중 <span class="kbd">M</span> 키를 누르면 현재 시간을 impact_time으로 기록합니다.
+      기록 후 SQL/JSON으로 바로 복사할 수 있습니다.
+    </div>
+
+    <div class="panel">
+      <strong>이 기능은 무엇을 하나요?</strong>
+      <ul class="guide-list" style="margin-top:8px;">
+        <li>스파링 영상에서 공격 타이밍(impact_time)을 손쉽게 찍어 DB 입력용 데이터로 변환합니다.</li>
+        <li>마킹한 시점마다 회피 판정값(`dodge_window_ms`, `hitbox_radius` 등)을 함께 저장합니다.</li>
+        <li>결과를 SQL 또는 JSON으로 만들어 바로 복사할 수 있어, 메타데이터 튜닝 작업 시간을 줄여줍니다.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <strong>사용 방법</strong>
+      <ol class="guide-list" style="margin-top:8px;">
+        <li>영상 파일을 선택하고, 영상 제목/공격 타입을 입력합니다.</li>
+        <li>영상 재생 중 공격 시점마다 <span class="kbd">M</span> 키 또는 <strong>현재 시점 마킹</strong> 버튼을 누릅니다.</li>
+        <li>마킹이 끝나면 <strong>SQL 생성</strong> 또는 <strong>JSON 생성</strong> 버튼을 눌러 결과를 만듭니다.</li>
+        <li><strong>결과 복사</strong> 후 DB 마이그레이션 SQL 또는 문서에 붙여넣어 사용합니다.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <label>영상 파일:</label>
+        <input id="video-file" type="file" accept="video/*" />
+        <label>영상 제목:</label>
+        <input id="video-title" type="text" placeholder="예: Entry Jab" />
+        <label>공격 타입:</label>
+        <input id="attack-type" type="text" value="jab" />
+      </div>
+    </div>
+
+    <div class="panel">
+      <video id="video" controls preload="metadata"></video>
+      <div class="row" style="margin-top:10px;">
+        <button id="mark-btn" class="primary">현재 시점 마킹</button>
+        <span>현재 시간: <strong id="current-time">0.000</strong>초</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <label>회피 판정 시간(ms)</label>
+        <input id="dodge-window" type="number" value="650" />
+        <label>히트박스 반경</label>
+        <input id="hitbox-radius" type="number" step="0.01" value="0.22" />
+        <label>판정 형태</label>
+        <input id="judge-shape" type="text" value="circle" />
+        <label>타겟 부위</label>
+        <input id="target-zone" type="text" value="head" />
+        <label>요구 동작</label>
+        <input id="required-move" type="text" value="slip_side" />
+        <label>최소 이동량</label>
+        <input id="min-displacement" type="number" step="0.01" value="0.10" />
+      </div>
+      <div class="muted" style="margin:8px 0 0;">
+        참고: `공격 타입`, `판정 형태`, `타겟 부위`, `요구 동작` 값은 DB 저장 규칙상 영문 키(예: `jab`, `circle`, `head`, `slip_side`)를 사용합니다.
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row" style="justify-content: space-between;">
+        <strong>마킹 목록</strong>
+        <div class="row">
+          <button id="sort-btn">시간순 정렬</button>
+          <button id="undo-btn">마지막 삭제</button>
+          <button id="clear-btn" class="warn">전체 삭제</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>충돌 시점(impact_time)</th>
+            <th>회피 판정 시간(ms)</th>
+            <th>히트박스 반경</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <button id="json-btn">JSON 생성</button>
+        <button id="sql-btn" class="primary">SQL 생성</button>
+        <button id="copy-btn">결과 복사</button>
+      </div>
+      <textarea id="output" placeholder="결과가 여기에 생성됩니다."></textarea>
+    </div>
+  </div>
+
+  <script>
+    const videoEl = document.getElementById("video");
+    const fileInput = document.getElementById("video-file");
+    const currentTimeEl = document.getElementById("current-time");
+    const rowsEl = document.getElementById("rows");
+    const outputEl = document.getElementById("output");
+
+    const marks = [];
+
+    function toFixed3(v) {
+      return Number(v).toFixed(3);
+    }
+
+    function readDefaults() {
+      return {
+        dodge_window_ms: Number(document.getElementById("dodge-window").value || 650),
+        hitbox_radius: Number(document.getElementById("hitbox-radius").value || 0.22),
+        judge_shape: document.getElementById("judge-shape").value || "circle",
+        target_zone: document.getElementById("target-zone").value || "head",
+        required_move: document.getElementById("required-move").value || "slip_side",
+        min_displacement: Number(document.getElementById("min-displacement").value || 0.10),
+      };
+    }
+
+    function renderRows() {
+      rowsEl.innerHTML = "";
+      marks.forEach((m, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${toFixed3(m.impact_time)}</td>
+          <td>${m.dodge_window_ms}</td>
+          <td>${m.hitbox_radius}</td>
+        `;
+        rowsEl.appendChild(tr);
+      });
+    }
+
+    function markCurrentTime() {
+      const t = Number(videoEl.currentTime || 0);
+      const defaults = readDefaults();
+      marks.push({
+        impact_time: Number(toFixed3(t)),
+        ...defaults,
+      });
+      renderRows();
+    }
+
+    function buildJson() {
+      outputEl.value = JSON.stringify(marks, null, 2);
+    }
+
+    function buildSql() {
+      const title = (document.getElementById("video-title").value || "").trim();
+      const attackType = (document.getElementById("attack-type").value || "jab").trim();
+      if (!title) {
+        alert("영상 제목을 입력해 주세요.");
+        return;
+      }
+      if (!marks.length) {
+        alert("마킹된 타임스탬프가 없습니다.");
+        return;
+      }
+
+      const sql = marks.map((m) => {
+        return [
+          "INSERT INTO attack_timestamps (",
+          "  video_id, impact_time, dodge_window_ms, hitbox_radius,",
+          "  attack_type, judge_shape, target_zone, required_move, min_displacement",
+          ")",
+          `SELECT id, ${toFixed3(m.impact_time)}, ${m.dodge_window_ms}, ${m.hitbox_radius.toFixed(2)}, '${attackType}', '${m.judge_shape}', '${m.target_zone}', '${m.required_move}', ${m.min_displacement.toFixed(2)}`,
+          "FROM attack_videos",
+          `WHERE title = '${title}'`,
+          `AND NOT EXISTS (SELECT 1 FROM attack_timestamps WHERE video_id = attack_videos.id AND impact_time = ${toFixed3(m.impact_time)});`,
+          ""
+        ].join("\n");
+      }).join("\n");
+
+      outputEl.value = sql;
+    }
+
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      videoEl.src = URL.createObjectURL(file);
+      if (!document.getElementById("video-title").value) {
+        document.getElementById("video-title").value = file.name.replace(/\.[^.]+$/, "");
+      }
+    });
+
+    videoEl.addEventListener("timeupdate", () => {
+      currentTimeEl.textContent = toFixed3(videoEl.currentTime || 0);
+    });
+
+    document.getElementById("mark-btn").addEventListener("click", markCurrentTime);
+    document.getElementById("json-btn").addEventListener("click", buildJson);
+    document.getElementById("sql-btn").addEventListener("click", buildSql);
+    document.getElementById("sort-btn").addEventListener("click", () => {
+      marks.sort((a, b) => a.impact_time - b.impact_time);
+      renderRows();
+    });
+    document.getElementById("undo-btn").addEventListener("click", () => {
+      marks.pop();
+      renderRows();
+    });
+    document.getElementById("clear-btn").addEventListener("click", () => {
+      if (!confirm("모든 마킹을 지울까요?")) return;
+      marks.length = 0;
+      renderRows();
+    });
+    document.getElementById("copy-btn").addEventListener("click", async () => {
+      if (!outputEl.value.trim()) return;
+      await navigator.clipboard.writeText(outputEl.value);
+      alert("복사 완료");
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        markCurrentTime();
+      }
+    });
+  </script>
+</body>
+</html>

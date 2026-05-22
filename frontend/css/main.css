@@ -1,0 +1,27 @@
+/* main.css — index 등: 구글 드라이브 이미지 로드 실패 시 레이아웃·배경 안정화
+   (div의 CSS background-image에는 HTML의 crossorigin 속성을 줄 수 없음 → img + 본 클래스로 처리) */
+
+/* 무엇: 외부 이미지가 막혀도 회색 그라데이션 블록 / 왜: 엑박 대신 최소 UI 유지 */
+img.bx-img-fallback {
+  display: block;
+  min-height: 3rem;
+  min-width: 3rem;
+  object-fit: none !important;
+  background: linear-gradient(155deg, #353535 0%, #1f1f1f 45%, #141414 100%) !important;
+  box-sizing: border-box;
+}
+
+/* 무엇: 이미지 레이어 아래 기본 면색 / 왜: 투명·엑박 구간에서도 섹션 톤 유지 */
+.s1-right,
+.s3-card-img {
+  background-color: #0a0a0a;
+}
+
+/* 섹션2(s2)는 흰 배경 디자인 — s2-left를 어둡게 두면 빨간 원·복서 옆에 검은 띠가 생김 */
+.s2-left {
+  background-color: #ffffff;
+}
+
+.s2-right {
+  background-color: #ffffff;
+}

@@ -1,0 +1,1466 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOXER — 튜토리얼</title>
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    body { padding-top: 64px; background: var(--color-bg-primary); }
+
+    /* ─── 목록 페이지 ─── */
+    .list-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      margin-bottom: 0.3rem;
+    }
+    .page-header p { color: var(--color-text-secondary); }
+
+    .tutorial-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+    }
+
+    .tut-card {
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tut-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow-blue); }
+    .tut-card.completed { border-color: rgba(48,209,88,0.3); }
+    .tut-card.locked { opacity: 0.6; cursor: not-allowed; }
+
+    .tut-thumb {
+      width: 100%; height: 140px;
+      background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-primary));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      position: relative;
+    }
+    .tut-lock-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+    }
+
+    .tut-body { padding: 1.2rem; }
+    .tut-title { font-weight: 700; margin-bottom: 4px; font-size: 0.95rem; }
+    .tut-desc  { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 10px; line-height: 1.5; }
+    .tut-meta  { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .tut-diff  { font-size: 11px; color: var(--color-text-secondary); }
+    .tut-reward { font-size: 11px; color: var(--color-accent-gold); }
+
+    /* ─── 상세 / 실습 패널 ─── */
+    .detail-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: none;
+      background: var(--color-bg-primary);
+    }
+    .detail-panel.open { display: flex; flex-direction: column; }
+
+    /* 상단 바 */
+    .detail-topbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-bg-secondary);
+    }
+    .detail-back {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .detail-back:hover { background: rgba(255,255,255,0.1); }
+    .detail-progress {
+      flex: 1;
+      height: 6px;
+      background: var(--color-bg-tertiary);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .detail-progress-fill {
+      height: 100%;
+      background: var(--color-accent-blue);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .detail-step-label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
+
+    /* 본문 레이아웃 */
+    .detail-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* 왼쪽: 튜토리얼 영상 */
+    .detail-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      border-right: 1px solid var(--color-border);
+    }
+    .detail-video-wrap {
+      flex: 1;
+      min-height: min(72vh, 820px);
+      max-width: 460px;
+      width: 100%;
+      margin: 0 auto;
+      aspect-ratio: 9 / 16;
+      background: #000;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .detail-video-placeholder {
+      text-align: center;
+      color: var(--color-text-secondary);
+      padding: 1rem;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(10,10,15,0.15), rgba(10,10,15,0.5));
+    }
+    #tutorial-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      background: #000;
+    }
+    .tutorial-guide {
+      margin-top: 1.25rem;
+      display: grid;
+      gap: 0.9rem;
+    }
+    .guide-card {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+    }
+    .guide-card h3 {
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      color: var(--color-text-primary);
+    }
+    .guide-card p {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+    .guide-columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem;
+    }
+    .guide-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.45rem;
+    }
+    .guide-list li {
+      color: var(--color-text-secondary);
+      font-size: 0.84rem;
+      line-height: 1.55;
+      padding-left: 0.9rem;
+      position: relative;
+    }
+    .guide-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.55rem;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--color-accent-red);
+    }
+    .guide-label {
+      display: inline-block;
+      margin-bottom: 0.45rem;
+      color: var(--color-accent-gold);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .video-spec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+    }
+    .video-spec-line {
+      font-size: 0.82rem;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      word-break: break-word;
+    }
+    .video-spec-line code {
+      font-size: 0.8rem;
+      color: var(--color-text-primary);
+    }
+    .curriculum-map {
+      display: grid;
+      gap: 0.55rem;
+      margin-top: 0.75rem;
+    }
+    .curriculum-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.82rem;
+    }
+    .curriculum-row strong {
+      color: var(--color-text-primary);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .curriculum-row span {
+      color: var(--color-text-secondary);
+    }
+
+    /* 오른쪽: 웹캠 + 판정 */
+    .detail-right {
+      width: 460px;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      gap: 1rem;
+      overflow-y: auto;
+    }
+
+    .webcam-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      min-height: min(64vh, 720px);
+      background: #000;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    #webcam-video, #pose-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    #pose-canvas { pointer-events: none; }
+
+    .webcam-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.5rem;
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      text-align: center;
+      padding: 1rem;
+    }
+    .webcam-placeholder.hidden { display: none; }
+
+    /* 정확도 원형 */
+    .accuracy-ring {
+      text-align: center;
+    }
+    .accuracy-ring canvas { display: block; margin: 0 auto; }
+    .accuracy-num {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      line-height: 1;
+      margin-top: 4px;
+    }
+    .accuracy-label { font-size: 12px; color: var(--color-text-secondary); }
+
+    /* 홀드 타이머 */
+    .hold-bar-wrap {
+      padding: 0 0.5rem;
+    }
+    .hold-bar-label {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .hold-bar {
+      height: 10px;
+      background: var(--color-bg-tertiary);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .hold-bar-fill {
+      height: 100%;
+      background: var(--color-accent-green);
+      width: 0%;
+      transition: width 0.1s linear;
+      border-radius: 5px;
+    }
+
+    /* ─── 6항목 자세 스코어카드 ─── */
+    .checklist { display: flex; flex-direction: column; gap: 6px; }
+    .check-item {
+      background: var(--color-bg-tertiary);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      transition: all 0.3s ease;
+    }
+    .check-item.ok     { border-color: rgba(48,209,88,0.4);   background: rgba(48,209,88,0.06); }
+    .check-item.warn   { border-color: rgba(255,214,10,0.4);  background: rgba(255,214,10,0.06); }
+    .check-item.fail   { border-color: rgba(255,45,85,0.4);   background: rgba(255,45,85,0.06); }
+
+    .check-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .check-icon { font-size: 0.9rem; flex-shrink: 0; }
+    .check-name { font-size: 12px; font-weight: 600; flex: 1; }
+    .check-score-pct { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary); }
+
+    /* 점수 바 */
+    .check-bar-wrap {
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .check-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    .check-msg { font-size: 11px; color: var(--color-text-secondary); }
+
+    /* 피드백 메시지 */
+    .feedback-box {
+      background: var(--color-bg-tertiary);
+      border-left: 3px solid var(--color-accent-blue);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* 완료 오버레이 */
+    .complete-overlay {
+      position: absolute; inset: 0;
+      background: rgba(10,10,15,0.92);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      border-radius: var(--radius-md);
+      animation: fadeIn 0.3s ease;
+      z-index: 50;
+    }
+    .complete-overlay.show { display: flex; }
+    .complete-title {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: var(--color-accent-green);
+      letter-spacing: 3px;
+    }
+    .complete-exp { font-size: 1.2rem; color: var(--color-accent-gold); font-weight: 700; }
+
+    /* 파티클 컨테이너 */
+    .particle-container { position: fixed; inset: 0; pointer-events: none; z-index: 300; }
+    .particle {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      animation: particle 1s ease forwards;
+    }
+
+    @media (max-width: 900px) {
+      .detail-body { flex-direction: column; }
+      .detail-right { width: 100%; }
+      .detail-video-wrap {
+        max-width: 420px;
+        min-height: min(62vh, 720px);
+      }
+      .webcam-wrap {
+        max-width: 420px;
+        min-height: min(62vh, 720px);
+        margin: 0 auto;
+      }
+      .guide-columns,
+      .video-spec-grid { grid-template-columns: 1fr; }
+      .tutorial-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .tutorial-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 파티클 컨테이너 -->
+<div class="particle-container" id="particles"></div>
+
+<!-- ─── 네비게이션 ─── -->
+<nav class="nav">
+  <a class="nav-logo" href="/index.html">
+    <img crossorigin="anonymous" class="nav-logo-img" src="./image/cache/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8.png" alt="BOXER" onerror="this.style.display='none'">
+    <span class="nav-logo-text">BOXER</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link active" href="/tutorial.html">튜토리얼</a>
+    <a class="nav-link" href="/tutorial2.html">튜토리얼 2</a>
+    <a class="nav-link" href="/sparring.html">스파링</a>
+    <a class="nav-link" href="/dashboard.html">대시보드</a>
+    <a class="nav-link" href="/shop.html">샵</a>
+    <div style="width:1px;height:20px;background:var(--color-border);margin:0 4px;"></div>
+    <span id="nav-coins-display" style="color:var(--color-accent-gold);font-size:13px;font-weight:600;padding:0 8px;"></span>
+    <button class="btn-outline" style="padding:8px 16px;font-size:13px;" onclick="auth.logout()">로그아웃</button>
+  </div>
+</nav>
+
+<!-- ─── 튜토리얼 목록 ─── -->
+<div class="list-wrap" id="list-view">
+  <div class="page-header">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1>튜토리얼</h1>
+        <p>기초 복싱 자세를 단계별로 배워보세요</p>
+      </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <a href="/tutorial2.html" style="font-size:12px;color:#fff;padding:6px 12px;border:1px solid rgba(47,125,246,0.35);border-radius:8px;font-weight:700;background:linear-gradient(135deg,rgba(47,125,246,.85),rgba(22,33,57,.95));">
+          🥊 튜토리얼 2
+        </a>
+        <a href="/admin.html" style="font-size:12px;color:var(--color-accent-gold);padding:6px 12px;border:1px solid rgba(255,214,10,0.3);border-radius:8px;font-weight:600;">
+          ⚙️ 관리자
+        </a>
+      </div>
+    </div>
+
+    <!-- 전체 진행률 바 -->
+    <div id="overall-progress" style="margin-top:1.2rem;display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.5px;">전체 진행도</span>
+        <span id="progress-fraction" style="font-size:13px;font-family:var(--font-mono);color:var(--color-accent-blue);">0/0</span>
+      </div>
+      <div class="progress-bar-wrap" style="height:10px;">
+        <div class="progress-bar-fill" id="overall-fill" style="background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-green)); transition: width 0.8s ease;"></div>
+      </div>
+      <div style="display:flex;gap:1.5rem;margin-top:8px;">
+        <span id="progress-exp-total" style="font-size:12px;color:var(--color-accent-gold);"></span>
+        <span id="progress-coins-total" style="font-size:12px;color:var(--color-accent-green);"></span>
+      </div>
+    </div>
+  </div>
+  <div id="tutorial-grid" class="tutorial-grid">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- ─── 튜토리얼 상세 / 실습 패널 ─── -->
+<div class="detail-panel" id="detail-panel">
+
+  <!-- 상단 바 -->
+  <div class="detail-topbar">
+    <button class="detail-back" onclick="closeDetail()">← 목록으로</button>
+    <div class="detail-progress">
+      <div class="detail-progress-fill" id="hold-progress-fill"></div>
+    </div>
+    <span class="detail-step-label" id="detail-title-small">튜토리얼</span>
+  </div>
+
+  <!-- 본문 -->
+  <div class="detail-body">
+
+    <!-- 좌: 설명 + 영상 -->
+    <div class="detail-left">
+      <h2 id="detail-title" style="font-family:var(--font-display);font-size:2rem;letter-spacing:1px;margin-bottom:0.5rem;"></h2>
+      <p id="detail-desc" style="color:var(--color-text-secondary);font-size:14px;margin-bottom:1rem;"></p>
+
+      <div class="detail-video-wrap">
+        <video id="tutorial-video" playsinline controls muted></video>
+        <div class="detail-video-placeholder">
+          <div style="font-size:4rem;">🥊</div>
+          <div>튜토리얼 영상</div>
+          <div style="font-size:12px;margin-top:4px;">영상이 연결되면 여기에 표시됩니다</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;display:flex;gap:8px;align-items:center;">
+        <span id="detail-difficulty" class="badge"></span>
+        <span id="detail-reward" style="font-size:13px;color:var(--color-accent-gold);"></span>
+      </div>
+
+      <div class="tutorial-guide">
+        <div class="guide-card">
+          <h3>튜토리얼 가이드</h3>
+          <p id="guide-summary">이 강좌의 핵심 포인트와 판정 기준이 여기에 표시됩니다.</p>
+        </div>
+
+        <div class="guide-columns">
+          <div class="guide-card">
+            <span class="guide-label">Footwork</span>
+            <h3>발 위치</h3>
+            <ul class="guide-list" id="guide-footwork"></ul>
+          </div>
+          <div class="guide-card">
+            <span class="guide-label">Upper Body</span>
+            <h3>상체 및 가드</h3>
+            <ul class="guide-list" id="guide-guard"></ul>
+          </div>
+          <div class="guide-card">
+            <span class="guide-label">Coaching</span>
+            <h3>수행 팁</h3>
+            <ul class="guide-list" id="guide-tips"></ul>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <span class="guide-label">Video Setup</span>
+          <h3>튜토리얼 영상 배치</h3>
+          <div class="video-spec-grid">
+            <div class="video-spec-line">
+              저장 위치<br>
+              <code id="guide-video-folder">./video/ (로컬 mp4)</code>
+            </div>
+            <div class="video-spec-line">
+              현재 강좌 파일명<br>
+              <code id="guide-video-file">tutorial-level1-stance.mp4</code>
+            </div>
+            <div class="video-spec-line">
+              DB에 넣을 경로<br>
+              <code id="guide-video-db-path">BOXER_VIDEO (js/config/boxer-video-local.js)</code>
+            </div>
+            <div class="video-spec-line">
+              재생 화면 비율<br>
+              <code>9:16 세로형 mp4 권장</code>
+            </div>
+          </div>
+
+          <div class="curriculum-map" id="curriculum-map"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우: 웹캠 + 판정 -->
+    <div class="detail-right">
+
+      <!-- 웹캠 -->
+      <div class="webcam-wrap" id="webcam-wrap">
+        <video id="webcam-video" autoplay playsinline muted></video>
+        <canvas id="pose-canvas"></canvas>
+        <div class="webcam-placeholder" id="webcam-placeholder">
+          <div style="font-size:3rem;">📷</div>
+          <div>카메라를 시작하려면<br>아래 버튼을 눌러주세요</div>
+        </div>
+
+        <!-- 완료 오버레이 -->
+        <div class="complete-overlay" id="complete-overlay">
+          <div class="complete-title">PERFECT!</div>
+          <div class="complete-exp" id="complete-exp">+100 EXP 🎉</div>
+          <button class="btn-primary" onclick="goNextTutorial()">다음으로 →</button>
+          <button class="btn-outline" onclick="closeDetail()" style="padding:10px 20px;font-size:14px;">목록으로</button>
+        </div>
+      </div>
+
+      <!-- 카메라 시작 버튼 -->
+      <div id="camera-start-area" style="text-align:center;">
+        <button class="btn-primary" style="width:100%;" onclick="startCamera()">📷 카메라 시작</button>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;">
+          localhost에서는 HTTP 웹캠이 허용됩니다
+        </div>
+      </div>
+
+      <!-- 정확도 링 -->
+      <div class="accuracy-ring" id="accuracy-section" style="display:none;">
+        <div class="accuracy-num" id="accuracy-num" style="color:var(--color-accent-blue);">0%</div>
+        <div class="accuracy-label">자세 일치도</div>
+      </div>
+
+      <!-- 홀드 타이머 바 -->
+      <div class="hold-bar-wrap" id="hold-section" style="display:none;">
+        <div class="hold-bar-label">
+          <span>3초 자세 유지</span>
+          <span id="hold-time">0.0s</span>
+        </div>
+        <div class="hold-bar">
+          <div class="hold-bar-fill" id="hold-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- 피드백 -->
+      <div class="feedback-box" id="feedback-box" style="display:none;">
+        자세를 잡아주세요
+      </div>
+
+      <!-- 6항목 자세 스코어카드 -->
+      <div class="checklist" id="checklist" style="display:none;"></div>
+
+      <!-- 완료 버튼 (웹캠 없을 때 수동) -->
+      <button class="btn-outline" id="manual-complete-btn" style="width:100%;display:none;" onclick="manualComplete()">
+        ✅ 완료로 표시하기
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- MediaPipe CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+<script src="js/core/api.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/ui/navbar.js"></script>
+<script src="js/ui/sounds.js"></script>
+<script src="js/tutorial/TutorialEngine.js"></script>
+<script src="js/config/boxer-video-local.js"></script>
+<script>
+  // 비동기 인증 체크 — 토큰 만료 시 자동 로그아웃
+  auth.requireAuthAsync().then(user => { if (!user) return; });
+  if (!auth.requireAuth()) throw new Error('redirect');
+
+  // ─── 상태 변수 ───
+  let tutorials = [];
+  let userProgress = {};
+  let currentTutorial = null;
+  let currentTutorialIdx = 0;
+  let poseInstance = null;
+  let cameraInstance = null;
+  let holdStartTime = null;
+  const HOLD_DURATION = 3000; // 3초
+  let isCompleted = false;
+  let tutorialSessionId = null;       // 튜토리얼 세션 ID
+  let lastPoseSaveTime = 0;           // pose-correction 마지막 저장 시각 (스로틀링)
+  const POSE_SAVE_INTERVAL = 3000;    // 3초마다 한 번만 저장
+  let currentTutorialBlueprint = null;
+  const V = window.BOXER_VIDEO || {};
+  function vidFallback(name) {
+    return './video/' + encodeURIComponent(name);
+  }
+
+  const CURRICULUM_VIDEO_MAP = [
+    {
+      level: '초급 1',
+      title: 'LEVEL 1-1 Boxing Stance',
+      fileName: 'tutorial-level1-stance.mp4',
+      dbPath: V.boxingStance || vidFallback('복싱스탠스.mp4')
+    },
+    {
+      level: '초급 2',
+      title: 'LEVEL 1-2 Jab',
+      fileName: 'tutorial-level1-jab.mp4',
+      dbPath: V.boxingWeaving || vidFallback('복싱 위빙.mp4')
+    },
+    {
+      level: '중급 1',
+      title: 'LEVEL 2-1 Straight',
+      fileName: 'tutorial-level2-straight.mp4',
+      dbPath: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4')
+    },
+    {
+      level: '중급 2',
+      title: 'LEVEL 2-2 Hook',
+      fileName: 'tutorial-level2-hook.mp4',
+      dbPath: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4')
+    },
+    {
+      level: '상급 1',
+      title: 'LEVEL 3-1 Ducking & Weaving',
+      fileName: 'tutorial-level3-ducking.mp4',
+      dbPath: V.boxingWeaving || vidFallback('복싱 위빙.mp4')
+    },
+    {
+      level: '상급 2',
+      title: 'LEVEL 3-2 Combo & Counter',
+      fileName: 'tutorial-level3-combo.mp4',
+      dbPath: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4')
+    }
+  ];
+
+  const TUTORIAL_BLUEPRINTS = [
+    {
+      match: ['level 1-1', 'boxing stance'],
+      mode: 'stance',
+      summary: '복싱의 80%는 스탠스에서 시작됩니다. AI는 발 간격, 뒤꿈치 텐션, 가드 높이, 턱과 팔꿈치 위치를 함께 보고 기본 자세가 안정적인지 판정합니다.',
+      footwork: [
+        '양발은 어깨너비보다 약간 넓게 두고 앞뒤 간격도 유지합니다.',
+        '앞발은 정면, 뒷발은 약 45도로 두고 뒤꿈치를 살짝 들어 스프링 상태를 만듭니다.',
+        '이동 후에도 발 너비가 무너지지 않도록 5:5 또는 6:4로 체중을 나눕니다.'
+      ],
+      guard: [
+        '턱은 가슴 쪽으로 당겨 어깨 뒤에 숨깁니다.',
+        '앞손은 눈높이, 뒷손은 턱 옆에 두고 얼굴을 보호합니다.',
+        '팔꿈치는 갈비뼈 쪽에 붙여 옆구리 노출을 줄입니다.'
+      ],
+      tips: [
+        '정면이 아니라 대각선으로 서서 피격 면적을 줄이세요.',
+        '시선은 아래가 아니라 상대 또는 거울 속 눈높이를 바라봅니다.',
+        '판정 포인트는 발 간격, 가드 높이, 상체 각도 유지입니다.'
+      ],
+      fileName: 'tutorial-level1-stance.mp4',
+      dbPath: V.boxingStance || vidFallback('복싱스탠스.mp4')
+    },
+    {
+      match: ['level 1-2', 'jab'],
+      mode: 'jab',
+      summary: '잽은 가장 빠르고 간결한 펀치입니다. AI는 앞손의 직선 궤적과 복귀 속도, 그리고 잽을 던지는 동안 뒷손 가드가 무너지지 않는지를 중점적으로 봅니다.',
+      footwork: [
+        '기본 스탠스를 유지한 채 앞발이 아주 살짝 전진하는 정도만 허용합니다.',
+        '앞발 방향이 틀어지지 않도록 고정하고 뒷발은 추진력을 유지합니다.',
+        '타격 후에도 발 간격이 무너지지 않도록 중심을 중앙에 둡니다.'
+      ],
+      guard: [
+        '앞손은 어깨가 턱을 가려주도록 직선으로 가볍게 뻗습니다.',
+        '뒷손은 반드시 턱 옆을 지키며 반대 가드를 유지합니다.',
+        '주먹이 닿는 순간 손등이 위로 살짝 회전하도록 만듭니다.'
+      ],
+      tips: [
+        '앞손을 내민 뒤 곧바로 원래 가드 히트박스로 돌아와야 합니다.',
+        '짧게 호흡을 뱉으며 리듬을 만드세요.',
+        '판정 포인트는 복귀 딜레이, 가드 유지, 앞발 안정성입니다.'
+      ],
+      fileName: 'tutorial-level1-jab.mp4',
+      dbPath: V.boxingWeaving || vidFallback('복싱 위빙.mp4')
+    },
+    {
+      match: ['level 2-1', 'straight', 'cross'],
+      mode: 'straight',
+      summary: '스트레이트는 뒷발 피벗과 골반 회전이 파워를 만드는 단계입니다. AI는 회전 각도, 체중 이동, 앞손 가드 유지, 코어 정렬을 함께 추적합니다.',
+      footwork: [
+        '뒷발을 안쪽으로 강하게 피벗해 지면을 차는 힘을 만듭니다.',
+        '회전해도 발 너비가 과하게 좁아지거나 넓어지지 않도록 유지합니다.',
+        '체중이 뒷발에서 앞발로 자연스럽게 이동해야 합니다.'
+      ],
+      guard: [
+        '골반과 어깨를 함께 돌리며 뒷손을 길게 직선으로 뻗습니다.',
+        '앞손은 턱 옆으로 당겨 안면을 보호합니다.',
+        '상체 전체가 대각선으로 틀어져 회전력이 실리도록 합니다.'
+      ],
+      tips: [
+        '상체만 먼저 나가면 밸런스가 무너집니다.',
+        '타격 지점을 끝까지 바라보고 턱을 들지 마세요.',
+        '판정 포인트는 피벗, 회전력, 체중 이동의 연결입니다.'
+      ],
+      fileName: 'tutorial-level2-straight.mp4',
+      dbPath: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4')
+    },
+    {
+      match: ['level 2-2', 'hook'],
+      mode: 'hook',
+      summary: '훅은 짧고 강한 회전이 핵심입니다. AI는 팔꿈치 각도, 어깨와 팔의 수평 정렬, 반대손 가드, 회전 축 유지 여부를 점수로 반영합니다.',
+      footwork: [
+        '앞발 뒤꿈치를 살짝 들고 안쪽으로 회전하며 축을 만듭니다.',
+        '기본 스탠스 폭을 유지해 회전 중에도 무너지지 않게 서세요.',
+        '체중이 발 바깥으로 쏠리지 않도록 복귀를 빠르게 준비합니다.'
+      ],
+      guard: [
+        '팔꿈치를 약 90도로 접어 ㄱ자 형태를 유지합니다.',
+        '주먹, 팔꿈치, 어깨가 수평에 가깝게 움직이도록 짧게 돌립니다.',
+        '반대손은 턱에 붙여 카운터를 막습니다.'
+      ],
+      tips: [
+        '크게 휘두르기보다 짧고 빠르게 돌리고 바로 복귀하세요.',
+        '팔 힘이 아니라 코어 회전력으로 타격합니다.',
+        '판정 포인트는 수평 정렬, 회전 축, 반대손 가드입니다.'
+      ],
+      fileName: 'tutorial-level2-hook.mp4',
+      dbPath: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4')
+    },
+    {
+      match: ['level 3-1', 'duck', 'weav'],
+      mode: 'ducking',
+      summary: '더킹과 위빙은 허리를 접는 동작이 아니라 무릎과 하체를 이용한 회피입니다. AI는 코 좌표의 높이 변화와 좌우 U자 이동, 회피 중 가드 유지를 동시에 봅니다.',
+      footwork: [
+        '허리를 숙이지 말고 무릎을 굽혀 자세를 낮춥니다.',
+        '위빙은 머리가 U자 경로를 그리도록 좌우 체중 이동을 만듭니다.',
+        '회피 후 바로 공격으로 연결할 수 있도록 발의 폭을 유지합니다.'
+      ],
+      guard: [
+        '회피 중에도 손은 항상 턱 근처에 남아 있어야 합니다.',
+        '시선은 아래로 떨어뜨리지 말고 정면을 봅니다.',
+        '몸은 유연하게 움직이되 상체 전체가 무너지지 않게 유지합니다.'
+      ],
+      tips: [
+        '영상 속 공격 타이밍에 맞춰 높이를 먼저 낮추고 빠져나오세요.',
+        '너무 깊게 숙이기보다 밸런스를 잃지 않는 범위에서 움직입니다.',
+        '판정 포인트는 코 높이 변화, 좌우 회피량, 가드 유지입니다.'
+      ],
+      fileName: 'tutorial-level3-ducking.mp4',
+      dbPath: V.boxingWeaving || vidFallback('복싱 위빙.mp4')
+    },
+    {
+      match: ['level 3-2', 'combo', 'counter'],
+      mode: 'combo',
+      summary: '콤보 앤 카운터는 개별 동작보다 연결 속도가 중요합니다. AI는 각 동작 사이의 딜레이, 가드 복귀, 중심 회복, 회피와 공격이 자연스럽게 이어지는지를 종합 평가합니다.',
+      footwork: [
+        '연속 동작 중에도 발이 꼬이지 않게 기본 스탠스 폭을 지킵니다.',
+        '잽 후 스트레이트, 위빙 후 훅으로 이어질 때 중심이 무너지지 않아야 합니다.',
+        '공격이 끝나면 즉시 5:5 기본 스탠스로 복귀합니다.'
+      ],
+      guard: [
+        '이전 동작의 회수 동작이 다음 동작의 준비가 되도록 연결합니다.',
+        '각 펀치 사이마다 손이 턱 옆을 짧게 스치며 복귀해야 합니다.',
+        '카운터 직전에도 시선과 턱 위치가 흔들리지 않게 유지합니다.'
+      ],
+      tips: [
+        '연속 동작을 하나의 리듬처럼 수행하고 멈춤을 줄이세요.',
+        '호흡은 끊지 말고 짧게 일정하게 내뱉습니다.',
+        '판정 포인트는 연결 속도, 가드 복귀, 반응 이동입니다.'
+      ],
+      fileName: 'tutorial-level3-combo.mp4',
+      dbPath: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4')
+    }
+  ];
+
+  const CHECK_LABELS_KO = {
+    guard: '가드 높이',
+    stance: '발 위치',
+    balance: '체중 중심',
+    chinTuck: '턱 위치',
+    elbowIn: '팔꿈치 밀착',
+    core: '상체 각도',
+    recovery: '가드 복귀 속도',
+    rotation: '회전력',
+    hookLine: '수평 정렬',
+    duckLevel: '낮아진 높이',
+    headMovement: '머리 이동',
+    comboFlow: '연결 속도'
+  };
+
+  function normalizeTitle(title = '') {
+    return String(title).toLowerCase();
+  }
+
+  function getTutorialBlueprint(tutorial) {
+    const title = normalizeTitle(tutorial?.title);
+    return TUTORIAL_BLUEPRINTS.find(blueprint =>
+      blueprint.match.every(fragment => title.includes(fragment))
+    ) || TUTORIAL_BLUEPRINTS.find(blueprint =>
+      blueprint.match.some(fragment => title.includes(fragment))
+    ) || TUTORIAL_BLUEPRINTS[0];
+  }
+
+  function renderGuideList(elementId, items = []) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    element.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+  }
+
+  function renderCurriculumMap(activeFileName) {
+    const element = document.getElementById('curriculum-map');
+    if (!element) return;
+    element.innerHTML = CURRICULUM_VIDEO_MAP.map(item => `
+      <div class="curriculum-row" style="${item.fileName === activeFileName ? 'border-color:rgba(255,45,85,0.4);background:rgba(255,45,85,0.08);' : ''}">
+        <div>
+          <strong>${item.level}</strong>
+          <span>${item.title}</span>
+        </div>
+        <div style="text-align:right;">
+          <strong>${item.fileName}</strong>
+          <span>${item.dbPath}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderTutorialGuide(tutorial) {
+    currentTutorialBlueprint = getTutorialBlueprint(tutorial);
+    const summary = currentTutorialBlueprint.summary || tutorial?.description || '튜토리얼 가이드가 준비 중입니다.';
+    document.getElementById('guide-summary').textContent = summary;
+    renderGuideList('guide-footwork', currentTutorialBlueprint.footwork);
+    renderGuideList('guide-guard', currentTutorialBlueprint.guard);
+    renderGuideList('guide-tips', currentTutorialBlueprint.tips);
+    document.getElementById('guide-video-folder').textContent =
+      '로컬 영상: ./video/ (설정: js/config/boxer-video-local.js)';
+    document.getElementById('guide-video-file').textContent = currentTutorialBlueprint.fileName;
+    document.getElementById('guide-video-db-path').textContent = currentTutorialBlueprint.dbPath;
+    renderCurriculumMap(currentTutorialBlueprint.fileName);
+  }
+
+  function createChecklistMarkup(profile) {
+    const icons = {
+      guard: '🥊',
+      stance: '👟',
+      balance: '⚖️',
+      chinTuck: '🎯',
+      elbowIn: '💪',
+      core: '🔥',
+      recovery: '↩️',
+      rotation: '🌀',
+      hookLine: '📏',
+      duckLevel: '⬇️',
+      headMovement: '🪄',
+      comboFlow: '⚡'
+    };
+    return profile.priority.map(key => `
+      <div class="check-item fail" id="check-${key}">
+        <div class="check-header">
+          <span class="check-icon">${icons[key] || '•'}</span>
+          <span class="check-name">${CHECK_LABELS_KO[key] || profile.labels[key] || key}</span>
+          <span class="check-score-pct" id="pct-${key}">0%</span>
+        </div>
+        <div class="check-bar-wrap"><div class="check-bar-fill" id="bar-${key}" style="background:#FF2D55;"></div></div>
+        <div class="check-msg" id="msg-${key}">판정 대기 중</div>
+      </div>
+    `).join('');
+  }
+
+  function prepareChecklist(mode) {
+    const profile = TutorialEngine.getProfile(mode);
+    const checklist = document.getElementById('checklist');
+    checklist.innerHTML = createChecklistMarkup(profile);
+  }
+
+  // ─── 튜토리얼 목록 로드 ───
+  async function loadTutorials() {
+    try {
+      const [list, prog] = await Promise.all([
+        api.get('/api/tutorials'),
+        api.get('/api/users/me/progress').catch(() => [])
+      ]);
+      tutorials = Array.isArray(list) ? list : (list.tutorials || list.items || []);
+      tutorials.sort((a, b) => (a.order_sequence || 0) - (b.order_sequence || 0));
+      tutorials = Array.from(
+        tutorials.reduce((map, tutorial) => {
+          map.set(tutorial.title, tutorial);
+          return map;
+        }, new Map()).values()
+      );
+      const curatedTutorials = tutorials.filter(tutorial => tutorial.title?.startsWith('LEVEL '));
+      if (curatedTutorials.length > 0) {
+        tutorials = curatedTutorials;
+      }
+
+      // 진행도 맵 생성
+      if (Array.isArray(prog)) {
+        prog.forEach(p => {
+          userProgress[p.tutorial_id] = p;
+        });
+      }
+
+      renderTutorialGrid();
+      renderOverallProgress();
+
+      // 네비 코인 표시
+      const user = auth.getCachedUser();
+      if (user?.coins !== undefined) {
+        document.getElementById('nav-coins-display').textContent = `🪙 ${user.coins.toLocaleString()}`;
+      }
+
+    } catch (err) {
+      showToast('튜토리얼 로드 실패: ' + err.message, 'error');
+      document.getElementById('tutorial-grid').innerHTML =
+        `<div style="color:var(--color-text-secondary);">데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</div>`;
+    }
+  }
+
+  // ─── 그리드 렌더링 ───
+  function renderTutorialGrid() {
+    const grid = document.getElementById('tutorial-grid');
+    if (!tutorials.length) {
+      grid.innerHTML = '<div style="color:var(--color-text-secondary);">등록된 튜토리얼이 없습니다.</div>';
+      return;
+    }
+
+    const diffLabel = { 1: '초급', 2: '중급', 3: '상급' };
+    const diffColor = { 1: 'var(--color-accent-green)', 2: 'var(--color-accent-gold)', 3: 'var(--color-accent-red)' };
+    const icons = ['🥊', '🛡️', '👊', '🦵', '⚡', '💪', '🎯', '🔥'];
+
+    grid.innerHTML = tutorials.map((tut, i) => {
+      const prog = userProgress[tut.id];
+      const done = prog?.is_completed;
+      const isPremium = tut.is_premium;
+      const blueprint = getTutorialBlueprint(tut);
+      const cardDescription = blueprint?.summary || tut.description || '복싱 기초 자세를 배워보세요.';
+
+      return `
+        <div class="tut-card ${done ? 'completed' : ''}" onclick="openTutorial(${i})">
+          <div class="tut-thumb">
+            ${icons[i % icons.length]}
+            ${isPremium ? '<div class="tut-lock-overlay">🔒</div>' : ''}
+            ${done ? '<div style="position:absolute;top:8px;right:8px;font-size:1.2rem;">✅</div>' : ''}
+          </div>
+          <div class="tut-body">
+            <div class="tut-title">${tut.title}</div>
+            <div class="tut-desc">${cardDescription}</div>
+            <div class="tut-meta">
+              <span class="badge ${isPremium ? 'badge-premium' : 'badge-free'}">${isPremium ? 'PREMIUM' : 'FREE'}</span>
+              <span class="tut-diff" style="color:${diffColor[tut.difficulty_level] || 'var(--color-text-secondary)'}">
+                Lv.${tut.difficulty_level || 1} ${diffLabel[tut.difficulty_level] || '초급'}
+              </span>
+              <span class="tut-reward">+${tut.reward_exp || 100} EXP</span>
+              ${prog?.best_accuracy ? `<span style="font-size:11px;color:var(--color-accent-blue);">최고 ${Math.round(prog.best_accuracy)}%</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ─── 전체 진행률 바 렌더링 ───
+  function renderOverallProgress() {
+    if (!tutorials.length) return;
+
+    const completedCount = tutorials.filter(t => userProgress[t.id]?.is_completed).length;
+    const total          = tutorials.length;
+    const pct            = total > 0 ? Math.round(completedCount / total * 100) : 0;
+
+    // 획득한 EXP / 코인 합산
+    const earnedExp   = tutorials.filter(t => userProgress[t.id]?.is_completed)
+                                 .reduce((s, t) => s + (t.reward_exp   || 100), 0);
+    const earnedCoins = tutorials.filter(t => userProgress[t.id]?.is_completed)
+                                 .reduce((s, t) => s + (t.reward_coins ||  10), 0);
+
+    document.getElementById('overall-progress').style.display = 'block';
+    document.getElementById('progress-fraction').textContent  = `${completedCount}/${total} 완료`;
+    document.getElementById('overall-fill').style.width       = pct + '%';
+    document.getElementById('progress-exp-total').textContent =
+      completedCount > 0 ? `⭐ 획득 EXP: +${earnedExp}` : '';
+    document.getElementById('progress-coins-total').textContent =
+      completedCount > 0 ? `🪙 획득 코인: +${earnedCoins}` : '';
+  }
+
+  // ─── 튜토리얼 열기 ───
+  function resolveTutorialAssetPath(assetPath, tutorialTitle = '') {
+    const blueprint = getTutorialBlueprint({ title: tutorialTitle });
+    const title = (tutorialTitle || '').toLowerCase();
+    const fallbackByTitle = [
+      { match: 'stance', path: V.boxingStance || vidFallback('복싱스탠스.mp4') },
+      { match: 'jab', path: V.boxingWeaving || vidFallback('복싱 위빙.mp4') },
+      { match: 'straight', path: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4') },
+      { match: 'cross', path: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4') },
+      { match: 'hook', path: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4') },
+      { match: 'duck', path: V.boxingWeaving || vidFallback('복싱 위빙.mp4') },
+      { match: 'weav', path: V.boxingWeaving || vidFallback('복싱 위빙.mp4') },
+      { match: 'combo', path: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4') },
+      { match: 'counter', path: V.boxingCombo || vidFallback('복싱 콤비네이션 강의.mp4') }
+    ];
+
+    if (assetPath) {
+      if (/^https?:\/\//i.test(assetPath)) return assetPath;
+      if (assetPath.startsWith('/assets/')) return `/frontend${assetPath}`;
+      if (assetPath.startsWith('assets/')) return `/${assetPath}`;
+      return assetPath;
+    }
+
+    if (blueprint?.dbPath) {
+      if (/^https?:\/\//i.test(blueprint.dbPath)) return blueprint.dbPath;
+      return `/frontend${blueprint.dbPath}`;
+    }
+
+    return fallbackByTitle.find(item => title.includes(item.match))?.path || '';
+  }
+
+  function renderTutorialVideo(tutorial) {
+    const videoEl = document.getElementById('tutorial-video');
+    const placeholderEl = document.querySelector('.detail-video-placeholder');
+    const resolvedPath = resolveTutorialAssetPath(tutorial?.video_url, tutorial?.title);
+
+    videoEl.pause();
+    videoEl.removeAttribute('src');
+    videoEl.load();
+    videoEl.style.display = 'none';
+    placeholderEl.style.display = 'flex';
+
+    if (!resolvedPath) return;
+
+    videoEl.src = resolvedPath;
+    videoEl.style.display = 'block';
+    placeholderEl.style.display = 'none';
+    videoEl.onerror = () => {
+      videoEl.style.display = 'none';
+      placeholderEl.style.display = 'flex';
+    };
+  }
+
+  function openTutorial(idx) {
+    currentTutorialIdx = idx;
+    currentTutorial = tutorials[idx];
+    currentTutorialBlueprint = getTutorialBlueprint(currentTutorial);
+    isCompleted = false;
+    holdStartTime = null;
+    TutorialEngine.reset(currentTutorialBlueprint.mode);
+
+    // 패널 열기
+    document.getElementById('list-view').style.display = 'none';
+    const panel = document.getElementById('detail-panel');
+    panel.classList.add('open');
+
+    // 정보 채우기
+    document.getElementById('detail-title').textContent = currentTutorial.title;
+    document.getElementById('detail-title-small').textContent = currentTutorial.title;
+    document.getElementById('detail-desc').textContent = currentTutorialBlueprint.summary || currentTutorial.description || '';
+
+    const diffLabel = { 1: '초급', 2: '중급', 3: '상급' };
+    const diffBadge = document.getElementById('detail-difficulty');
+    diffBadge.textContent = `Lv.${currentTutorial.difficulty_level || 1} ${diffLabel[currentTutorial.difficulty_level] || '초급'}`;
+    diffBadge.className = 'badge badge-free';
+
+    document.getElementById('detail-reward').textContent =
+      `🪙 ${currentTutorial.reward_coins || 10} 코인  ⭐ ${currentTutorial.reward_exp || 100} EXP`;
+    renderTutorialGuide(currentTutorial);
+    prepareChecklist(currentTutorialBlueprint.mode);
+    renderTutorialVideo(currentTutorial);
+
+    // 튜토리얼 세션 생성 (비동기, UI 흐름 블록 안 함)
+    tutorialSessionId = null;
+    api.post('/api/sessions', { session_type: 'tutorial' })
+      .then(resp => { tutorialSessionId = resp?.data?.id || resp?.id || null; })
+      .catch(() => {});
+
+    // UI 초기화
+    document.getElementById('complete-overlay').classList.remove('show');
+    document.getElementById('accuracy-section').style.display = 'none';
+    document.getElementById('hold-section').style.display = 'none';
+    document.getElementById('feedback-box').style.display = 'none';
+    document.getElementById('checklist').style.display = 'none';
+    document.getElementById('manual-complete-btn').style.display = 'none';
+    document.getElementById('camera-start-area').style.display = 'block';
+    document.getElementById('webcam-placeholder').classList.remove('hidden');
+    document.getElementById('hold-bar-fill').style.width = '0%';
+    document.getElementById('hold-progress-fill').style.width = '0%';
+    resetChecklist(currentTutorialBlueprint.mode);
+
+    const title = (currentTutorial.title || '').toLowerCase();
+    if (title.includes('stance') || title.includes('jab')) {
+      startCamera({ silent: true }).catch(() => {});
+    }
+  }
+
+  function closeDetail() {
+    stopCamera();
+    document.getElementById('detail-panel').classList.remove('open');
+    document.getElementById('list-view').style.display = 'block';
+  }
+
+  function goNextTutorial() {
+    stopCamera();
+    if (currentTutorialIdx + 1 < tutorials.length) {
+      openTutorial(currentTutorialIdx + 1);
+    } else {
+      closeDetail();
+      showToast('모든 튜토리얼 완료! 🎉', 'success');
+    }
+  }
+
+  // ─── 카메라 시작 ───
+  async function startCamera(options = {}) {
+    const { silent = false } = options;
+    document.getElementById('camera-start-area').style.display = 'none';
+
+    try {
+      const video = document.getElementById('webcam-video');
+      const canvas = document.getElementById('pose-canvas');
+
+      // MediaPipe 사용 가능 여부 확인
+      if (typeof Pose === 'undefined') {
+        throw new Error('MediaPipe 로드 실패');
+      }
+
+      document.getElementById('webcam-placeholder').classList.add('hidden');
+
+      poseInstance = new Pose({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      poseInstance.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7
+      });
+      poseInstance.onResults(onPoseResults);
+
+      cameraInstance = new Camera(video, {
+        onFrame: async () => {
+          if (poseInstance) await poseInstance.send({ image: video });
+        },
+        width: 640, height: 480
+      });
+      await cameraInstance.start();
+
+      // UI 표시
+      document.getElementById('accuracy-section').style.display = 'block';
+      document.getElementById('hold-section').style.display = 'block';
+      document.getElementById('feedback-box').style.display = 'block';
+      document.getElementById('checklist').style.display = 'flex';
+
+      canvas.width  = video.videoWidth  || 640;
+      canvas.height = video.videoHeight || 480;
+
+    } catch (err) {
+      // 웹캠 불가 시 수동 완료 버튼 표시
+      if (!silent) {
+        showToast('카메라 시작 실패: ' + err.message, 'error');
+      }
+      document.getElementById('camera-start-area').style.display = 'block';
+      document.getElementById('webcam-placeholder').classList.remove('hidden');
+      document.getElementById('manual-complete-btn').style.display = 'block';
+      throw err;
+    }
+  }
+
+  function stopCamera() {
+    if (cameraInstance) { cameraInstance.stop(); cameraInstance = null; }
+    if (poseInstance)   { poseInstance.close?.(); poseInstance = null; }
+    const video = document.getElementById('webcam-video');
+    if (video?.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
+  }
+
+  // ─── 포즈 결과 처리 (TutorialEngine 사용) ───
+  function onPoseResults(results) {
+    const canvas = document.getElementById('pose-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!results.poseLandmarks) {
+      updateUI({ accuracy: 0, feedback: '자세가 감지되지 않습니다. 전신이 보이도록 해주세요.' });
+      holdStartTime = null;
+      return;
+    }
+
+    const lm = results.poseLandmarks;
+
+    // TutorialEngine으로 6종 자세 분석
+    const mode = currentTutorialBlueprint?.mode || 'stance';
+    const { checks, accuracy, feedback, profile } = TutorialEngine.analyze(lm, { mode });
+
+    // 컬러 스켈레톤 그리기 (초록/골드/빨강으로 자세 상태 표시)
+    TutorialEngine.drawColoredSkeleton(ctx, lm, checks);
+
+    // 강좌별 체크리스트 업데이트
+    profile.priority.forEach(key => updateCheckItem(key, checks[key]));
+
+    // 홀드 타이머 — 85% 이상 유지 시 완료
+    if (accuracy >= 0.85) {
+      if (!holdStartTime) holdStartTime = Date.now();
+      const elapsed = Date.now() - holdStartTime;
+      const pct = Math.min(elapsed / HOLD_DURATION * 100, 100);
+      document.getElementById('hold-bar-fill').style.width = pct + '%';
+      document.getElementById('hold-progress-fill').style.width = pct + '%';
+      document.getElementById('hold-time').textContent = (elapsed / 1000).toFixed(1) + 's';
+
+      if (elapsed >= HOLD_DURATION && !isCompleted) {
+        isCompleted = true;
+        triggerComplete(accuracy);
+      }
+    } else {
+      holdStartTime = null;
+      document.getElementById('hold-bar-fill').style.width = '0%';
+      document.getElementById('hold-time').textContent = '0.0s';
+    }
+
+    updateUI({ accuracy, feedback });
+
+    // 자세 교정 데이터 저장 (3초 스로틀링)
+    savePoseCorrection(checks, accuracy);
+  }
+
+  // ─── 자세 교정 데이터 저장 (POST /api/sessions/pose-corrections) ───
+  // 6종 체크 중 가장 심각한 문제를 저장 (3초 스로틀링)
+  function savePoseCorrection(checks, accuracy) {
+    if (!tutorialSessionId) return;
+    const now = Date.now();
+    if (now - lastPoseSaveTime < POSE_SAVE_INTERVAL) return;
+
+    // 우선순위: 심각도 high → medium → low 순
+    const issueByKey = {
+      guard: { issueType: 'hands_too_low', severity: 'high' },
+      elbowIn: { issueType: 'elbow_out', severity: 'medium' },
+      stance: { issueType: 'stance_too_narrow', severity: 'medium' },
+      balance: { issueType: 'weight_off_center', severity: 'medium' },
+      chinTuck: { issueType: 'head_forward', severity: 'low' },
+      core: { issueType: 'core_weak', severity: 'low' },
+      recovery: { issueType: 'slow_guard_recovery', severity: 'high' },
+      rotation: { issueType: 'insufficient_rotation', severity: 'high' },
+      hookLine: { issueType: 'hook_alignment_off', severity: 'high' },
+      duckLevel: { issueType: 'insufficient_duck', severity: 'high' },
+      headMovement: { issueType: 'evade_range_too_small', severity: 'medium' },
+      comboFlow: { issueType: 'combo_timing_slow', severity: 'high' }
+    };
+    const priority = TutorialEngine.getProfile(currentTutorialBlueprint?.mode || 'stance').priority;
+
+    for (const key of priority) {
+      if (checks[key] && !checks[key].ok) {
+        const issue = issueByKey[key] || { issueType: key, severity: 'medium' };
+        lastPoseSaveTime = now;
+        api.post('/api/sessions/pose-corrections', {
+          session_id:       tutorialSessionId,
+          pose_type:        key,
+          accuracy:         Math.round(accuracy * 100),
+          issue_type:       issue.issueType,
+          feedback_message: checks[key].message,
+          severity:         issue.severity
+        }).catch(() => {});
+        return; // 가장 심각한 것 하나만 저장
+      }
+    }
+  }
+
+  // ─── UI 업데이트 ───
+  function updateUI({ accuracy, feedback }) {
+    const pct = Math.round(accuracy * 100);
+    document.getElementById('accuracy-num').textContent = pct + '%';
+    document.getElementById('accuracy-num').style.color =
+      pct >= 85 ? 'var(--color-accent-green)' :
+      pct >= 60 ? 'var(--color-accent-gold)' :
+      'var(--color-accent-red)';
+    document.getElementById('feedback-box').textContent = feedback;
+  }
+
+  // check 객체 { ok, score, message }를 받아 스코어카드 업데이트
+  function updateCheckItem(key, check) {
+    const el = document.getElementById(`check-${key}`);
+    if (!el || !check) return;
+
+    const scorePct = Math.round((check.score || 0) * 100);
+    const barEl    = document.getElementById(`bar-${key}`);
+    const msgEl    = document.getElementById(`msg-${key}`);
+    const pctEl    = document.getElementById(`pct-${key}`);
+    const iconEl   = el.querySelector('.check-icon');
+
+    // 상태 클래스 결정
+    el.classList.remove('ok', 'warn', 'fail');
+    if (check.ok) {
+      el.classList.add('ok');
+      if (iconEl) iconEl.textContent = '✅';
+    } else if ((check.score || 0) >= 0.5) {
+      el.classList.add('warn');
+      if (iconEl) iconEl.textContent = '🟡';
+    } else {
+      el.classList.add('fail');
+      if (iconEl) iconEl.textContent = '❌';
+    }
+
+    // 점수 바 색상
+    const barColor = check.ok ? '#30D158' : (check.score >= 0.5 ? '#FFD60A' : '#FF2D55');
+    if (barEl) { barEl.style.width = scorePct + '%'; barEl.style.background = barColor; }
+    if (pctEl) pctEl.textContent = scorePct + '%';
+    if (msgEl) msgEl.textContent = check.message || '';
+  }
+
+  function resetChecklist(mode = 'stance') {
+    const profile = TutorialEngine.getProfile(mode);
+    profile.priority.forEach(key => {
+      const el = document.getElementById(`check-${key}`);
+      if (!el) return;
+      el.classList.remove('ok','warn');
+      el.classList.add('fail');
+      const iconEl = el.querySelector('.check-icon');
+      if (iconEl) iconEl.textContent = '❌';
+      const barEl  = document.getElementById(`bar-${key}`);
+      const msgEl  = document.getElementById(`msg-${key}`);
+      const pctEl  = document.getElementById(`pct-${key}`);
+      if (barEl) { barEl.style.width = '0%'; barEl.style.background = '#FF2D55'; }
+      if (pctEl) pctEl.textContent = '0%';
+      if (msgEl) msgEl.textContent = '판정 대기 중';
+    });
+  }
+
+  // ─── 완료 처리 ───
+  async function triggerComplete(accuracy) {
+    stopCamera();
+    document.getElementById('complete-overlay').classList.add('show');
+    document.getElementById('complete-exp').textContent =
+      `+${currentTutorial.reward_exp || 100} EXP  🪙+${currentTutorial.reward_coins || 10}`;
+
+    // 파티클 이펙트 + 완료 사운드
+    spawnParticles();
+    SoundSystem.tutorialComplete();
+
+    // API 호출
+    try {
+      const prog = userProgress[currentTutorial.id];
+      await api.post(`/api/tutorials/${currentTutorial.id}/complete`, {
+        accuracy: Math.round(accuracy * 100),
+        attempts: (prog?.attempts || 0) + 1
+      });
+      userProgress[currentTutorial.id] = { ...prog, is_completed: true, best_accuracy: Math.round(accuracy * 100) };
+      renderOverallProgress(); // 진행률 바 갱신
+      showToast('튜토리얼 완료! 🎉', 'success');
+    } catch (err) {
+      showToast('완료 저장 실패: ' + err.message, 'error');
+    }
+  }
+
+  // 웹캠 없을 때 수동 완료
+  async function manualComplete() {
+    if (isCompleted) return;
+    isCompleted = true;
+    document.getElementById('complete-overlay').classList.add('show');
+    document.getElementById('complete-exp').textContent =
+      `+${currentTutorial.reward_exp || 100} EXP  🪙+${currentTutorial.reward_coins || 10}`;
+    spawnParticles();
+
+    try {
+      await api.post(`/api/tutorials/${currentTutorial.id}/complete`, {
+        accuracy: 100,
+        attempts: 1
+      });
+      showToast('튜토리얼 완료! 🎉', 'success');
+    } catch (err) {
+      showToast('완료 저장 실패: ' + err.message, 'error');
+    }
+  }
+
+  // ─── 파티클 이펙트 ───
+  function spawnParticles() {
+    const container = document.getElementById('particles');
+    const colors = ['#FF2D55','#FFD60A','#30D158','#007AFF','#FF9F0A'];
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const x = (Math.random() * 100) + 'vw';
+      const y = (Math.random() * 60 + 20) + 'vh';
+      const px = (Math.random() * 200 - 100) + 'px';
+      const py = (Math.random() * -200 - 50) + 'px';
+      p.style.cssText = `
+        left:${x}; top:${y};
+        background:${colors[i % colors.length]};
+        --px:${px}; --py:${py};
+        animation-delay:${Math.random() * 0.4}s;
+        animation-duration:${0.8 + Math.random() * 0.6}s;
+      `;
+      container.appendChild(p);
+      setTimeout(() => p.remove(), 1500);
+    }
+  }
+
+  // ─── 시작 ───
+  loadTutorials();
+</script>
+</body>
+</html>

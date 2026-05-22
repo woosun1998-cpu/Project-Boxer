@@ -1,0 +1,1121 @@
+/* ════════════════════════════════════════════════════════
+   BOXER HOME TRAINING — index.css
+   피그마 기준: 1920 × 3240 px  (node-id 52:12 "로그인 전")
+   모든 vw 수치는 1920px 캔버스 기준으로 환산
+════════════════════════════════════════════════════════ */
+
+/* ── 폰트 ── */
+@font-face {
+  font-family: "KBL Jump EB";
+  src: url("../font/KBLJump_EB_Extended.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paperlogy SemiBold";
+  src: url("../font/Paperlogy-6SemiBold.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paperlogy Black";
+  src: url("../font/Paperlogy-9Black.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paperlogy Regular";
+  src: url("../font/Paperlogy-4Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+/* ── 리셋 ──
+   ※ global.css 하단에 게임 페이지용
+      body { display:flex; overflow:hidden; height:100vh } 가 선언되어 있어
+      index.html 레이아웃을 파괴함. 아래에서 전부 덮어씀.
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: auto !important;
+  overflow: visible !important;
+  font-size: 16px;
+}
+
+body {
+  /* global.css의 display:flex / overflow:hidden / height:100vh 전부 무효화 */
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  /* 색상·폰트 */
+  background: #111 !important;
+  color: #fff;
+  font-family: "Paperlogy SemiBold", sans-serif;
+  /* 정렬 초기화 (flex 잔재 제거) */
+  align-items: unset !important;
+  justify-content: unset !important;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* 섹션 공통 — global.css의 stage 잔재 제거 */
+section {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  position: static;
+}
+
+/* ════════════════════════════════════════════════════════
+   내비게이션 (fixed) — 항목 수에 맞춰 캡슐 너비 자동 (global.css와 동일)
+════════════════════════════════════════════════════════ */
+.hero-nav {
+  position: fixed;
+  top: 20px;
+  right: 46px;
+  width: auto;
+  min-width: max-content;
+  height: 70px;
+  border-radius: 100px;
+  background: #fff;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  padding: 0 32px;
+  color: #1c1c1c;
+  z-index: 999;
+  font-size: 20px;
+  line-height: 1;
+  white-space: nowrap;
+  font-family: "Paperlogy SemiBold", sans-serif;
+}
+
+/* 링크 / 버튼 공통: Figma color #000000, hover시 강조 */
+.hero-nav a {
+  color: #000000;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.hero-nav a:hover {
+  color: #ed1d32;
+}
+
+.hero-nav a.active {
+  color: #ed1d32 !important;
+}
+
+.drawer-auth-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: #000000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.drawer-auth-link:hover {
+  color: #ed1d32;
+}
+
+/* 햄버거: x:1817 y:45 w:26 h:21
+   막대 3개: h:3  color:#1c1c1c  간격 = (21-9)/2 = 6px
+   막대 y: 45,54,63 → 간격 9px */
+.menu-btn {
+  width: 26px; /* Figma w:26           */
+  height: 21px; /* Figma h:21           */
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.menu-btn i {
+  display: block;
+  height: 3px; /* Figma rect h:3       */
+  width: 100%;
+  border-radius: 999px; /* Figma cornerRadius   */
+  background: #1c1c1c; /* Figma fill #1c1c1c   */
+}
+
+/* ════════════════════════════════════════════════════════
+   섹션 1 — 히어로
+   ── 피그마 확인 수치 (node 52:12 직접 읽기) ────────────
+   캔버스 1920 × 3240  /  히어로 영역: 0 ~ 1084px
+
+   로고 이미지 (56:90)     x:15   y:130  w:805  h:392
+   흰 가로선 (470:10)      x:47   y:530  w:739  h:3    fill:#ffffff
+   버튼 rect (472:17)      x:158  y:583  w:519  h:130  fill:#ed1d32  r:69
+   버튼 텍스트(472:15)     fontSize:60  fill:#ffffff  letterSpacing:0
+   배경 도형 그룹(470:13)  x:657  y:-2.5 w:1241.5 h:1080
+   복서 이미지 (467:518)   x:845  y:76   w:1173  h:1004
+   하단 빨간 띠 (467:520)  x:0    y:1030 w:1920  h:54  fill:#ed1d32
+
+   좌측 열 분할: 0 ~ 820px → 820/1920 = 42.71%
+   우측 열 분할: 820 ~ 1920px → flex:1
+
+   배경 도형 left (우측 열 기준):
+     657 - 820 = -163px → -163/1920*100 = -8.49vw
+   복서 left (우측 열 기준):
+     845 - 820 = 25px   →   25/1920*100 =  1.30vw
+   복서 bottom = 0 (y:76 + h:1004 = 1080 = 섹션 하단)
+   복서 height = 1004/1080 = 92.96%
+════════════════════════════════════════════════════════ */
+
+/* ── 섹션 래퍼 ──
+   3번째 배경 이미지: center/cover → 비율 유지, 잘림 없음
+   overflow:hidden → 복서 우측 블리드(98px) 처리 */
+.s1 {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+/* ── 2열 Flex 컨테이너 ──
+   높이: min-height:100vh = Figma 1080px 기준 (16:9 full-screen)
+   align-items:stretch → 두 열 동일 높이 */
+.s1-inner {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════════
+   좌측 열 │ Figma 0 ~ 820px = 42.71%
+   z-index:2 → 우측 열 배경 도형 블리드 위에 렌더링
+══════════════════════════════════════════ */
+.s1-left {
+  flex: 0 0 42.71%; /* 820/1920               */
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  /* 패딩: top=130px(6.77vw)  left=15px(0.78vw)  bottom=80px(4.17vw) */
+  padding-top: 6.77vw; /* 130/1920               */
+  padding-left: 0.78vw; /* 15/1920                */
+  padding-bottom: 4.17vw; /* 80/1920                */
+}
+
+/* ─ 로고: x:15  y:130  w:805  h:392 ─ */
+.s1-logo {
+  width: 41.93vw; /* 805/1920               */
+  max-width: 800px;
+  height: auto;
+  margin-top: -200px;
+  margin-left: 10px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ─ 흰 가로선: x:47  y:530  w:739  h:3  fill:#ffffff ─
+   subtitle 삭제 후 → 이 요소가 직접 8px 갭 담당
+   로고 하단 y:522 → 라인 y:530 → 갭 8px = 0.42vw
+   margin-left = 47-15(padding-left) = 32px = 1.67vw */
+.s1-line {
+  margin-top: -140px; /* 8/1920 (로고→라인 갭)  */
+  margin-left: 1.67vw; /* 32/1920               */
+  width: 38.49vw; /* 739/1920               */
+  max-width: 739px;
+  height: 3px;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   복서 시작하기 버튼
+   ── 피그마 수치 (node 472:17 + 472:15) ────────────────
+   rect      x:158  y:583  w:519  h:130  r:69  fill:#ed1d32
+   text      x:253  y:629  w:330  h:40
+             fontSize:60  fontWeight:600(SemiBold)  fill:#ffffff
+             letterSpacing:0  lineHeightPx:40
+
+   margin-top  = 583 - (530+3) = 50px = 2.60vw
+   margin-left = 158 - 15(padding) = 143px = 7.45vw
+   border-radius = 69px = 3.59vw  (Figma cornerRadius:69)
+   font-size = 60px → clamp(28px, 3.125vw, 60px)
+   text center = 629+20=649 ≈ button center=583+65=648 ✓ (수직 중앙)
+═══════════════════════════════════════════════════════ */
+.s1-btn {
+  margin-top: 2.6vw; /* 50/1920               */
+  margin-left: 7.45vw; /* 143/1920              */
+  align-self: flex-start;
+  flex-shrink: 0;
+
+  /* 크기 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(220px, 27.03vw, 519px); /* 519/1920  */
+  height: clamp(70px, 6.77vw, 130px); /* 130/1920  */
+  padding: 0;
+  border-radius: clamp(35px, 3.59vw, 69px); /* r:69/1920 */
+
+  /* 색상 */
+  background: #ed1d32; /* Figma fill #ed1d32    */
+  border: 0;
+  color: #ffffff; /* Figma fill #ffffff    */
+
+  /* 타이포: fontSize:60  fontWeight:600  letterSpacing:0 */
+  font-family: "Paperlogy SemiBold", sans-serif;
+  font-size: clamp(28px, 3.125vw, 60px); /* 60/1920  */
+  font-weight: 600;
+  letter-spacing: 0; /* Figma letterSpacing:0 */
+  white-space: nowrap;
+  line-height: 1;
+
+  /* 그림자 (Figma drop shadow + inner shadow) */
+  box-shadow:
+    2px 8px 4px rgba(0, 0, 0, 0.25),
+    inset 0 4px 4px rgba(0, 0, 0, 0.25);
+
+  /* hover 트랜지션 */
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+  cursor: pointer;
+}
+
+.s1-btn:hover {
+  background: #c81326;
+  transform: scale(1.04);
+  box-shadow:
+    4px 12px 8px rgba(0, 0, 0, 0.32),
+    inset 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+.s1-btn:active {
+  transform: scale(0.98);
+  background: #a81020;
+}
+
+/* ══════════════════════════════════════════
+   우측 열 │ Figma 820 ~ 1920px → flex:1
+   overflow:visible → 배경 도형 좌측 블리드(-163px) 허용
+   z-index:1 → 좌측 열(z:2)보다 낮음
+   height:100% → absolute 자식(복서)의 % 참조 기준 확보
+══════════════════════════════════════════ */
+.s1-right {
+  flex: 1;
+  height: 56.25vw; /* 1080/1920 — absolute 자식 height:100% 기준점 */
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* ─ 배경 장식 도형 이미지 ─
+   Figma GROUP (470:13): x:657  y:-2.5  w:1241.5  h:1080
+   우측 열 시작(x=820) 기준:
+     left  = 657-820 = -163px  → -8.49vw  (좌측 블리드)
+     top   = -2.5px            → -0.13vw
+     width = 1241.5px          → 64.66vw
+     height= 1080px            → 100%
+   z-index:0 → 복서 이미지 아래층 */
+.s1-shape {
+  position: absolute;
+  left: -8.49vw; /* -(163/1920) — 위치 조절은 left / top */
+  top: -1.5vw; /* ↑ 값을 키우면 아래로, 줄이면 위로 */
+  width: 64.66vw; /* 1241.5/1920           */
+  height: 115%;
+  object-fit: fill; /* 이미지 비율이 1:1(정사각형)이므로 cover 사용 시 상하 잘림 → fill로 컨테이너에 딱 맞게 */
+  z-index: 0; /* 빨간 띠(.s1-strip)보다 아래 */
+}
+
+/* ─ 복서 인물 이미지 ─
+   Figma RECT (467:518): x:845  y:76  w:1173  h:1004
+   우측 열 시작(x=820) 기준:
+     left   = 845-820 = 25px   → 1.30vw
+     bottom = 0  (y:76+h:1004 = 1080 = 섹션 하단 일치)
+     height = 1004/1920        = 52.29vw  ← vw 고정값으로 교체
+              (% 대신 vw를 써서 부모 height 미정의 시 소실 방지)
+     width  = auto (비율 유지, 우측 98px 블리드는 .s1 overflow:hidden 처리)
+   z-index:1 → 배경 도형(.s1-shape) 위층 */
+.s1-boxer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom right;
+  z-index: 2; /* 빨간 띠 위 */
+}
+
+/* ─ 하단 빨간 띠 ─
+   Figma (467:520): x:0  y:1030  w:1920  h:54  fill:#ed1d32 */
+.s1-strip {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 54px;
+  background: #ed1d32;
+  z-index: 1; /* 평행사변형(.s1-shape) 위 · 복서(.s1-boxer) 아래 */
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════
+   섹션 2 — AI 복싱 플랫폼 (흰 배경)
+   ── 피그마 확인 수치 (node 52:12 내 s2 요소) ──────────
+   Rectangle 6 (88:53) 흰 배경  : x:0    y:1080  w:1920  h:1094
+   s2 섹션 기준 y=0 → 절대좌표 y - 1080
+
+   [좌측 이미지 레이어]
+   2번째 섹션 인물 뒤에 들어가는 배경 FRAME (472:23)
+     → s2-bg-text 기준
+     abs  x:-5   y:1030  w:911   h:1214
+     rel  left:-5px (-0.26vw)  top:-50px (-2.60vw)
+          width:911px (47.45vw)  height:1214px (63.23vw)
+
+   2번째 영역 복서 이미지 FRAME (113:54)
+     → s2-boxer-img 기준
+     abs  x:17   y:1028  w:977   h:1146
+     rel  left:17px (0.89vw)   top:-52px (-2.71vw)
+          width:977px (50.89vw)  height:1146px (59.69vw)
+     ★ top:-52  +  h:1146 = 1094 = s2 전체 높이 → 복서 하단이 s2 하단과 일치
+
+   [우측 텍스트]
+   heading (472:27): abs x:1071  y:1255  w:710  h:160
+     → rel top:175px (9.11vw)  좌측 패딩: 1071-977=94px (4.9vw)
+     fontFamily:Paperlogy  fontStyle:9 Black  fontWeight:900
+     fontSize:75  lineHeightPx:80  fill:#000000  letterSpacing:0
+
+   body (124:14): abs x:1071  y:1504  w:840  h:240
+     → rel top:424px  margin-top from heading bottom (175+160=335): 89px (4.64vw)
+     fontFamily:Paperlogy  fontStyle:4 Regular  fontWeight:400
+     fontSize:34  lineHeightPx:50  fill:#000000  letterSpacing:0
+════════════════════════════════════════════════════════ */
+
+/* ── 섹션 래퍼 ──
+   overflow:visible → 이미지가 s1 하단으로 -52px 블리드 허용 */
+.s2 {
+  display: block;
+  width: 100%;
+  background: #ffffff;
+  overflow: visible;
+}
+
+/* ── 2열 Flex 컨테이너 ──
+   가로 배치 절대 유지, min-height = 1094px = 56.98vw */
+.s2-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  min-height: 56.98vw; /* 1094/1920                    */
+  overflow: visible;
+}
+
+/* ══════════════════════════════════════════
+   좌측 열 │ Figma 0 ~ 977px = 50.89%
+   두 이미지 모두 position:absolute → 기준점 높이 확보
+   overflow:visible → 상단(-52px) 블리드 허용
+══════════════════════════════════════════ */
+.s2-left {
+  flex: 0 0 50.89%; /* 977/1920                     */
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  overflow: visible;
+  min-height: 56.98vw; /* 이미지 absolute 기준 높이    */
+}
+
+/* 무엇: 2번 영역 뒤쪽 빨간 원형 도형 / 왜: 복서 이미지 뒤 배경 강조 */
+.s2-circle {
+  position: absolute;
+  left: -160px;
+  top: -1px;
+  width: 54.43vw;
+  height: 57.97vw;
+  border-radius: 0 57.97vw 57.97vw 0;
+  background: #ed1d32;
+  z-index: 0;
+}
+
+/* ─ 복서 인물 이미지 (2번째 영역 복서 이미지.png)
+   Figma 113:54: abs x:17  y:1028  w:977  h:1146
+   s2-left 기준:
+     left = 17px      →  0.89vw
+     top  = 1028-1080 = -52px  → -2.71vw
+     w    = 977px     → 50.89vw
+     h    = 1146px    → 59.69vw
+   ★ top(-52) + h(1146) = 1094 = s2 하단 정확히 일치
+   z-index:1 → 원형 빛 위층 */
+.s2-boxer-img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  object-position: left bottom;
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════
+   우측 열 │ 텍스트 + 배경 글자 컬럼
+   position:relative → s2-bg-text absolute 기준점
+   min-width:0 → flex 자식 텍스트 세로 추락 버그 방지
+   padding-top = 175/1920 = 9.11vw (heading y:1255-1080)
+   padding-left = 94/1920 = 4.90vw (x:1071 - col_start:977)
+══════════════════════════════════════════ */
+.s2-right {
+  flex: 1;
+  flex-shrink: 0;
+  min-width: 0;
+  position: relative; /* ← s2-bg-text absolute 기준점 */
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 9.11vw; /* 175/1920                     */
+  padding-left: 4.9vw; /* 94/1920 (1071-977)           */
+  padding-right: 0.47vw; /* 9/1920                       */
+  padding-bottom: 4.17vw; /* 80/1920                      */
+}
+
+/* ─ 배경 글자 이미지 (2번째 영역 복서 배경 글자.png)
+   s2-right 전체를 덮는 연한 회색 "BOXER" 워터마크
+   position:absolute → s2-right 기준, 텍스트 콘텐츠 뒤에 깔림
+   z-index:0 → heading/body(z:1) 아래 최하위 레이어 */
+.s2-bg-text {
+  position: absolute;
+  top: 100px;
+  left: -20px;
+  right: 0;
+  bottom: 54px; /* 아래 빨간 띠 높이만큼 비움 */
+  width: 100%;
+  height: calc(100% - 54px);
+  max-height: none;
+  object-fit: contain;
+  object-position: center bottom;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ─ 제목 — 배경 글자 위에 렌더링
+   Figma 472:27: fontWeight:900  fontSize:75  lineHeightPx:80  fill:#000000 */
+.s2-heading {
+  position: relative;
+  z-index: 1; /* s2-bg-text(z:0) 위           */
+  font-family: "Paperlogy Black", "Paperlogy SemiBold", sans-serif;
+  font-size: clamp(32px, 3.91vw, 75px);
+  font-weight: 900;
+  line-height: calc(80 / 75);
+  color: #000000;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+/* ─ 본문 — 배경 글자 위에 렌더링
+   Figma 124:14: fontWeight:400  fontSize:34  lineHeightPx:50  fill:#000000
+   margin-top = 424-335 = 89px = 4.64vw */
+.s2-body {
+  position: relative;
+  z-index: 1; /* s2-bg-text(z:0) 위           */
+  margin-top: 4.64vw; /* 89/1920                      */
+  font-family: "Paperlogy Regular", "Paperlogy SemiBold", sans-serif;
+  font-size: clamp(14px, 1.77vw, 34px);
+  font-weight: 400;
+  line-height: calc(50 / 34);
+  color: #000000;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+.s2-body p {
+  margin: 0;
+}
+
+/* ════════════════════════════════════════════════════════
+   섹션 3 — 다양한 모드
+   Figma: y:2174  h:1103  (1920 × 1103)
+   배경: 3번째 배경 이미지.png (cover)
+
+   · 상단 빨간 띠  y:2174  h:54
+   · 타이틀        x:265  y:2265  w:1391  h:120   (섹션상대: top=91, 띠 54 → gap:37px)
+   · 카드 시작      y:2422.99  (타이틀 하단 기준 gap:37.99px)
+   · 카드 left margin: 212px = 11.04vw  (대칭)
+   · 카드 width:    465.78px = 24.26vw
+   · 카드 gap:      50px    =  2.6vw
+   · 하단 빨간 띠  y:3186  h:54
+════════════════════════════════════════════════════════ */
+.s3 {
+  background: #0a0a0a;
+}
+
+.s3-strip {
+  width: 100%;
+  height: 54px;
+  background: #ed1d32;
+}
+
+/* 내부 패딩: top=37px, side=212px=11.04vw, bottom=70px */
+.s3-inner {
+  padding: 1.93vw 11.04vw 3.65vw;
+}
+
+/* 타이틀: h:120 → font-size ~100px (5.2vw) — KBL Jump EB Extended  fontWeight:400 */
+.s3-title {
+  font-family: "KBL Jump EB Extended", "KBL Jump EB", sans-serif;
+  font-size: clamp(44px, 5.2vw, 100px);
+  font-weight: 400;
+  line-height: 1.2;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* 카드 3열 flex: gap = 50px = 2.6vw */
+.s3-cards {
+  display: flex;
+  gap: 2.6vw;
+  margin-top: 1.98vw; /* 38 / 1920 */
+}
+
+/* ══════════════════════════════════════════
+   개별 카드
+   ── 피그마 수치 (472:86 트레이닝 GROUP 기준) ──
+   GROUP        x:212   y:2422.99  w:465.78  h:672.80
+   외곽 rect    stroke:#f79415  strokeWeight:2  radius:38
+   내부 rect    fill:#000000    radius:38       offset≈10px(각 면)
+   → .s3-card padding:10px / border:2px solid #f79415 / radius:38px
+   → .s3-card-inner radius:38px (Figma 수치)
+
+   카드 높이 = 672.80px → min-height 로 고정
+   호버: translateY(-12px)
+══════════════════════════════════════════ */
+.s3-card {
+  flex: 1;
+  min-width: 0;
+  min-height: clamp(400px, 35.04vw, 672px);
+  border-radius: 38px;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.s3-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+}
+
+.s3-card-inner {
+  background: #000000; /* Figma fill #000  */
+  border-radius: 38px; /* Figma radius:38  */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ─ 이미지 영역 ─
+   카드 이미지에 버튼·설명글이 이미 포함되어 있음
+   → 이미지가 카드 전체를 꽉 채우도록 설정 */
+.s3-card-img {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+/* 무엇: 카드 PNG 전체가 보이게 / 왜: cover는 박스에 맞춰 잘라서 피그마와 다르게 보임 */
+.s3-card-img img {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+/* ════════════════════════════════════════════════════════
+   DRAWER
+════════════════════════════════════════════════════════ */
+:root {
+  --auth-accent: #ed1c33;
+  --panel: #1f1f1f;
+}
+
+.dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 2000;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(590px, calc(100% - 32px));
+  background: #fff;
+  transform: translateX(102%);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 2001;
+  overflow: hidden;
+  font-family: "Paperlogy SemiBold", sans-serif;
+}
+body.drawer-open .dim {
+  opacity: 1;
+  pointer-events: auto;
+}
+body.drawer-open .drawer {
+  transform: translateX(0);
+}
+.drawer-inner {
+  position: relative;
+  height: 100%;
+  padding: 12px 30px;
+}
+.drawer-close {
+  position: absolute;
+  right: 30px;
+  top: 20px;
+  border: 0;
+  background: transparent;
+  font-size: 46px;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 2002;
+  color: #111;
+}
+.drawer-profile {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-top: 18px;
+}
+.drawer-profile img {
+  width: 130px;
+  height: 130px;
+  border-radius: 999px;
+  object-fit: cover;
+}
+.drawer-links {
+  margin-top: 10px;
+  display: flex;
+  gap: 40px;
+  font-size: 25px;
+}
+.drawer-action-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: #9d9b9b;
+  font-size: 15px;
+  font-weight: 600;
+}
+.stat-box {
+  margin-top: 38px;
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 18px;
+  color: #fff;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-right: 0;
+  border-bottom: 0;
+}
+.stat-cell {
+  border-right: 2px solid rgba(255, 255, 255, 0.92);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.92);
+  min-height: 190px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.stat-label {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.15;
+}
+.stat-number-row {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+.stat-value {
+  margin: 0;
+  color: #ccff00;
+  font-size: 88px;
+  line-height: 0.88;
+}
+.stat-unit {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1;
+  padding-bottom: 8px;
+}
+.graph-box {
+  margin-top: 28px;
+  background: var(--panel);
+  border-radius: 18px;
+  padding: 18px;
+  color: #fff;
+}
+.graph-box h4 {
+  margin: 0 0 14px;
+  font-size: 44px;
+  line-height: 1;
+}
+.graph-box img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+/* ════════════════════════════════════════════════════════
+   로그인 모달
+════════════════════════════════════════════════════════ */
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;
+  padding: 20px;
+}
+.auth-modal-overlay.open {
+  display: flex;
+}
+.auth-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
+  padding: 14px 12px 18px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+.auth-brand {
+  margin: 8px 0 12px;
+  text-align: center;
+}
+.auth-brand__img {
+  display: block;
+  width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+.auth-mode {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+.auth-mode__btn {
+  flex: 1;
+  max-width: 50%;
+  height: 46px;
+  border: 0;
+  background: none;
+  font-size: 15px;
+  font-weight: 700;
+  color: #8a8a8a;
+  cursor: pointer;
+  position: relative;
+}
+.auth-mode__btn[aria-selected="true"] {
+  color: var(--auth-accent);
+}
+.auth-mode__btn[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: var(--auth-accent);
+}
+.auth-inset-title {
+  margin: 0 0 12px;
+  padding-left: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--auth-accent);
+}
+.auth-inset {
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.auth-inset__row {
+  position: relative;
+  border-top: 1px solid #ebebeb;
+}
+.auth-inset__row:first-of-type {
+  border-top: 0;
+}
+.naver-inp {
+  width: 100%;
+  height: 56px;
+  border: 0;
+  margin: 0;
+  padding: 18px 16px 0;
+  font-family: "Paperlogy SemiBold", sans-serif;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: #fff;
+}
+.naver-inp::placeholder {
+  color: transparent;
+}
+.naver-inp:focus {
+  outline: 2px solid #ed1d32;
+  outline-offset: -2px;
+}
+.auth-float {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  font-weight: 700;
+  color: #b0b0b0;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.16s ease;
+  background: #fff;
+  padding: 0 4px;
+}
+.naver-inp:focus + .auth-float,
+.naver-inp:not(:placeholder-shown) + .auth-float {
+  top: 10px;
+  transform: translateY(0);
+  font-size: 11px;
+  color: #8c8c8c;
+}
+.auth-extras {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  font-size: 12px;
+  color: #555;
+}
+.auth-keep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.auth-keep input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--auth-accent);
+}
+.auth-btn-main {
+  width: 100%;
+  height: 50px;
+  border: 0;
+  border-radius: 10px;
+  background: #ed1d32;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.auth-btn-main:hover {
+  background: #c81326;
+}
+.auth-foot {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+}
+.auth-foot a,
+.auth-foot__btn {
+  color: #888;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.auth-foot a:hover,
+.auth-foot__btn:hover {
+  text-decoration: underline;
+}
+.auth-foot-sep {
+  margin: 0 4px;
+  color: #ccc;
+}
+.auth-pane {
+  display: none;
+}
+.auth-pane.active {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-pane form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-error {
+  min-height: 22px;
+  margin: 0;
+  font-size: 13px;
+  color: #d61f35;
+  display: none;
+}
+
+/* ════════════════════════════════════════════════════════
+   프로필 수정 모달
+════════════════════════════════════════════════════════ */
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2110;
+  padding: 20px;
+}
+.profile-modal-overlay.open {
+  display: flex;
+}
+.profile-modal {
+  width: 100%;
+  max-width: 620px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+.profile-title {
+  margin: 0 0 12px;
+  font-size: 24px;
+  font-weight: 800;
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.profile-grid .auth-field:last-child {
+  grid-column: 1 / -1;
+}
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.profile-preview {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid #d4d4d4;
+  margin-bottom: 10px;
+}
+.auth-input {
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid #d4d4d4;
+  padding: 0 14px;
+  font-size: 15px;
+}
+.auth-field {
+  position: relative;
+  margin-bottom: 10px;
+}
+.auth-field .auth-input {
+  margin-bottom: 0;
+  padding-top: 14px;
+}
+.auth-label {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8e8e8e;
+  font-size: 14px;
+  pointer-events: none;
+  background: #fff;
+  padding: 0 4px;
+  transition: all 0.18s ease;
+}
+.auth-input:focus + .auth-label,
+.auth-input:not(:placeholder-shown) + .auth-label {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #111;
+}
+.auth-submit {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: #111;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-secondary {
+  width: 100%;
+  height: 46px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  background: #f7f7f7;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}

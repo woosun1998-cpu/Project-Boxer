@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 400 500" height="500" width="400">
+  <defs>
+    <filter height="300%" width="300%" y="-100%" x="-100%" id="neon">
+      <feGaussianBlur result="blur1" stdDeviation="6" in="SourceGraphic"></feGaussianBlur>
+      <feGaussianBlur result="blur2" stdDeviation="12" in="SourceGraphic"></feGaussianBlur>
+      <feGaussianBlur result="blur3" stdDeviation="18" in="SourceGraphic"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="blur3"></feMergeNode><feMergeNode in="blur2"></feMergeNode><feMergeNode in="blur1"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#neon)">
+    <path stroke-linecap="round" stroke-width="22" stroke="#FF1E1E" fill="none" d="M245 95 Q195 65 155 95 Q150 170 175 210 Q135 245 145 320 Q155 410 185 445 Q235 460 270 425 Q295 320 325 285 Q345 190 300 145"></path>
+    <ellipse stroke-width="20" stroke="#FF1E1E" fill="none" ry="46" rx="38" cy="95" cx="205"></ellipse>
+    <path stroke-linecap="round" stroke-width="26" stroke="#FF1E1E" fill="none" d="M165 185 Q125 165 115 215"></path>
+    <path stroke-linecap="round" stroke-width="26" stroke="#FF1E1E" fill="none" d="M255 175 Q295 165 310 215"></path>
+    <path stroke-linecap="round" stroke-width="9" stroke="#FFFFFF" fill="none" d="M245 95 Q195 65 155 95 Q150 170 175 210 Q135 245 145 320 Q155 410 185 445 Q235 460 270 425 Q295 320 325 285 Q345 190 300 145"></path>
+  </g>
+</svg>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 훈련</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <!-- Game HUD styles -->
+  <link rel="stylesheet" href="./css/boxing-ui.css?v=20260509-pose-overlay">
+
+  <style>
+    /* ── Design tokens (legacy compat for training.js CSS refs) ── */
+    :root {
+      --accent:  #ff3e3e;
+      --warm:    #ff9a3d;
+      --danger:  #ff6b6b;
+      --success: #39D353;
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+    html { background: #040404; color: #fff; font-family: var(--fp); }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% -10%, rgba(255,62,62,0.14) 0%, transparent 55%),
+        #040404;
+    }
+
+    /* ── Topbar ──────────────────────────────────────────────── */
+    .bx-topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 62px;
+      background: rgba(0,0,0,0.92); border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(14px); z-index: 100;
+    }
+    .bx-topbar-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 100%; padding: 0 24px; max-width: 1440px; margin: 0 auto;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 12px; }
+    .bx-brand { text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .bx-brand-logo {
+      width: 30px; height: 30px; object-fit: cover; border-radius: 8px;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.28)) drop-shadow(0 0 20px rgba(232,0,13,0.12));
+    }
+    .bx-live {
+      display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+      border: 1px solid rgba(232,0,13,0.28); background: rgba(232,0,13,0.06);
+      font-family: var(--fp); font-size: 11px; font-weight: 900; letter-spacing: .12em;
+      color: #ff3e3e; text-transform: uppercase; border-radius: 2px;
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    .bx-live::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #ff3e3e; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .bx-nav { display: flex; align-items: center; gap: 16px; }
+    .bx-nav a {
+      font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.32);
+      text-decoration: none; letter-spacing: .04em; transition: color .15s;
+    }
+    .bx-nav a:hover { color: #fff; }
+    .bx-nav a[aria-current] { color: #ff3e3e; border-bottom: 1px solid #ff3e3e; padding-bottom: 1px; }
+    .bx-nav button[data-logout-button] {
+      font-family: var(--fp); font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.32);
+      background: none; border: 1px solid rgba(255,255,255,0.14); padding: 5px 12px;
+      cursor: pointer; border-radius: 2px; transition: all .15s;
+    }
+    .bx-nav button[data-logout-button]:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+    @media (max-width: 860px) {
+      .bx-nav { gap: 10px; }
+      .bx-nav a { font-size: 11px; }
+    }
+    @media (max-width: 600px) {
+      .bx-nav a:not([aria-current]):not(:last-child) { display: none; }
+    }
+
+    /* ── User info slots (hidden visually, needed by training.js hydratePage) ─ */
+    .user-meta-hidden {
+      position: absolute;
+      width: 1px; height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────────────── -->
+<header class="bx-topbar" data-app-header>
+  <div class="bx-topbar-inner">
+    <div class="bx-topbar-left">
+      <a class="bx-brand" href="/index.html">
+        <img class="bx-brand-logo"
+          src="./assets/images/dashboard/오버레이 프로필 이미지.png"
+          alt="IM_BOXER">
+      </a>
+      <span class="bx-live">AI Coach</span>
+      <span style="font-size:12px;color:rgba(255,255,255,0.32);letter-spacing:.03em;"
+            data-user-summary>반복 훈련</span>
+    </div>
+    <nav class="bx-nav">
+      <button type="button" data-logout-button>로그아웃</button>
+    </nav>
+  </div>
+</header>
+
+<!--
+  Hidden slots: training.js hydratePage()가 쓰는 data-* 요소.
+  시각적으로 숨기되 DOM에 유지.
+-->
+<div class="user-meta-hidden" aria-hidden="true">
+  <span data-user-name></span>
+  <span data-user-tier-badge>FREE</span>
+  <span data-user-tier-text></span>
+  <span data-page-message></span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN ARENA
+     data-page="training"  data-training-state 는 training.js가 동적으로 제어
+     ══════════════════════════════════════════════════════════ -->
+<main class="arena-page" data-page="training" data-training-state="ready">
+
+  <!-- ① TOP HUD BAR ──────────────────────────────────────── -->
+  <div class="hud-bar">
+    <div class="hud-bar__left">
+      <span class="hud-round-tag">ROUND</span>
+      <span class="hud-round-num" data-round-number>1</span>
+      <span class="t-state-badge" data-training-state-label>준비</span>
+    </div>
+
+    <div class="hud-bar__center">
+      <!--
+        data-training-webcam-lesson: training.js가 레슨명 텍스트를 업데이트.
+        HUD 중앙에 크게 표시.
+      -->
+      <span class="hud-lesson-name" data-training-webcam-lesson>초보 기본 가드</span>
+    </div>
+
+    <div class="hud-bar__right">
+      <span class="hud-timer" data-round-timer>03:00</span>
+    </div>
+  </div>
+
+  <!-- 타이머 진행 바 -->
+  <div class="hud-timer-progress">
+    <div class="hud-timer-fill" data-round-progress style="width:0%"></div>
+  </div>
+
+  <!-- ② DURATION SELECTOR ──────────────────────────────── -->
+  <div class="duration-row">
+    <span class="duration-row__label">훈련 시간</span>
+    <div class="t-duration-btns">
+      <button class="t-dur-btn" data-duration-btn="60"  aria-pressed="false">1분</button>
+      <button class="t-dur-btn" data-duration-btn="180" aria-pressed="true">3분</button>
+      <button class="t-dur-btn" data-duration-btn="300" aria-pressed="false">5분</button>
+      <button class="t-dur-btn" data-duration-btn="600" aria-pressed="false">10분</button>
+    </div>
+    <span class="duration-row__display">세션 <span data-session-duration-display>03:00</span></span>
+    <button type="button" class="t-dur-btn" data-bgm-toggle aria-pressed="false">BGM OFF</button>
+  </div>
+
+  <!-- ③ MAIN ARENA (좌 스탯 | 카메라 | 우 코치) ─────────── -->
+  <div class="arena-body">
+
+    <!-- LEFT: SCORE / ACCURACY / HP / COMBO ─────────────── -->
+    <div class="arena-side arena-side--left">
+
+      <div class="side-stat">
+        <span class="side-stat__label">SCORE</span>
+        <img class="side-stat__grade" data-training-grade-badge
+          src="./assets/images/tutorials/grades/grade_d.svg"
+          alt="D 등급">
+        <span class="side-stat__val side-stat__val--score" data-score-current>0</span>
+      </div>
+
+      <div class="side-stat">
+        <span class="side-stat__label">ACCURACY</span>
+        <span class="side-stat__val" data-score-accuracy>—</span>
+      </div>
+
+      <div class="side-gauge">
+        <div class="side-gauge__header">
+          <span class="side-gauge__label">HP</span>
+          <span class="side-gauge__val" data-hp-value>100%</span>
+        </div>
+        <div class="side-gauge__track side-gauge__track--hp">
+          <div class="side-gauge__fill" data-hp-gauge style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="side-gauge">
+        <div class="side-gauge__header">
+          <span class="side-gauge__label">COMBO</span>
+          <span class="side-gauge__val" data-combo-value>0x</span>
+        </div>
+        <div class="side-gauge__track side-gauge__track--combo">
+          <div class="side-gauge__fill" data-combo-gauge style="width:0%"></div>
+        </div>
+      </div>
+
+    </div><!-- /arena-side--left -->
+
+    <!-- CENTER: WEBCAM + REFERENCE VIDEO ────────────────── -->
+    <div class="training-stage">
+    <div class="arena-cam-wrap" data-api-training-slot>
+      <span class="stage-panel-label">내 자세</span>
+
+      <!-- 코너 레티클 -->
+      <div class="cam-corner cam-corner--tl"></div>
+      <div class="cam-corner cam-corner--tr"></div>
+      <div class="cam-corner cam-corner--bl"></div>
+      <div class="cam-corner cam-corner--br"></div>
+
+      <!-- 스캔라인 효과 -->
+      <div class="cam-scanline" aria-hidden="true"></div>
+
+      <!--
+        실루엣 오버레이: training.js가 data-training-silhouette src를 업데이트.
+        현재 레슨의 포즈 실루엣을 반투명하게 표시.
+      -->
+      <img class="cam-silhouette" data-training-silhouette
+        src="./assets/images/tutorials/silhouette/jpg/black/guard_black.jpg"
+        alt="동작 가이드 실루엣">
+
+      <!-- 웹캠 비디오 -->
+      <video data-webcam-video autoplay muted playsinline></video>
+
+      <!-- 포즈 오버레이 캔버스 -->
+      <canvas data-pose-overlay></canvas>
+
+      <!-- 판정 팝업 (CSS/JS 애니메이션 트리거용) -->
+      <div class="cam-judgment" data-judgment-popup aria-live="polite" aria-atomic="true"></div>
+
+      <!-- 카메라 없을 때 fallback -->
+      <div class="webcam-fallback" data-webcam-fallback>
+        <svg class="cam-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="4" y="14" width="48" height="36" rx="6" stroke="currentColor" stroke-width="3"/>
+          <circle cx="28" cy="32" r="9" stroke="currentColor" stroke-width="3"/>
+          <path d="M52 24 L60 18 L60 46 L52 40" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        </svg>
+        <p>카메라가 연결되지 않았습니다</p>
+        <p class="cam-hint">시작하기를 누르면 카메라 권한을 요청합니다</p>
+      </div>
+
+      <!-- 카메라 상태 칩 -->
+      <span data-webcam-status>카메라 대기 중</span>
+
+    </div><!-- /arena-cam-wrap -->
+
+    <div class="reference-video-wrap">
+      <span class="stage-panel-label stage-panel-label--reference">참고 영상</span>
+      <video data-training-reference-video
+        src="./assets/videos/training/tutorial-uppercut.mp4"
+        autoplay muted loop playsinline></video>
+    </div>
+    </div><!-- /training-stage -->
+
+    <!-- RIGHT: COACH + FEEDBACK ─────────────────────────── -->
+    <div class="arena-side arena-side--right">
+
+      <div class="coach-block">
+        <span class="coach-block__label">COACH MESSAGE</span>
+        <p class="coach-block__msg" data-coach-message>
+          훈련이 시작되면 코치 메시지가 표시됩니다.
+        </p>
+      </div>
+
+      <div class="feedback-block">
+        <span class="feedback-block__label">FEEDBACK</span>
+        <ul class="t-feedback-list" data-feedback-list>
+          <li>아직 피드백이 없습니다. 훈련을 시작하면 동작 분석 결과가 기록됩니다.</li>
+        </ul>
+      </div>
+
+      <!--
+        가이드 패널 (오른쪽에 배치): training.js가 data-training-guide-title/text/list를 업데이트.
+      -->
+      <div class="guide-panel" data-training-guide>
+        <span class="panel-label" data-training-guide-title>기본 가드 따라하기</span>
+        <p class="guide-panel__text" data-training-guide-text>
+          손은 광대 높이, 턱은 살짝 당기고, 무게중심은 낮게 유지하세요.
+        </p>
+        <ol class="guide-panel__list" data-training-guide-list>
+          <li>양손을 눈높이 근처에 둡니다.</li>
+          <li>어깨 힘을 빼고 턱을 내립니다.</li>
+          <li>발은 어깨 너비 정도로 두고 중심을 낮춥니다.</li>
+        </ol>
+        <figure class="guide-reference">
+          <img data-training-guide-image
+            src="./assets/images/tutorials/silhouette/jpg/neon/guard_neon.jpg"
+            alt="기본 가드 기준 동작">
+        </figure>
+      </div>
+
+    </div><!-- /arena-side--right -->
+
+  </div><!-- /arena-body -->
+
+  <!-- ④ CONTROLS BAR ────────────────────────────────────── -->
+  <div class="controls-bar">
+    <button type="button" class="game-btn game-btn--primary" data-training-start-button>
+      ▶ 훈련 시작
+    </button>
+    <button type="button" class="game-btn game-btn--ghost" data-training-restart-button>
+      ↺ 재시작
+    </button>
+    <button type="button" class="game-btn game-btn--danger" data-training-end-button>
+      ■ 종료
+    </button>
+  </div>
+
+  <!-- ⑤ STATUS LINE ─────────────────────────────────────── -->
+  <div class="arena-status-line" data-training-status>
+    시작하기 버튼을 눌러 훈련을 시작하세요.
+  </div>
+
+  <!-- ⑥ DEBUG PANEL (기본 접힘) ──────────────────────────── -->
+  <div class="arena-info-grid" style="grid-template-columns:1fr;">
+    <details class="debug-panel">
+      <summary>DEV: 디버그 정보</summary>
+      <div class="debug-panel__body">
+        <ul class="debug-list">
+          <li><strong>origin</strong><span data-training-debug-origin>unknown</span></li>
+          <li><strong>lesson</strong><span data-training-debug-lesson>basic-guard</span></li>
+          <li><strong>threshold</strong><span data-training-debug-threshold>--</span></li>
+          <li><strong>snapshot</strong><span data-training-debug-snapshot>대기 중</span></li>
+        </ul>
+        <pre class="debug-panel__pre" data-training-debug-json>{
+  "note": "훈련이 시작되면 threshold와 lastPoseSnapshot이 표시됩니다."
+}</pre>
+      </div>
+    </details>
+  </div>
+
+  <!-- ⑦ FOOTER ───────────────────────────────────────────── -->
+  <div class="arena-footer">
+    <div>
+      <span class="arena-footer__tip-label">훈련 팁</span>
+      <span class="arena-footer__tip">
+        가드를 유지하고 시선을 정면으로 고정하세요. 자세가 안정될수록 점수가 올라갑니다.
+      </span>
+    </div>
+    <div class="arena-footer__links">
+      <a class="ghost-link" href="./training_result.html" data-training-result-link>훈련 결과 확인</a>
+      <a class="ghost-link" href="/tutorial-new.html" data-training-back-link>튜토리얼로</a>
+    </div>
+  </div>
+
+</main><!-- /arena-page -->
+
+<!-- ── Scripts ──────────────────────────────────────────── -->
+<script>
+  window.IM_BOXER_MEDIA_PIPE_MODEL_URL = "./assets/models/pose_landmarker_full.task";
+  window.IM_BOXER_MEDIA_PIPE_WASM_URL  = "./vendor/tasks-vision/wasm";
+  window.IM_BOXER_MEDIA_PIPE_IMPORT_CANDIDATES = [
+    "./vendor/tasks-vision/vision_bundle.mjs"
+  ];
+
+  /* Duration button interaction (pure UI — training.js reads data-duration-btn) */
+  document.querySelectorAll('[data-duration-btn]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('[data-duration-btn]').forEach(function(b) {
+        b.setAttribute('aria-pressed', 'false');
+      });
+      btn.setAttribute('aria-pressed', 'true');
+      var secs = parseInt(btn.dataset.durationBtn, 10);
+      var mm = String(Math.floor(secs / 60)).padStart(2, '0');
+      var ss = String(secs % 60).padStart(2, '0');
+      var display = document.querySelector('[data-session-duration-display]');
+      if (display) display.textContent = mm + ':' + ss;
+      document.dispatchEvent(new CustomEvent('im-boxer:training-duration-change', {
+        detail: { durationMs: secs * 1000 }
+      }));
+    });
+  });
+</script>
+<script type="module" src="./js/engine/PoseOverlay.js"></script>
+<script type="module" src="./js/pages/training.js?v=20260512-local-vendor-path"></script>
+
+</body>
+</html>

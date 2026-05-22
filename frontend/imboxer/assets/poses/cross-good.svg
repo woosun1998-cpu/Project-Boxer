@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" fill="none">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#39D353" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#39D353" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="50" cy="70" r="48" fill="url(#glow)"/>
+  <!-- Head (rotated with body) -->
+  <circle cx="54" cy="13" r="10" stroke="white" stroke-width="2.5" fill="rgba(255,255,255,0.07)"/>
+  <!-- Torso (rotated - cross uses rear hand with rotation) -->
+  <line x1="54" y1="23" x2="48" y2="75" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Shoulders (rotated - right shoulder forward) -->
+  <line x1="32" y1="40" x2="72" y2="30" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left arm: guard maintained -->
+  <polyline points="32,40 24,58 28,42" stroke="rgba(255,255,255,0.8)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="28" cy="41" r="5" fill="rgba(255,255,255,0.7)"/>
+  <!-- Right arm: EXTENDED CROSS (rear hand forward) -->
+  <line x1="72" y1="30" x2="93" y2="26" stroke="#39D353" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="94" cy="26" r="5.5" fill="#39D353"/>
+  <!-- Motion lines -->
+  <line x1="86" y1="20" x2="92" y2="22" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="85" y1="26" x2="92" y2="26" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="86" y1="32" x2="92" y2="30" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <!-- Hip rotation arrow -->
+  <path d="M 40,78 Q 50,70 60,78" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <polyline points="57,74 60,78 57,82" stroke="#39D353" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+  <!-- Hips -->
+  <line x1="34" y1="78" x2="62" y2="72" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left leg -->
+  <polyline points="34,78 28,104 30,128" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="30" y1="128" x2="20" y2="132" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Right leg (back foot pushing) -->
+  <polyline points="62,72 68,100 66,126" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="66" y1="126" x2="76" y2="130" stroke="rgba(255,255,255,0.7)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Good indicator -->
+  <circle cx="88" cy="14" r="8" fill="#39D353" opacity="0.9"/>
+  <polyline points="84,14 87,17 92,11" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

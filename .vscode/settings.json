@@ -1,0 +1,53 @@
+{
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": null,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.useEditorConfig": true,
+  "liveServer.settings.root": "/frontend",
+  "liveServer.settings.wait": 1500,
+  "liveServer.settings.fullReload": false,
+  "liveServer.settings.watchFiles": [
+    "frontend/**/*.html",
+    "frontend/**/*.css",
+    "frontend/**/*.js",
+    "frontend/**/*.png",
+    "frontend/**/*.jpg",
+    "frontend/**/*.jpeg",
+    "frontend/**/*.svg",
+    "frontend/**/*.webp",
+    "frontend/**/*.gif",
+    "frontend/**/*.mp4",
+    "frontend/**/*.json"
+  ],
+  "liveServer.settings.ignoreFiles": [
+    "**/.git/**",
+    "**/.cursor/**",
+    "**/node_modules/**",
+    "**/backend/**",
+    "**/*.log",
+    "**/*.tmp",
+    "**/*.temp",
+    "**/*.pid",
+    "**/*.lock",
+    "**/*.jsonl",
+    "**/*.txt",
+    "**/backend/**/*.log",
+    "**/frontend/**/*.log",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    "**/terminals/**",
+    "**/agent-transcripts/**"
+  ]
+}

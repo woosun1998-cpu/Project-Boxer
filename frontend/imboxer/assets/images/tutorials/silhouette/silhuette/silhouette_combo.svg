@@ -1,0 +1,80 @@
+<svg id="boxing-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 420 520" height="520" width="420">
+  <defs>
+    <style>
+      @keyframes cycle {
+        0%    { opacity: 1; }  /* Guard */
+        16.6% { opacity: 0; }
+        16.7% { opacity: 1; }  /* Jab */
+        33.2% { opacity: 0; }
+        33.3% { opacity: 1; }  /* Cross */
+        49.9% { opacity: 0; }
+        50%   { opacity: 1; }  /* Hook */
+        66.5% { opacity: 0; }
+        66.6% { opacity: 1; }  /* Slip */
+        83.2% { opacity: 0; }
+        83.3% { opacity: 1; }  /* Uppercut */
+        100%  { opacity: 1; }
+      }
+      .pose { animation: cycle 24s infinite linear; }
+    </style>
+  </defs>
+
+  
+  <g style="animation-delay: 0s" class="pose">
+    <path fill="#111111" d="M210 85 Q175 45 140 85 Q145 160 170 185 Q135 230 155 295 Q160 410 195 445 Q235 455 265 415 Q285 300 325 275 Q340 170 290 130"></path>
+    <ellipse fill="#111111" ry="44" rx="37" cy="88" cx="205"></ellipse>
+    <path stroke-linecap="round" stroke-width="52" stroke="#111111" fill="none" d="M155 175 Q120 165 115 210"></path>
+    <path stroke-linecap="round" stroke-width="50" stroke="#111111" fill="none" d="M255 165 Q290 160 300 205"></path>
+  </g>
+
+  
+  <g style="animation-delay: 4s" class="pose">
+    <path fill="#111111" d="M210 85 Q170 50 135 88 Q150 165 175 190 Q145 255 170 315 Q165 415 200 450 Q245 455 270 410 Q285 290 315 265"></path>
+    <ellipse fill="#111111" ry="44" rx="37" cy="88" cx="200"></ellipse>
+    
+    <path stroke-linecap="round" stroke-width="48" stroke="#111111" fill="none" d="M175 190 Q225 175 340 165"></path>
+    <path stroke-linecap="round" stroke-width="46" stroke="#111111" fill="none" d="M255 165 Q285 155 295 200"></path>
+  </g>
+
+  
+  <g style="animation-delay: 8s" class="pose">
+    <path fill="#111111" d="M200 85 Q155 55 125 95 Q145 170 175 195 Q125 245 155 315 Q175 425 225 455 Q275 415 295 330 Q345 245 310 185"></path>
+    <ellipse fill="#111111" ry="44" rx="37" cy="88" cx="198"></ellipse>
+    <path stroke-linecap="round" stroke-width="52" stroke="#111111" fill="none" d="M175 195 Q260 165 355 170"></path>
+    <path stroke-linecap="round" stroke-width="45" stroke="#111111" fill="none" d="M235 165 Q270 155 280 195"></path>
+  </g>
+
+  
+  <g style="animation-delay: 12s" class="pose">
+    <path fill="#111111" d="M205 85 Q165 50 140 90 Q160 170 190 195 Q135 225 140 285 Q170 375 215 435 Q260 415 285 345 Q325 245 295 190"></path>
+    <ellipse fill="#111111" ry="44" rx="37" cy="88" cx="200"></ellipse>
+    <path stroke-linecap="round" stroke-width="50" stroke="#111111" fill="none" d="M190 195 Q235 165 310 205 Q335 245 310 275"></path>
+  </g>
+
+  
+  <g style="animation-delay: 16s" class="pose">
+    <path fill="#111111" d="M215 85 Q170 55 145 95 Q165 165 175 195 Q135 245 125 295 Q150 380 185 435 Q235 445 265 390 Q285 275 265 195"></path>
+    <ellipse fill="#111111" ry="43" rx="36" cy="95" cx="155"></ellipse>
+  </g>
+
+  
+  <g style="animation-delay: 20s" class="pose">
+    <path fill="#111111" d="M200 85 Q165 50 135 88 Q155 165 175 195 Q145 255 170 325 Q195 395 235 445 Q280 425 305 355 Q315 255 280 190"></path>
+    <ellipse fill="#111111" ry="44" rx="37" cy="88" cx="198"></ellipse>
+    <path stroke-linecap="round" stroke-width="48" stroke="#111111" fill="none" d="M175 195 Q195 255 225 145 Q245 115 265 155"></path>
+  </g>
+
+  
+  <g opacity="0.9">
+    
+    <line style="animation-delay: 4s" class="pose" stroke-dasharray="12,6" stroke-width="5" stroke="#FF1E1E" y2="165" x2="340" y1="190" x1="175"></line>
+    
+    <line style="animation-delay: 8s" class="pose" stroke-dasharray="10,5" stroke-width="6" stroke="#FF1E1E" y2="170" x2="355" y1="195" x1="175"></line>
+    
+    <path style="animation-delay: 12s" class="pose" stroke-dasharray="8,4" stroke-width="6" stroke="#FF1E1E" fill="none" d="M195 195 Q245 160 310 205"></path>
+    
+    <path style="animation-delay: 16s" class="pose" stroke-dasharray="10,5" stroke-width="6" stroke="#FF1E1E" fill="none" d="M205 85 Q165 55 140 95"></path>
+    
+    <path style="animation-delay: 20s" class="pose" stroke-dasharray="9,4" stroke-width="7" stroke="#FF1E1E" fill="none" d="M180 245 Q205 175 255 125"></path>
+  </g>
+</svg>

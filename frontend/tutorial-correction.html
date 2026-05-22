@@ -1,0 +1,1875 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>BOXER - Correction Mode</title>
+    <link rel="stylesheet" href="css/global.css?v=20260424" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css" />
+    <style>
+      :root{
+        --bg: #05070b;
+        --panel: rgba(12, 15, 22, 0.94);
+        --panel-strong: rgba(8, 11, 17, 0.98);
+        --border: rgba(255,255,255,0.08);
+        --text-dim: rgba(255,255,255,0.72);
+        --jab: #52b7ff;
+        --cross: #ffbe4d;
+        --hook: #ff5f7f;
+        --uppercut: #b28cff;
+      }
+
+      body {
+        margin: 0;
+        width: 100vw;
+        min-height: 100vh;
+        overflow-x: hidden; /* 가로 스크롤 방지 */
+        font-family: 'Pretendard', var(--font-body);
+        color: #fff;
+        background:
+          radial-gradient(circle at 14% 10%, rgba(82,183,255,0.11), transparent 22%),
+          radial-gradient(circle at 84% 12%, rgba(255,95,127,0.10), transparent 18%),
+          radial-gradient(circle at 50% 108%, rgba(255,190,77,0.08), transparent 24%),
+          linear-gradient(180deg, #05070b 0%, #0b1018 55%, #05070b 100%);
+      }
+
+      .coach-page {
+        /* 전체 너비를 유연하게 사용하도록 수정 */
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: .75rem 1rem 1rem;
+        display: grid;
+        gap: .85rem;
+      }
+
+      .coach-hero,
+      .coach-panel-card,
+      .coach-stage,
+      .punch-card,
+      .guide-card{
+        border:1px solid var(--border);
+        box-shadow:0 20px 48px rgba(0,0,0,0.22);
+      }
+
+      .coach-hero{
+        border-radius:24px;
+        background:
+          linear-gradient(180deg, rgba(12,15,22,0.96), rgba(8,11,18,0.98)),
+          radial-gradient(circle at top right, rgba(255,45,85,0.16), transparent 34%);
+        overflow:hidden;
+        padding:1rem 1.05rem;
+        display:grid;
+        grid-template-columns:minmax(0,1.22fr) auto;
+        gap:.8rem;
+        align-items:end;
+      }
+
+      .coach-kicker{
+        font-family:var(--font-display);
+        letter-spacing:.22em;
+        text-transform:uppercase;
+        color:#ff9bb0;
+        font-size:.84rem;
+      }
+
+      .coach-title{
+        margin:.2rem 0 0;
+        font-family:var(--font-display);
+        font-size:clamp(1.6rem, 3.4vw, 3rem);
+        line-height:.88;
+        letter-spacing:.06em;
+        text-transform:uppercase;
+      }
+
+      .coach-desc{
+        margin:.55rem 0 0;
+        max-width:64ch;
+        color:var(--text-dim);
+        line-height:1.65;
+      }
+
+      .coach-clock{
+        display:inline-flex;
+        flex-direction:column;
+        gap:.12rem;
+        margin-top:.8rem;
+        padding:.72rem .9rem;
+        border-radius:18px;
+        background:linear-gradient(180deg, rgba(255,45,85,.16), rgba(255,255,255,.05));
+        border:1px solid rgba(255,255,255,.10);
+        box-shadow:0 0 0 1px rgba(255,45,85,.08), 0 18px 32px rgba(255,45,85,.12);
+      }
+
+      .coach-clock span{
+        font-size:.72rem;
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        color:rgba(255,255,255,.64);
+      }
+
+      .coach-clock strong{
+        font-family:var(--font-display);
+        font-size:clamp(1.5rem, 3.1vw, 2.4rem);
+        letter-spacing:.05em;
+        line-height:1;
+      }
+
+      .coach-chips{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.45rem;
+        justify-content:flex-end;
+      }
+
+      .punch-chip{
+        display:inline-flex;
+        align-items:center;
+        min-height:32px;
+        padding:0 .72rem;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,0.10);
+        background:rgba(255,255,255,0.05);
+        font-family:var(--font-display);
+        letter-spacing:.11em;
+        text-transform:uppercase;
+        font-size:.68rem;
+      }
+
+      .punch-chip[data-label="jab"]{ color:var(--jab); }
+      .punch-chip[data-label="cross"]{ color:var(--cross); }
+      .punch-chip[data-label="hook"]{ color:var(--hook); }
+      .punch-chip[data-label="uppercut"]{ color:var(--uppercut); }
+
+      .coach-grid{
+        display:grid;
+        grid-template-columns:minmax(0,1.1fr) minmax(520px,1.35fr);
+        gap:.42rem;
+      }
+
+      .coach-stage {
+        position: relative;
+        width: 100%;
+        /* 높이를 유연하게 조절하여 화면 밖으로 튀어나가는 것 방지 */
+        min-height: 50vh;
+        max-height: 70vh;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #090c12;
+      }
+
+      .coach-stage video,
+      .coach-stage canvas{
+        position:absolute;
+        inset:0;
+        width:100%;
+        height:100%;
+        display:block;
+        object-fit:cover;
+        background:transparent;
+      }
+
+      .coach-stage video{
+        z-index:1;
+        transform:scaleX(-1);
+      }
+
+      .coach-stage canvas{
+        z-index:2;
+        pointer-events:none;
+        mix-blend-mode:screen;
+      }
+
+      .camera-hint{
+        position:absolute;
+        left:50%;
+        top:50%;
+        z-index:3;
+        max-width:420px;
+        padding:.85rem 1rem;
+        border-radius:16px;
+        background:rgba(0,0,0,0.62);
+        border:1px solid rgba(255,255,255,0.12);
+        color:rgba(255,255,255,0.82);
+        text-align:center;
+        line-height:1.5;
+        backdrop-filter:blur(10px);
+        pointer-events:none;
+        transform:translate(-50%, -50%);
+        transition:opacity .2s ease, transform .2s ease;
+      }
+
+      .coach-stage.is-live .camera-hint{
+        opacity:0;
+        transform:translate(-50%, -50%) scale(.98);
+      }
+
+      .coach-stage::after{
+        content:'';
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:
+          linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.16)),
+          radial-gradient(circle at 50% 54%, transparent 32%, rgba(5,7,11,0.40) 100%);
+      }
+
+      .coach-overlay-top{
+        position:absolute;
+        inset:.8rem .8rem auto .8rem;
+        z-index:4;
+        display:flex;
+        gap:.5rem;
+        align-items:center;
+        justify-content:space-between;
+        flex-wrap:wrap;
+      }
+
+      .coach-badge,
+      .coach-state-pill{
+        display:inline-flex;
+        align-items:center;
+        gap:.45rem;
+        min-height:30px;
+        padding:0 .7rem;
+        border-radius:999px;
+        background:rgba(255,45,85,0.12);
+        border:1px solid rgba(255,45,85,0.20);
+        color:#ff9bb0;
+        font-family:var(--font-display);
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        font-size:.7rem;
+      }
+
+      .coach-state-pill{
+        background:rgba(255,255,255,0.06);
+        border-color:rgba(255,255,255,0.10);
+        color:#fff;
+      }
+
+      .coach-overlay-bottom{
+        position:absolute;
+        left:.8rem;
+        right:.8rem;
+        bottom:.8rem;
+        z-index:4;
+        display:grid;
+        gap:.35rem;
+      }
+
+      .coach-progress{
+        display:grid;
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+        gap:.45rem;
+      }
+
+      .progress-pill{
+        border-radius:14px;
+        padding:.5rem .62rem;
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,255,255,0.08);
+      }
+
+      .progress-pill span{
+        display:block;
+        font-size:.62rem;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+        color:rgba(255,255,255,0.5);
+        margin-bottom:.25rem;
+      }
+
+      .progress-pill strong{
+        font-family:var(--font-display);
+        font-size:1rem;
+        letter-spacing:.04em;
+      }
+
+      .coach-panel{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:.6rem;
+        align-content:start;
+      }
+
+      .coach-panel-card--wide{
+        grid-column:1 / -1;
+      }
+
+      .coach-panel-card{
+        border-radius:20px;
+        background:var(--panel);
+        padding:.9rem;
+      }
+
+      .coach-panel-card h2,
+      .coach-panel-card h3{
+        margin:0;
+        font-family:var(--font-display);
+        letter-spacing:.08em;
+        text-transform:uppercase;
+      }
+
+      .coach-panel-card p{
+        margin:.45rem 0 0;
+        color:var(--text-dim);
+        line-height:1.55;
+      }
+
+      .metric-grid{
+        display:grid;
+        grid-template-columns:repeat(4, minmax(0,1fr));
+        gap:.42rem;
+        margin-top:.7rem;
+      }
+
+      .metric{
+        padding:.65rem .72rem;
+        border-radius:14px;
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,255,255,0.08);
+      }
+
+      .metric span{
+        display:block;
+        font-size:.62rem;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+        color:rgba(255,255,255,0.48);
+        margin-bottom:.22rem;
+      }
+
+      .metric strong{
+        font-family:var(--font-display);
+        font-size:1.05rem;
+        letter-spacing:.04em;
+      }
+
+      .coach-live-card{
+        display:grid;
+        gap:.7rem;
+      }
+
+      .coach-live-top{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:.75rem;
+      }
+
+      .coach-live-top h3{
+        margin:0;
+      }
+
+      .coach-live-top p{
+        margin:.35rem 0 0;
+      }
+
+      .coach-live-pill,
+      .coach-live-tag{
+        display:inline-flex;
+        align-items:center;
+        min-height:28px;
+        padding:0 .65rem;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,0.10);
+        background:rgba(255,255,255,0.05);
+        font-family:var(--font-display);
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        font-size:.68rem;
+      }
+
+      .coach-live-pill{
+        color:#ff9bb0;
+        background:rgba(255,45,85,0.12);
+        border-color:rgba(255,45,85,0.22);
+        white-space:nowrap;
+      }
+
+      .coach-live-tags{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.45rem;
+      }
+
+      .coach-live-tag{
+        color:rgba(255,255,255,0.82);
+      }
+
+      .coach-live-brief{
+        display:grid;
+        gap:.28rem;
+        padding:.7rem .76rem;
+        border-radius:14px;
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,255,255,0.08);
+      }
+
+      .coach-live-brief strong{
+        font-family:var(--font-display);
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        font-size:.8rem;
+      }
+
+      .coach-live-brief span{
+        color:rgba(255,255,255,0.76);
+        line-height:1.55;
+        font-size:.86rem;
+      }
+
+      .coach-live-grid{
+        display:grid;
+        gap:.45rem;
+      }
+
+      .coach-live-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.5rem;
+        align-items:baseline;
+        justify-content:space-between;
+        padding:.6rem .72rem;
+        border-radius:12px;
+        background:rgba(255,255,255,0.03);
+        border:1px solid rgba(255,255,255,0.07);
+      }
+
+      .coach-live-row span{
+        color:rgba(255,255,255,0.52);
+        font-size:.68rem;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+      }
+
+      .coach-live-row strong{
+        font-family:var(--font-display);
+        letter-spacing:.05em;
+        font-size:.84rem;
+        text-align:right;
+      }
+
+      .coach-feedback-card{
+        display:grid;
+        gap:.72rem;
+      }
+
+      .coach-feedback-head{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:.75rem;
+      }
+
+      .coach-feedback-head h3{
+        margin:0;
+      }
+
+      .coach-feedback-head p{
+        margin:.35rem 0 0;
+      }
+
+      .coach-feedback-pill{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:30px;
+        padding:0 .72rem;
+        border-radius:999px;
+        background:rgba(255,255,255,0.06);
+        border:1px solid rgba(255,255,255,0.10);
+        color:#fff;
+        font-family:var(--font-display);
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        font-size:.7rem;
+        white-space:nowrap;
+      }
+
+      .coach-feedback-list{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:.5rem;
+      }
+
+      .coach-feedback-item{
+        position:relative;
+        overflow:hidden;
+        padding:.82rem .9rem;
+        border-radius:16px;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)),
+          radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--tip-color, #ff9bb0) 18%, transparent), transparent 34%);
+        border:1px solid rgba(255,255,255,0.08);
+        box-shadow:
+          0 0 0 1px rgba(255,255,255,0.02),
+          0 0 24px color-mix(in srgb, var(--tip-color, #ff9bb0) 18%, transparent);
+        animation:tipPop .32s ease both;
+      }
+
+      .coach-feedback-item strong{
+        display:flex;
+        align-items:center;
+        gap:.45rem;
+        margin:0 0 .2rem;
+        font-family:var(--font-display);
+        letter-spacing:.10em;
+        text-transform:uppercase;
+        font-size:.84rem;
+      }
+
+      .coach-feedback-item span{
+        display:block;
+        color:rgba(255,255,255,0.78);
+        line-height:1.56;
+        font-size:.92rem;
+      }
+
+      .coach-points{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0,1fr));
+        gap:.42rem;
+        margin-top:.7rem;
+      }
+
+      .coach-point{
+        border-radius:16px;
+        padding:.72rem .8rem;
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,255,255,0.08);
+      }
+
+      .coach-point strong{
+        display:block;
+        margin-bottom:.24rem;
+        font-family:var(--font-display);
+        letter-spacing:.10em;
+        text-transform:uppercase;
+        font-size:.8rem;
+      }
+
+      .coach-point span{
+        color:rgba(255,255,255,0.76);
+        line-height:1.55;
+        font-size:.84rem;
+      }
+
+      @keyframes tipPop{
+        from{
+          opacity:.4;
+          transform:translateY(6px) scale(.985);
+          box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 0 0 rgba(0,0,0,0);
+        }
+        to{
+          opacity:1;
+          transform:translateY(0) scale(1);
+        }
+      }
+
+      .punch-radar{
+        display:grid;
+        gap:.42rem;
+        margin-top:.5rem;
+      }
+
+      .punch-radar-head{
+        display:flex;
+        justify-content:space-between;
+        gap:.8rem;
+        align-items:baseline;
+        font-family:var(--font-display);
+        letter-spacing:.16em;
+        text-transform:uppercase;
+        font-size:.76rem;
+        color:rgba(255,255,255,0.56);
+      }
+
+      .punch-radar-head strong{
+        color:#fff;
+        font-size:.9rem;
+        letter-spacing:.12em;
+      }
+
+      .punch-radar-grid{
+        display:grid;
+        grid-template-columns:repeat(4, minmax(0,1fr));
+        gap:.5rem;
+      }
+
+      .punch-card{
+        --punch-color:#fff;
+        position:relative;
+        overflow:hidden;
+        border-radius:14px;
+        padding:.68rem .66rem .58rem;
+        background:rgba(0,0,0,0.28);
+        min-height:96px;
+        border:1px solid rgba(255,255,255,0.08);
+        transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+      }
+
+      .punch-card::before{
+        content:'';
+        position:absolute;
+        inset:0;
+        background:linear-gradient(135deg, color-mix(in srgb, var(--punch-color) 18%, transparent), transparent 64%);
+        pointer-events:none;
+      }
+
+      .punch-card[data-label="jab"]{ --punch-color: var(--jab); }
+      .punch-card[data-label="cross"]{ --punch-color: var(--cross); }
+      .punch-card[data-label="hook"]{ --punch-color: var(--hook); }
+      .punch-card[data-label="uppercut"]{ --punch-color: var(--uppercut); }
+
+      .punch-card.active{
+        transform:translateY(-2px);
+        background:rgba(0,0,0,0.38);
+        border-color: color-mix(in srgb, var(--punch-color) 68%, white 16%);
+        box-shadow:
+          0 0 0 1px color-mix(in srgb, var(--punch-color) 26%, transparent),
+          0 14px 30px rgba(0,0,0,0.24),
+          0 0 24px color-mix(in srgb, var(--punch-color) 22%, transparent);
+      }
+
+      .punch-name,
+      .punch-score,
+      .punch-caption{
+        position:relative;
+        z-index:1;
+        display:block;
+      }
+
+      .punch-name{
+        font-family:var(--font-display);
+        font-size:.82rem;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+      }
+
+      .punch-score{
+        margin-top:.18rem;
+        font-family:var(--font-display);
+        font-size:1.05rem;
+        line-height:1;
+        letter-spacing:.03em;
+      }
+
+      .punch-caption{
+        margin-top:.18rem;
+        font-size:.64rem;
+        letter-spacing:.10em;
+        color:rgba(255,255,255,0.72);
+        text-transform:uppercase;
+      }
+
+      .punch-bar{
+        position:relative;
+        z-index:1;
+        margin-top:.55rem;
+        height:6px;
+        border-radius:999px;
+        background:rgba(255,255,255,0.08);
+        overflow:hidden;
+      }
+
+      .punch-bar span{
+        display:block;
+        width:0%;
+        height:100%;
+        border-radius:inherit;
+        background:linear-gradient(90deg, var(--punch-color), color-mix(in srgb, var(--punch-color) 46%, white 52%));
+        box-shadow:0 0 16px color-mix(in srgb, var(--punch-color) 35%, transparent);
+        transition:width .12s linear;
+      }
+
+      .guide-list{
+        display:grid;
+        gap:.5rem;
+        margin-top:.5rem;
+      }
+
+      .guide-list > .guide-card{
+        display:none;
+      }
+
+      .guide-dropdown{
+        border-radius:14px;
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,255,255,0.08);
+        overflow:hidden;
+      }
+
+      .guide-dropdown .guide-card{
+        display:block;
+      }
+
+      .guide-dropdown summary{
+        list-style:none;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:.8rem;
+        padding:.7rem .74rem;
+        font-family:var(--font-display);
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        font-size:.76rem;
+      }
+
+      .guide-dropdown summary::-webkit-details-marker{
+        display:none;
+      }
+
+      .guide-dropdown[open] summary{
+        border-bottom:1px solid rgba(255,255,255,0.08);
+        background:rgba(255,255,255,0.03);
+      }
+
+      .guide-dropdown-body{
+        padding:.68rem .74rem .74rem;
+      }
+
+      .guide-card{
+        border-radius:14px;
+        background:rgba(255,255,255,0.04);
+        padding:.68rem .74rem;
+      }
+
+      .guide-card strong{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:.8rem;
+        margin-bottom:.2rem;
+        font-family:var(--font-display);
+        letter-spacing:.12em;
+        text-transform:uppercase;
+        font-size:.76rem;
+      }
+
+      .guide-card span{
+        color:rgba(255,255,255,0.76);
+        line-height:1.55;
+        font-size:.82rem;
+      }
+
+      .guide-chip{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:22px;
+        padding:0 .45rem;
+        border-radius:999px;
+        font-size:.62rem;
+        letter-spacing:.12em;
+        border:1px solid rgba(255,255,255,0.09);
+        color:rgba(255,255,255,0.72);
+      }
+
+      .guide-chevron{
+        font-size:.74rem;
+        color:rgba(255,255,255,0.55);
+      }
+
+      .perfect-burst{
+        animation:burst .95s ease;
+        box-shadow:0 0 0 1px rgba(255,45,85,0.16), 0 0 50px rgba(255,45,85,0.22), 0 24px 54px rgba(0,0,0,0.22);
+      }
+
+      @keyframes burst{
+        0%{ transform:scale(1); }
+        35%{ transform:scale(1.02); }
+        100%{ transform:scale(1); }
+      }
+
+      .cta-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.65rem;
+        margin-top:.8rem;
+      }
+
+      .camera-tools{
+        margin-top:.85rem;
+        display:grid;
+        gap:.45rem;
+      }
+
+      .camera-tools-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:.42rem;
+        align-items:end;
+      }
+
+      .camera-field{
+        flex:1 1 260px;
+        display:grid;
+        gap:.25rem;
+      }
+
+      .camera-field label{
+        font-size:.72rem;
+        letter-spacing:.14em;
+        text-transform:uppercase;
+        color:rgba(255,255,255,0.6);
+      }
+
+      .camera-field select{
+        width:100%;
+        min-height:40px;
+        border-radius:12px;
+        border:1px solid rgba(255,255,255,0.10);
+        background:rgba(255,255,255,0.06);
+        color:#fff;
+        padding:0 .8rem;
+        font-family:'Pretendard', var(--font-body);
+        font-size:.95rem;
+        outline:none;
+      }
+
+      .camera-field select:focus{
+        border-color:rgba(255,255,255,0.22);
+        box-shadow:0 0 0 3px rgba(255,255,255,0.08);
+      }
+
+      .camera-note{
+        color:rgba(255,255,255,0.62);
+        font-size:.8rem;
+        line-height:1.5;
+      }
+
+      .btn-primary,
+      .btn-outline{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:40px;
+        padding:0 .85rem;
+        border-radius:12px;
+        font-family:'Pretendard', var(--font-body);
+        font-weight:800;
+        white-space:nowrap;
+        font-size:.92rem;
+      }
+
+      .btn-primary{
+        background:#ff2d55;
+        color:#fff;
+        box-shadow:0 12px 26px rgba(255,45,85,0.24);
+      }
+
+      .btn-outline{
+        background:rgba(255,255,255,0.05);
+        color:#fff;
+        border:1px solid rgba(255,255,255,0.10);
+      }
+
+      @media (max-width: 1080px){
+        .coach-hero,
+        .coach-grid{
+          grid-template-columns:1fr;
+        }
+
+        .coach-panel{
+          grid-template-columns:1fr;
+        }
+
+        .coach-chips{
+          justify-content:flex-start;
+        }
+
+        .coach-stage{
+          min-height:360px;
+          max-height:56vh;
+        }
+
+        .metric-grid,
+        .coach-feedback-list,
+        .coach-points{
+          grid-template-columns:repeat(2, minmax(0,1fr));
+        }
+      }
+
+      @media (max-width: 720px){
+        .coach-page{
+          width:min(100vw - 1rem, 1400px);
+          padding-top:.75rem;
+        }
+
+        .coach-hero{
+          padding:.95rem .9rem;
+        }
+
+        .coach-title{
+          font-size:clamp(2rem, 11vw, 3rem);
+        }
+
+        .coach-stage{
+          min-height:300px;
+          max-height:min(70vh, 720px);
+        }
+
+        .coach-progress,
+        .metric-grid,
+        .coach-panel,
+        .punch-radar-grid,
+        .coach-feedback-list,
+        .coach-points{
+          grid-template-columns:1fr;
+        }
+      }
+
+      @media (max-width: 1280px){
+        .punch-radar-grid{
+          grid-template-columns:repeat(2, minmax(0,1fr));
+        }
+
+        .metric-grid,
+        .coach-feedback-list,
+        .coach-points{
+          grid-template-columns:repeat(2, minmax(0,1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="coach-page">
+      <section class="coach-hero">
+        <div>
+          <div class="coach-kicker">Optional Coach Mode</div>
+          <h1 class="coach-title">PUNCH DETECTOR</h1>
+          <p class="coach-desc">
+            자세 교정 페이지를 더 촘촘하게 보여주는 실시간 분석 화면입니다.
+            화면 비율, 신뢰도, 반응 속도를 한눈에 보면서 움직임을 바로 교정할 수 있습니다.
+          </p>
+          <div class="coach-clock" aria-live="polite">
+            <span>분석 경과 시간</span>
+            <strong id="analysis-clock">00:00</strong>
+          </div>
+          <div class="cta-row">
+            <button type="button" class="btn-primary" id="start-btn">자세 교정 시작</button>
+            <button type="button" class="btn-outline" id="stop-btn">중지</button>
+            <button type="button" class="btn-outline" id="debug-toggle-btn">디버그 OFF</button>
+            <a class="btn-outline" href="./tutorial.html">튜토리얼로 돌아가기</a>
+          </div>
+        </div>
+        <div class="coach-chips" aria-label="지원 타격">
+          <span class="punch-chip" data-label="jab">JAB</span>
+          <span class="punch-chip" data-label="cross">CROSS</span>
+          <span class="punch-chip" data-label="hook">HOOK</span>
+          <span class="punch-chip" data-label="uppercut">UPPERCUT</span>
+        </div>
+      </section>
+
+      <section class="coach-grid">
+        <div class="coach-stage" id="coach-stage">
+          <video id="coach-video" autoplay playsinline muted></video>
+          <canvas id="coach-canvas"></canvas>
+          <div class="camera-hint" id="camera-hint">카메라가 보이면 시작 버튼을 누르세요. 검은 화면이면 다른 카메라를 선택한 뒤 다시 시작해 보세요.</div>
+
+          <div class="coach-overlay-top">
+            <div class="coach-badge">Correction Mode</div>
+            <div class="coach-state-pill" id="coach-run-state">대기</div>
+          </div>
+
+          <div class="coach-overlay-bottom">
+            <div class="coach-progress" aria-label="실시간 점수 요약">
+              <div class="progress-pill">
+                <span>현재 라벨</span>
+                <strong id="coach-label">-</strong>
+              </div>
+              <div class="progress-pill">
+                <span>신뢰도</span>
+                <strong id="coach-score">0%</strong>
+              </div>
+              <div class="progress-pill">
+                <span>총 감지</span>
+                <strong id="coach-total">0</strong>
+              </div>
+              <div class="progress-pill">
+                <span>상태</span>
+                <strong id="coach-state">대기</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="coach-panel">
+          <section class="coach-panel-card coach-panel-card--wide">
+            <h2>REAL-TIME DETECTION</h2>
+            <p>네 가지 펀치를 한 화면에서 비교해 현재 자세를 더 빠르게 읽을 수 있도록 배치했습니다.</p>
+            <div class="punch-radar">
+              <div class="punch-radar-head">
+                <span>Real-time Punch Radar</span>
+                <strong id="coach-best">NO PUNCH</strong>
+              </div>
+              <div class="punch-radar-grid" id="coach-radar">
+                <div class="punch-card" data-label="jab">
+                  <span class="punch-name">JAB</span>
+                  <span class="punch-score">0%</span>
+                  <span class="punch-caption">SNAP</span>
+                  <div class="punch-bar"><span></span></div>
+                </div>
+                <div class="punch-card" data-label="cross">
+                  <span class="punch-name">CROSS</span>
+                  <span class="punch-score">0%</span>
+                  <span class="punch-caption">DRIVE</span>
+                  <div class="punch-bar"><span></span></div>
+                </div>
+                <div class="punch-card" data-label="hook">
+                  <span class="punch-name">HOOK</span>
+                  <span class="punch-score">0%</span>
+                  <span class="punch-caption">SWING</span>
+                  <div class="punch-bar"><span></span></div>
+                </div>
+                <div class="punch-card" data-label="uppercut">
+                  <span class="punch-name">UPPERCUT</span>
+                  <span class="punch-score">0%</span>
+                  <span class="punch-caption">LIFT</span>
+                  <div class="punch-bar"><span></span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="coach-panel-card coach-panel-card--wide coach-feedback-card">
+            <div class="coach-feedback-head">
+              <div>
+                <h3>INSTANT FEEDBACK</h3>
+                <p id="coach-feedback-summary">지금 자세에서 바로 바꿔야 할 포인트를 짧고 선명하게 보여줍니다.</p>
+              </div>
+              <span class="coach-feedback-pill" id="coach-feedback-count">0개 교정</span>
+            </div>
+            <div class="coach-feedback-list" id="coach-feedback-list"></div>
+          </section>
+
+          <section class="coach-panel-card coach-panel-card--wide">
+            <h3>COACH METRICS</h3>
+            <p>현재 자세의 핵심 수치를 한눈에 보여줍니다. 숫자는 프레임마다 바뀌고, 요약 값은 세션 전체를 반영합니다.</p>
+            <div class="metric-grid">
+              <div class="metric">
+                <span>Punch Speed</span>
+                <strong id="coach-speed">0.00</strong>
+              </div>
+              <div class="metric">
+                <span>Guard Rate</span>
+                <strong id="coach-guard">0%</strong>
+              </div>
+              <div class="metric">
+                <span>Pivot Score</span>
+                <strong id="coach-pivot">0%</strong>
+              </div>
+              <div class="metric">
+                <span>Reaction</span>
+                <strong id="coach-reaction">0ms</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="coach-panel-card coach-live-card coach-panel-card--wide">
+            <div class="coach-live-top">
+              <div>
+                <h3>CURRENT POSE</h3>
+                <p>가드, 발 간격, 팔 길이, 회전 상태를 묶어 현재 자세를 안내합니다.</p>
+              </div>
+              <div style="display:grid; gap:.45rem; justify-items:end;">
+                <div class="coach-live-pill" id="coach-threshold">기준 54%</div>
+                <div class="coach-live-pill" id="coach-session-timer">00:00 / 01:00</div>
+              </div>
+            </div>
+            <div class="coach-live-tags">
+              <span class="coach-live-tag" id="coach-focus">목표 · 가드 · 회전 · 발</span>
+              <span class="coach-live-tag" id="coach-live-label">관찰 중</span>
+            </div>
+            <div class="coach-live-brief">
+              <strong id="coach-status">대기</strong>
+              <span id="coach-message">시작 버튼을 누르면 분석이 시작됩니다.</span>
+            </div>
+            <div class="coach-live-grid">
+              <div class="coach-live-row">
+                <span>지금 보는 기준</span>
+                <strong id="coach-live-criteria">목표 높이 / 가드 / 회전 / 발 지지</strong>
+              </div>
+              <div class="coach-live-row">
+                <span>측정 기준</span>
+                <strong id="coach-live-threshold">기준 54%</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="coach-panel-card coach-panel-card--wide">
+            <h3>COACH POINTS</h3>
+            <p>화면 비율에 맞춰 교정 포인트만 골라 배치했습니다.</p>
+            <div class="coach-points">
+              <div class="coach-point">
+                <strong>GUARD</strong>
+                <span>손을 얼굴선 가까이 두고 팔꿈치를 몸쪽으로 붙여주세요.</span>
+              </div>
+              <div class="coach-point">
+                <strong>STANCE</strong>
+                <span>발을 조금 더 넓게 두고 회전 전에 중심을 먼저 잡아주세요.</span>
+              </div>
+              <div class="coach-point">
+                <strong>ARMS</strong>
+                <span>팔을 끝까지 뻗고 어깨가 마무리를 이어가도록 해주세요.</span>
+              </div>
+              <div class="coach-point">
+                <strong>REACTION</strong>
+                <span>목표가 보이면 바로 움직이도록 반응 템포를 조금 더 줄여주세요.</span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="js/core/api.js?v=20260424"></script>
+    <script src="js/coach.js?v=20260424"></script>
+    <script>
+        (function () {
+        const coachPanel = document.querySelector('.coach-panel');
+        if (coachPanel) {
+          coachPanel.innerHTML = `
+            <section class="coach-panel-card coach-panel-card--wide">
+              <h2>REAL-TIME DETECTION</h2>
+              <p>네 가지 펀치를 한 화면에서 비교해 현재 자세를 더 빠르게 읽을 수 있도록 배치했습니다.</p>
+              <div class="punch-radar">
+                <div class="punch-radar-head">
+                  <span>Real-time Punch Radar</span>
+                  <strong id="coach-best">NO PUNCH</strong>
+                </div>
+                <div class="punch-radar-grid" id="coach-radar">
+                  <div class="punch-card" data-label="jab">
+                    <span class="punch-name">JAB</span>
+                    <span class="punch-score">0%</span>
+                    <span class="punch-caption">SNAP</span>
+                    <div class="punch-bar"><span></span></div>
+                  </div>
+                  <div class="punch-card" data-label="cross">
+                    <span class="punch-name">CROSS</span>
+                    <span class="punch-score">0%</span>
+                    <span class="punch-caption">DRIVE</span>
+                    <div class="punch-bar"><span></span></div>
+                  </div>
+                  <div class="punch-card" data-label="hook">
+                    <span class="punch-name">HOOK</span>
+                    <span class="punch-score">0%</span>
+                    <span class="punch-caption">SWING</span>
+                    <div class="punch-bar"><span></span></div>
+                  </div>
+                  <div class="punch-card" data-label="uppercut">
+                    <span class="punch-name">UPPERCUT</span>
+                    <span class="punch-score">0%</span>
+                    <span class="punch-caption">LIFT</span>
+                    <div class="punch-bar"><span></span></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="coach-panel-card coach-feedback-card coach-panel-card--wide">
+              <div class="coach-feedback-head">
+                <div>
+                  <h3>INSTANT FEEDBACK</h3>
+                  <p id="coach-feedback-summary">지금 자세에서 바로 바꿔야 할 포인트를 짧고 선명하게 보여줍니다.</p>
+                </div>
+                <span class="coach-feedback-pill" id="coach-feedback-count">0개 교정</span>
+              </div>
+              <div class="coach-feedback-list" id="coach-feedback-list"></div>
+            </section>
+
+            <section class="coach-panel-card coach-panel-card--wide">
+              <h3>COACH METRICS</h3>
+              <p>현재 자세의 핵심 수치를 한눈에 보여줍니다. 숫자는 프레임마다 바뀌고, 요약 값은 세션 전체를 반영합니다.</p>
+              <div class="metric-grid">
+                <div class="metric">
+                  <span>Punch Speed</span>
+                  <strong id="coach-speed">0.00</strong>
+                </div>
+                <div class="metric">
+                  <span>Guard Rate</span>
+                  <strong id="coach-guard">0%</strong>
+                </div>
+                <div class="metric">
+                  <span>Pivot Score</span>
+                  <strong id="coach-pivot">0%</strong>
+                </div>
+                <div class="metric">
+                  <span>Reaction</span>
+                  <strong id="coach-reaction">0ms</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="coach-panel-card coach-live-card coach-panel-card--wide">
+              <div class="coach-live-top">
+                <div>
+                  <h3>CURRENT POSE</h3>
+                  <p>가드, 발 간격, 팔 길이, 회전 상태를 묶어 현재 자세를 안내합니다.</p>
+                </div>
+                <div style="display:grid; gap:.45rem; justify-items:end;">
+                  <div class="coach-live-pill" id="coach-threshold">기준 54%</div>
+                  <div class="coach-live-pill" id="coach-session-timer">00:00 / 01:00</div>
+                </div>
+              </div>
+              <div class="coach-live-tags">
+                <span class="coach-live-tag" id="coach-focus">목표 · 가드 · 회전 · 발</span>
+                <span class="coach-live-tag" id="coach-live-label">관찰 중</span>
+              </div>
+              <div class="coach-live-brief">
+                <strong id="coach-status">대기</strong>
+                <span id="coach-message">시작 버튼을 누르면 분석이 시작됩니다.</span>
+              </div>
+              <div class="coach-live-grid">
+                <div class="coach-live-row">
+                  <span>지금 보는 기준</span>
+                  <strong id="coach-live-criteria">목표 높이 / 가드 / 회전 / 발 지지</strong>
+                </div>
+                <div class="coach-live-row">
+                  <span>측정 기준</span>
+                  <strong id="coach-live-threshold">기준 54%</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="coach-panel-card coach-panel-card--wide">
+              <h3>COACH POINTS</h3>
+              <p>화면 비율에 맞춰 교정 포인트만 골라 배치했습니다.</p>
+              <div class="coach-points">
+                <div class="coach-point">
+                  <strong>GUARD</strong>
+                  <span>손을 얼굴선 가까이 두고 팔꿈치를 몸쪽으로 붙여주세요.</span>
+                </div>
+                <div class="coach-point">
+                  <strong>STANCE</strong>
+                  <span>발을 조금 더 넓게 두고 회전 전에 중심을 먼저 잡아주세요.</span>
+                </div>
+                <div class="coach-point">
+                  <strong>ARMS</strong>
+                  <span>팔을 끝까지 뻗고 어깨가 마무리를 이어가도록 해주세요.</span>
+                </div>
+                <div class="coach-point">
+                  <strong>REACTION</strong>
+                  <span>목표가 보이면 바로 움직이도록 반응 템포를 조금 더 줄여주세요.</span>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const videoEl = document.getElementById('coach-video');
+        const canvasEl = document.getElementById('coach-canvas');
+        const stageEl = document.getElementById('coach-stage');
+        const statusEl = document.getElementById('coach-status');
+        const messageEl = document.getElementById('coach-message');
+        const labelEl = document.getElementById('coach-label');
+        const scoreEl = document.getElementById('coach-score');
+        const totalEl = document.getElementById('coach-total');
+        const stateEl = document.getElementById('coach-state');
+        const runStateEl = document.getElementById('coach-run-state');
+        const bestEl = document.getElementById('coach-best');
+        const liveLabelEl = document.getElementById('coach-live-label');
+        const liveCriteriaEl = document.getElementById('coach-live-criteria');
+        const liveThresholdEl = document.getElementById('coach-live-threshold');
+        const sessionTimerEl = document.getElementById('coach-session-timer');
+        const debugToggleBtn = document.getElementById('debug-toggle-btn');
+        const focusEl = document.getElementById('coach-focus');
+        const analysisClockEl = document.getElementById('analysis-clock');
+        const punchCards = Array.from(document.querySelectorAll('.punch-card'));
+        const heroCopyEl = document.querySelector('.coach-hero > div');
+        const ctaRowEl = document.querySelector('.cta-row');
+        const cameraStorageKey = 'boxer-correction-camera-device-id';
+        const debugStorageKey = 'boxer-correction-debug-enabled';
+        let debugEnabled = localStorage.getItem(debugStorageKey) === '1';
+        let analysisClockTimer = null;
+        let analysisClockStartedAt = null;
+        const trainingFeedbackEl = document.getElementById('coach-training-feedback');
+        const feedbackSummaryEl = document.getElementById('coach-feedback-summary');
+        const feedbackCountEl = document.getElementById('coach-feedback-count');
+        const feedbackListEl = document.getElementById('coach-feedback-list');
+        const liveFocusMap = {
+          none: {
+            label: "Observing",
+            criteria: "목표 높이 / 가드 / 회전 / 발 지지",
+            focus: "목표 · 가드 · 회전 · 발",
+          },
+          jab: {
+            label: "JAB",
+            criteria: "짧은 전진 / 직선 경로 / 빠른 회수",
+            focus: "직선 · 회수 · 속도",
+          },
+          cross: {
+            label: "CROSS",
+            criteria: "전진 추진 / 힙 회전 / 어깨 마무리",
+            focus: "전진 · 회전 · 마무리",
+          },
+          hook: {
+            label: "HOOK",
+            criteria: "옆 회전 / 팔꿈치 각도 / 어깨 높이",
+            focus: "회전 · 각도 · 어깨",
+          },
+          uppercut: {
+            label: "UPPERCUT",
+            criteria: "아래 추진 / 무릎 힘 / 위로 마무리",
+            focus: "아래 추진 · 무릎 · 상승 마무리",
+          },
+        };
+        if (heroCopyEl && ctaRowEl && !document.getElementById('camera-device-select')) {
+          const cameraTools = document.createElement('div');
+          cameraTools.className = 'camera-tools';
+          cameraTools.innerHTML = `
+            <div class="camera-tools-row">
+              <div class="camera-field">
+                <label for="camera-device-select">카메라 선택</label>
+                <select id="camera-device-select">
+                  <option value="">자동 선택</option>
+                </select>
+              </div>
+              <button type="button" class="btn-outline" id="camera-refresh-btn">카메라 새로고침</button>
+            </div>
+            <div class="camera-note">카메라가 계속 검은 화면이면 다른 카메라를 선택한 뒤 다시 시작해 보세요.</div>
+          `;
+          ctaRowEl.insertAdjacentElement('afterend', cameraTools);
+        }
+
+        if (ctaRowEl && !document.getElementById('coach-summary-btn')) {
+          const summaryBtn = document.createElement('a');
+          summaryBtn.className = 'btn-outline';
+          summaryBtn.id = 'coach-summary-btn';
+          summaryBtn.href = './tutorial-coaching-summary.html';
+          summaryBtn.textContent = '코칭 요약';
+          ctaRowEl.insertBefore(summaryBtn, ctaRowEl.children[3] || null);
+        }
+
+        const cameraDeviceSelect = document.getElementById('camera-device-select');
+        const cameraRefreshBtn = document.getElementById('camera-refresh-btn');
+        const cameraHintEl = document.getElementById('camera-hint');
+
+        const punchUi = {
+          jab: { title: 'JAB SNAP!', subtitle: 'STRAIGHT SHOT', color: '#52b7ff' },
+          cross: { title: 'CROSS DRIVE!', subtitle: 'REAR HAND', color: '#ffbe4d' },
+          hook: { title: 'HOOK RIP!', subtitle: 'ARC SHOT', color: '#ff5f7f' },
+          uppercut: { title: 'UPPERCUT LIFT!', subtitle: 'RISING SHOT', color: '#b28cff' },
+        };
+        const detectionThreshold = 0.42;
+
+        let detector = null;
+        let started = false;
+        let perfectAudio = null;
+
+        function setState(status, message) {
+          if (statusEl) statusEl.textContent = status;
+          if (messageEl && message) messageEl.textContent = message;
+          stateEl.textContent = status === 'Idle' ? '대기' : status;
+          runStateEl.textContent = status === 'Idle' ? '대기' : status;
+        }
+
+        function syncDebugButton() {
+          if (!debugToggleBtn) return;
+          debugToggleBtn.textContent = debugEnabled ? '디버그 ON' : '디버그 OFF';
+        }
+
+        function formatElapsed(ms) {
+          const total = Math.max(0, Math.floor(ms / 1000));
+          const mm = String(Math.floor(total / 60)).padStart(2, '0');
+          const ss = String(total % 60).padStart(2, '0');
+          return `${mm}:${ss}`;
+        }
+
+        function startAnalysisClock() {
+          analysisClockStartedAt = performance.now();
+          if (analysisClockTimer) clearInterval(analysisClockTimer);
+          const tick = () => {
+            if (analysisClockEl && analysisClockStartedAt !== null) {
+              analysisClockEl.textContent = formatElapsed(performance.now() - analysisClockStartedAt);
+            }
+          };
+          tick();
+          analysisClockTimer = setInterval(tick, 1000);
+        }
+
+        function stopAnalysisClock() {
+          if (analysisClockTimer) clearInterval(analysisClockTimer);
+          analysisClockTimer = null;
+          analysisClockStartedAt = null;
+          if (analysisClockEl) analysisClockEl.textContent = '00:00';
+        }
+
+        async function refreshTrainingStats() {
+          if (!window.api || !localStorage.getItem('boxer_token')) return;
+          try {
+            const stats = await window.api.get('/api/stats/me');
+            if (!trainingFeedbackEl) return;
+            const data = stats?.data || stats || {};
+            const totalSessions = Number(data.total_sessions || 0);
+            const winRate = Math.round(Number(data.win_rate || 0) * 100);
+            const totalScore = Number(data.total_score || 0);
+            const maxCombo = Number(data.max_combo || 0);
+            trainingFeedbackEl.textContent = totalSessions
+              ? `최근 ${totalSessions}회 세션 기준으로 점수 ${totalScore}, 최고 콤보 ${maxCombo}, 승률 ${winRate}%로 요약됩니다.`
+              : '최근 세션 요약이 아직 준비되지 않았습니다.';
+          } catch (_error) {
+            if (trainingFeedbackEl) {
+              trainingFeedbackEl.textContent = '최근 세션 요약을 불러오지 못했습니다. 잠시 후 다시 확인해 주세요.';
+            }
+          }
+        }
+
+        function getLiveFrame(summary = {}) {
+          return summary?.live_frame || {};
+        }
+
+        function updateLivePoseUi(best, summary) {
+          const live = getLiveFrame(summary);
+          const normalized = String(best?.label || live.bestLabel || '').toLowerCase();
+          const config = liveFocusMap[normalized] || liveFocusMap.none;
+          const thresholdPercent = Math.round((Number(live.threshold ?? 0.54) || 0.54) * 100);
+          const bestScore = Math.round(Number(live.bestScore ?? best?.score ?? 0) * 100);
+          const sessionSec = Number(summary?.session_duration_sec || 0);
+          const mm = String(Math.floor(sessionSec / 60)).padStart(2, '0');
+          const ss = String(sessionSec % 60).padStart(2, '0');
+          const detectedLabel = live.punchDetected && live.punchDetected !== "none"
+            ? live.punchDetected.toUpperCase()
+            : "Observing";
+
+          if (liveLabelEl) liveLabelEl.textContent = detectedLabel === 'Observing' ? '관찰 중' : detectedLabel;
+          if (liveCriteriaEl) liveCriteriaEl.textContent = config.criteria;
+          if (liveThresholdEl) liveThresholdEl.textContent = `기준 ${thresholdPercent}%`;
+          if (sessionTimerEl) sessionTimerEl.textContent = `${mm}:${ss} / 01:00`;
+          if (focusEl) focusEl.textContent = config.focus;
+
+          if (statusEl) {
+            statusEl.textContent = live.punchDetected && live.punchDetected !== "none"
+              ? `${config.label} ${bestScore}%`
+              : "관찰 중";
+          }
+
+          if (messageEl) {
+            const promptLabel = String(live.promptLabel || '').toUpperCase();
+            const promptAge = Number(live.promptAgeMs || 0);
+            const promptNote = promptLabel
+              ? `반응 포인트: ${promptLabel} / 경과 ${promptAge}ms`
+              : '지금 자세를 기준으로 다음 반응을 보고 있습니다.';
+            messageEl.textContent = `${config.criteria}. ${promptNote}`;
+          }
+        }
+
+        function buildCorrectionTips(summary = {}) {
+          const live = getLiveFrame(summary);
+          const tips = [];
+          const guard = Number(live.guardScore || 0);
+          const pivot = Number(live.pivotScore || 0);
+          const lead = Number(live.leadExtension || 0);
+          const rear = Number(live.rearExtension || 0);
+          const bestScore = Number(live.bestScore || 0);
+          const reactionMs = Number(summary?.reaction_ms_avg || 0);
+
+          if (guard < 0.55) {
+            tips.push({
+              title: 'GUARD',
+              text: '손을 얼굴선 가까이 두고 팔꿈치를 몸쪽으로 붙여주세요.',
+              color: '#ff5f7f',
+            });
+          }
+
+          if (pivot < 0.45) {
+            tips.push({
+              title: 'STANCE',
+              text: '발을 조금 더 넓게 두고 중심을 먼저 안정시켜주세요.',
+              color: '#ffbe4d',
+            });
+          }
+
+          if (lead < 0.36 || rear < 0.36) {
+            tips.push({
+              title: 'ARMS',
+              text: '팔을 끝까지 뻗고 어깨가 마무리를 이어가게 해주세요.',
+              color: '#52b7ff',
+            });
+          }
+
+          if (reactionMs > 1500) {
+            tips.push({
+              title: 'REACTION',
+              text: '목표가 보이면 바로 움직이도록 반응 템포를 조금 더 줄여주세요.',
+              color: '#b28cff',
+            });
+          }
+
+          if (!tips.length) {
+            tips.push({
+              title: bestScore > 0.1 ? 'GOOD FLOW' : 'BASICS',
+              text: bestScore > 0.1
+                ? '기본 흐름은 좋습니다. 자세를 유지하면서 속도만 조금 더 살려보세요.'
+                : '시작 자세를 먼저 고르고, 팔과 발의 타이밍을 조금 더 맞춰보세요.',
+              color: '#7ee3b5',
+            });
+          }
+
+          return tips.slice(0, 4);
+        }
+
+        function renderCorrectionFeedback(summary = {}) {
+          if (!feedbackListEl) return;
+          const tips = buildCorrectionTips(summary);
+
+          if (feedbackSummaryEl) {
+            feedbackSummaryEl.textContent = tips.length
+              ? '지금 자세에서 바로 바꿔야 할 포인트입니다.'
+              : '교정할 항목이 아직 없습니다.';
+          }
+
+          if (feedbackCountEl) {
+            feedbackCountEl.textContent = `${tips.length}개 교정`;
+          }
+
+          feedbackListEl.innerHTML = tips.map((tip) => `
+            <div class="coach-feedback-item" style="--tip-color:${tip.color}">
+              <strong>${tip.title}</strong>
+              <span>${tip.text}</span>
+            </div>
+          `).join('');
+        }
+
+        function playPerfectSound(label, score) {
+          try {
+            const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextCtor) return;
+            if (!perfectAudio) perfectAudio = new AudioContextCtor();
+            const ctx = perfectAudio;
+            if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+            const tones = label === 'jab'
+              ? [880, 1240]
+              : label === 'cross'
+                ? [740, 1040, 1320]
+                : label === 'hook'
+                  ? [620, 940, 1180]
+                  : [520, 820, 1240];
+
+            const now = ctx.currentTime;
+            const envelope = ctx.createGain();
+            envelope.gain.setValueAtTime(0.0001, now);
+            envelope.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+            envelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+            envelope.connect(ctx.destination);
+
+            tones.forEach((freq, index) => {
+              const osc = ctx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, now + index * 0.035);
+              osc.connect(envelope);
+              osc.start(now + index * 0.035);
+              osc.stop(now + 0.42 + index * 0.015);
+            });
+          } catch (_error) {}
+        }
+
+        function renderPunchRadar(detections = [], best = null) {
+          const scores = new Map([
+            ['jab', 0],
+            ['cross', 0],
+            ['hook', 0],
+            ['uppercut', 0],
+          ]);
+
+          detections.forEach((entry) => {
+            const label = String(entry?.label || '').toLowerCase();
+            if (!scores.has(label)) return;
+            const score = Number(entry?.score || 0);
+            scores.set(label, Math.max(scores.get(label) || 0, score));
+          });
+
+          const bestLabel = String(best?.label || '').toLowerCase();
+          const bestConfig = punchUi[bestLabel] || null;
+          bestEl.textContent = bestConfig ? bestConfig.title : 'NO PUNCH';
+          bestEl.style.color = bestConfig?.color || '#fff';
+
+          punchCards.forEach((card) => {
+            const label = String(card.dataset.label || '').toLowerCase();
+            const score = scores.get(label) || 0;
+            const percent = Math.round(score * 100);
+            const scoreNode = card.querySelector('.punch-score');
+            const fillNode = card.querySelector('.punch-bar span');
+            if (scoreNode) scoreNode.textContent = `${percent}%`;
+            if (fillNode) fillNode.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+            card.classList.toggle('active', label === bestLabel && percent > 0);
+          });
+        }
+
+        function flashPerfect(label, score) {
+          const normalized = String(label || 'hook').toLowerCase();
+          const ui = punchUi[normalized] || {
+            title: String(label || 'HOOK').toUpperCase(),
+            subtitle: 'PUNCH',
+            color: '#ffffff',
+          };
+
+          stageEl.classList.remove('perfect-burst');
+          void stageEl.offsetWidth;
+          stageEl.classList.add('perfect-burst');
+          if (statusEl) statusEl.textContent = 'PERFECT!';
+          if (messageEl) messageEl.textContent = `${ui.title} ${Math.round(score * 100)}%`;
+          setTimeout(() => stageEl.classList.remove('perfect-burst'), 1000);
+          playPerfectSound(normalized);
+        }
+
+        function resetUi() {
+          labelEl.textContent = "-";
+          scoreEl.textContent = "0%";
+          totalEl.textContent = "0";
+          stateEl.textContent = "대기";
+          runStateEl.textContent = "대기";
+          bestEl.textContent = "NO PUNCH";
+          if (liveLabelEl) liveLabelEl.textContent = "관찰 중";
+          if (liveCriteriaEl) liveCriteriaEl.textContent = "손목 속도 / 가드 높이 / 골반 회전 / 발 지지";
+          if (liveThresholdEl) liveThresholdEl.textContent = "기준 54%";
+          if (sessionTimerEl) sessionTimerEl.textContent = "00:00 / 01:00";
+          if (focusEl) focusEl.textContent = "목표 · 가드 · 회전 · 발";
+          if (statusEl) statusEl.textContent = "대기";
+          if (messageEl) messageEl.textContent = "시작 버튼을 눌러 코칭을 시작하세요.";
+          punchCards.forEach((card) => {
+            card.classList.remove("active");
+            const scoreNode = card.querySelector(".punch-score");
+            const fillNode = card.querySelector(".punch-bar span");
+            if (scoreNode) scoreNode.textContent = "0%";
+            if (fillNode) fillNode.style.width = "0%";
+          });
+        }
+
+        syncDebugButton();
+        renderCorrectionFeedback({});
+
+        function getSelectedCameraConstraints() {
+          const selectedDeviceId = String(cameraDeviceSelect?.value || localStorage.getItem(cameraStorageKey) || '').trim();
+          const base = {
+            width: { ideal: 720 },
+            height: { ideal: 1280 },
+            aspectRatio: { ideal: 9 / 16 },
+            facingMode: { ideal: 'user' },
+          };
+          if (selectedDeviceId) {
+            base.deviceId = { exact: selectedDeviceId };
+          }
+          return base;
+        }
+
+        async function populateCameraDevices() {
+          if (!cameraDeviceSelect || !navigator.mediaDevices?.enumerateDevices) return;
+
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cameras = devices.filter((device) => device.kind === 'videoinput');
+            const rememberedId = String(localStorage.getItem(cameraStorageKey) || '').trim();
+            const previousValue = cameraDeviceSelect.value;
+
+            cameraDeviceSelect.innerHTML = '<option value="">자동 선택</option>';
+            cameras.forEach((device, index) => {
+              const option = document.createElement('option');
+              option.value = device.deviceId;
+              option.textContent = device.label || `카메라 ${index + 1}`;
+              cameraDeviceSelect.appendChild(option);
+            });
+
+            const availableIds = new Set(cameras.map((device) => device.deviceId));
+            const nextValue = availableIds.has(rememberedId)
+              ? rememberedId
+              : availableIds.has(previousValue)
+                ? previousValue
+                : '';
+            cameraDeviceSelect.value = nextValue;
+
+            if (cameraHintEl) {
+              cameraHintEl.textContent = cameras.length ? '카메라를 선택한 뒤 시작 버튼을 누르세요. 화면이 검게 보이면 다른 카메라로 바꿔서 다시 시작해 보세요.' : '카메라를 찾지 못했습니다. 연결 상태를 확인해 주세요.';
+            }
+          } catch (_error) {
+            if (cameraHintEl) {
+              cameraHintEl.textContent = '카메라 접근이 차단되었습니다. 권한을 허용한 뒤 다시 시도해 주세요.';
+            }
+          }
+        }
+
+        function saveCameraSelection() {
+          if (!cameraDeviceSelect) return;
+          const value = String(cameraDeviceSelect.value || '').trim();
+          if (value) {
+            localStorage.setItem(cameraStorageKey, value);
+          } else {
+            localStorage.removeItem(cameraStorageKey);
+          }
+        }
+
+        async function startCorrection() {
+          if (started) return;
+          const detectorFactory = window.createBoxerCoachDetector || window.createBoxerAIDetector;
+          if (!detectorFactory) {
+            setState("오류", "분석기를 불러오지 못했습니다.");
+            return;
+          }
+
+          started = true;
+          stageEl.classList.add("is-live");
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          saveCameraSelection();
+          setState("준비 중", "카메라와 자세 분석 모델을 불러오는 중입니다.");
+          startAnalysisClock();
+
+          try {
+            detector = detectorFactory({
+              mode: "tutorial",
+              videoConstraints: getSelectedCameraConstraints(),
+              threshold: detectionThreshold,
+              debug: debugEnabled,
+              onStatus: (state) => {
+                if (state === "ready") {
+                  setState("준비", "카메라를 준비했습니다. 시작 버튼을 누르면 분석이 시작됩니다.");
+                } else if (state === "loading" || state === "loading-model") {
+                  setState("준비 중", "카메라와 자세 분석 모델을 불러오는 중입니다.");
+                } else if (state === "running") {
+                  setState("분석 중", "자세를 읽는 중입니다. 기준에 맞게 움직여 보세요.");
+                } else if (state === "reaction") {
+                  setState("반응 대기", "지금 보는 타격 기준을 기다리고 있습니다.");
+                } else if (state === "syncing") {
+                  setState("저장 중", "세션 결과를 서버에 저장하는 중입니다.");
+                } else if (state === "stopped") {
+                  setState("중지", "분석이 중지되었습니다.");
+                } else if (String(state).startsWith("error")) {
+                  setState("오류", "카메라 또는 자세 분석에 문제가 있습니다.");
+                }
+              },
+              onPrediction: (best, detections, summary) => {
+                const label = String(best?.label || "-").toUpperCase();
+                const score = Number(best?.score || 0);
+                labelEl.textContent = label;
+                scoreEl.textContent = `${Math.round(score * 100)}%`;
+                totalEl.textContent = String(summary?.total_punches ?? summary?.totalPunches ?? 0);
+                renderPunchRadar(detections, best);
+
+                const speedEl = document.getElementById("coach-speed");
+                const guardEl = document.getElementById("coach-guard");
+                const pivotEl = document.getElementById("coach-pivot");
+                const reactionEl = document.getElementById("coach-reaction");
+                const live = getLiveFrame(summary);
+                const speedValue = Number(live.speedRaw || summary?.avg_punch_speed || 0);
+                const guardValue = Number.isFinite(Number(live.guardScore))
+                  ? Number(live.guardScore) * 100
+                  : Number(summary?.guard_success_rate || 0);
+                const pivotValue = Number.isFinite(Number(live.pivotScore))
+                  ? Number(live.pivotScore) * 100
+                  : Number(summary?.pivot_score_avg || 0);
+                const reactionValue = live.promptLabel
+                  ? `${Math.round(Number(live.promptAgeMs || 0))}ms`
+                  : `${Math.round(Number(summary?.reaction_ms_avg || 0))}ms`;
+                if (speedEl) speedEl.textContent = `${speedValue.toFixed(2)}`;
+                if (guardEl) guardEl.textContent = `${Math.round(guardValue)}%`;
+                if (pivotEl) pivotEl.textContent = `${Math.round(pivotValue)}%`;
+                if (reactionEl) reactionEl.textContent = reactionValue;
+
+                const normalized = String(best?.label || "").toLowerCase();
+                updateLivePoseUi(best, summary);
+                renderCorrectionFeedback(summary);
+                if (detector) detector.debugEnabled = debugEnabled;
+                if (score >= detectionThreshold && punchUi[normalized]) {
+                  const ui = punchUi[normalized];
+                  setState("감지 중", `${ui.title} 감지. ${ui.subtitle} 리듬을 이어가세요.`);
+                } else {
+                  setState("분석 중", "현재 자세를 비교하고 있습니다.");
+                }
+              },
+              onPerfect: ({ label, score }) => {
+                flashPerfect(label, Number(score || 0));
+              },
+              onFeedback: (message) => {
+                if (message && messageEl) messageEl.textContent = message;
+                const savedMatch = String(message || "").match(/^Session saved \((.+)\)$/);
+                if (savedMatch) {
+                  refreshTrainingStats().catch(() => {});
+                  if (savedMatch[1] === 'stop' || savedMatch[1] === 'session-end') {
+                    setTimeout(() => {
+                      window.location.href = './tutorial-coaching-summary.html';
+                    }, 450);
+                  }
+                }
+              },
+            });
+
+            await detector.init({ videoEl, canvasEl });
+            populateCameraDevices().catch(() => {});
+            detector.start();
+            refreshTrainingStats().catch(() => {});
+            setState("분석 중", "자세를 읽는 중입니다. 기준에 맞게 움직여 보세요.");
+          } catch (error) {
+            started = false;
+            detector = null;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            const isCameraDenied = error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError";
+            const fallbackMessage = isCameraDenied
+              ? "카메라 권한이 거부되었습니다. 브라우저에서 카메라 접근을 허용한 뒤 다시 시도해 주세요."
+              : error?.message || "자세 분석 모델을 불러오지 못했습니다.";
+            setState("오류", "카메라 또는 모델을 불러오지 못했습니다.");
+            if (cameraHintEl) {
+              cameraHintEl.textContent = isCameraDenied
+                ? "카메라 접근이 차단되었습니다. 권한을 허용한 뒤 다시 시도해 주세요."
+                : "카메라 또는 모델에 문제가 있습니다. 잠시 후 다시 시도해 주세요.";
+            }
+            stopAnalysisClock();
+          }
+        }
+
+        function stopCorrection() {
+          detector?.stop?.();
+          detector = null;
+          started = false;
+          stageEl.classList.remove('is-live');
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+          setState("중지", "분석이 중지되었습니다.");
+          stopAnalysisClock();
+          resetUi();
+        }
+
+        startBtn.addEventListener('click', startCorrection);
+        stopBtn.addEventListener('click', stopCorrection);
+        debugToggleBtn?.addEventListener('click', () => {
+          debugEnabled = !debugEnabled;
+          localStorage.setItem(debugStorageKey, debugEnabled ? '1' : '0');
+          syncDebugButton();
+          if (detector) detector.debugEnabled = debugEnabled;
+        });
+        cameraDeviceSelect?.addEventListener('change', saveCameraSelection);
+        cameraRefreshBtn?.addEventListener('click', () => populateCameraDevices().catch(() => {}));
+        stopBtn.disabled = true;
+        resetUi();
+        stopAnalysisClock();
+        setState("대기", "시작 버튼을 눌러 코칭을 시작하세요.");
+        populateCameraDevices().catch(() => {});
+        window.addEventListener('beforeunload', () => detector?.stop?.());
+
+        // 🚨 [추가된 로직] 준비 화면(ready.html)을 거쳐서 파라미터가 넘어왔다면 즉시 자동 시작!
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('level') || urlParams.has('autostart')) {
+          setTimeout(() => {
+            if (!started && startBtn) {
+              console.log("자동으로 자세 교정을 시작합니다!");
+              startBtn.click();
+            }
+          }, 400); // UI 렌더링 후 부드럽게 카메라 권한을 요청하도록 0.4초 딜레이
+        }
+      })();
+    </script>
+  </body>
+</html>
+
+
+

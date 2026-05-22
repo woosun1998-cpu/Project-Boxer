@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IM_BOXER | 훈련 허브</title>
+
+  <link rel="stylesheet" crossorigin
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/common.css">
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const hasLessonParam = params.has("lesson_key") || params.has("lessonKey") || params.has("lesson");
+      if (!hasLessonParam) return;
+
+      const rawKey = params.get("lesson_key") || params.get("lessonKey") || params.get("lesson") || "basic-guard";
+      const key = String(rawKey || "basic-guard").trim();
+      let lessonKey = key || "basic-guard";
+      if (lessonKey === "guard" || lessonKey === "beginner-basic-guard" || lessonKey === "real-fight-guard") {
+        lessonKey = "basic-guard";
+      } else if (lessonKey === "hook") {
+        lessonKey = "left-hook";
+      }
+
+      window.location.replace(`./training_session.html?lesson_key=${encodeURIComponent(lessonKey)}`);
+    })();
+  </script>
+
+  <style>
+    :root {
+      --red: #ff3e3e;
+      --red-dk: #e8000d;
+      --gold: #f5c518;
+      --green: #39d353;
+      --s0: #030303;
+      --s1: #080808;
+      --s2: #101010;
+      --t1: #fff;
+      --t2: rgba(255,255,255,0.68);
+      --t3: rgba(255,255,255,0.36);
+      --border: rgba(255,255,255,0.09);
+      --fp: 'Pretendard Variable', -apple-system, sans-serif;
+      --fm: 'Bebas Neue', monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--t1);
+      font-family: var(--fp);
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.54), rgba(0,0,0,.30) 42%, rgba(0,0,0,.66)),
+        url("./assets/images/training/main_bg.jpg") center / cover no-repeat fixed,
+        var(--s0);
+      background-color: #202020;
+      background-blend-mode: normal, screen, normal;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(255,62,62,.16), transparent 28%),
+        radial-gradient(circle at 78% 18%, rgba(245,197,24,.10), transparent 22%),
+        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.58));
+      z-index: -1;
+    }
+
+    .bx-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 62px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.92);
+      backdrop-filter: blur(16px);
+    }
+    .bx-topbar-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+    }
+    .bx-topbar-left { display: flex; align-items: center; gap: 14px; }
+    .bx-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+    .bx-brand-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: url("./assets/images/dashboard/오버레이 프로필 이미지.png") center/cover no-repeat;
+      filter: drop-shadow(0 0 10px rgba(232,0,13,0.3));
+    }
+    .bx-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--fp);
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      color: var(--red);
+      border: 1px solid rgba(232,0,13,0.4);
+      background: rgba(232,0,13,0.06);
+      padding: 3px 9px;
+      border-radius: 2px;
+    }
+    .bx-live::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .bx-nav { display: flex; align-items: center; gap: 22px; }
+    .bx-nav a {
+      color: var(--t3);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      transition: color .15s;
+    }
+    .bx-nav a:hover { color: var(--t1); }
+    .bx-nav a[aria-current] {
+      color: var(--red);
+      border-bottom: 1px solid var(--red);
+      padding-bottom: 1px;
+    }
+
+    .hub-wrap {
+      width: min(1360px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 114px 0 82px;
+    }
+    .hub-hero {
+      min-height: 330px;
+      display: grid;
+      align-items: end;
+      padding: clamp(28px, 5vw, 64px) 0;
+    }
+    .hub-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+    .hub-kicker::before {
+      content: "";
+      width: 42px;
+      height: 2px;
+      background: var(--red);
+    }
+    .hub-title {
+      margin: 0;
+      max-width: 980px;
+      font-size: clamp(72px, 14vw, 128px);
+      line-height: .92;
+      font-family: var(--fm);
+      font-weight: 900;
+      letter-spacing: .06em;
+      -webkit-text-stroke: 1px currentColor;
+      text-shadow: 0 0 20px rgba(255,255,255,0.08);
+    }
+    .hub-title em {
+      color: var(--red);
+      font-style: normal;
+    }
+    .hub-copy {
+      max-width: 620px;
+      margin: 18px 0 0;
+      color: var(--t2);
+      font-size: 16px;
+      line-height: 1.75;
+      font-weight: 600;
+    }
+
+    .hub-panel-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 8px 0 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hub-panel-title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 950;
+    }
+    .hub-panel-note {
+      color: var(--t3);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .lesson-card {
+      position: relative;
+      min-height: 360px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--s1);
+      text-decoration: none;
+      color: #fff;
+      isolation: isolate;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .lesson-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,62,62,.38);
+      box-shadow: 0 18px 48px rgba(0,0,0,.34), 0 0 32px rgba(255,62,62,.12);
+    }
+    .lesson-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .9;
+      filter: brightness(1.18) saturate(1.12) contrast(1.04);
+      z-index: -2;
+    }
+    .lesson-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.62) 72%),
+        radial-gradient(circle at 18% 14%, rgba(255,62,62,.14), transparent 32%);
+      z-index: -1;
+    }
+    .lesson-body {
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 22px;
+    }
+    .lesson-num {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-family: var(--fm);
+      font-size: 28px;
+      color: rgba(255,255,255,.5);
+    }
+    .lesson-level {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      padding: 5px 9px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.5);
+      color: rgba(255,255,255,.76);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .lesson-title {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 950;
+    }
+    .lesson-title span {
+      display: block;
+      margin-top: 5px;
+      font-family: var(--fm);
+      font-size: 17px;
+      letter-spacing: .12em;
+      color: var(--gold);
+    }
+    .lesson-desc {
+      min-height: 52px;
+      margin: 0 0 18px;
+      color: var(--t2);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 600;
+    }
+    .lesson-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid rgba(255,62,62,.48);
+      background: rgba(255,62,62,.14);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 980px) {
+      .lesson-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .bx-nav a:not([aria-current="page"]) { display: none; }
+      .hub-title { font-size: clamp(56px, 14vw, 90px); }
+    }
+    @media (max-width: 640px) {
+      .hub-wrap { width: min(100% - 28px, 1360px); }
+      .hub-hero { min-height: 280px; }
+      .lesson-grid { grid-template-columns: 1fr; }
+      .lesson-card,
+      .lesson-body { min-height: 320px; }
+      .hub-panel-head { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bx-topbar">
+    <div class="bx-topbar-inner">
+      <div class="bx-topbar-left">
+        <a class="bx-brand" href="./dashboard.html" aria-label="IM_BOXER dashboard">
+          <span class="bx-brand-logo" aria-hidden="true"></span>
+        </a>
+        <span class="bx-live">Training Hub</span>
+      </div>
+      <nav class="bx-nav">
+        <a href="./dashboard.html">대시보드</a>
+        <a href="./tutorial.html">튜토리얼</a>
+        <a href="./training.html" aria-current="page">훈련</a>
+        <a href="./sparring.html">스파링</a>
+        <a href="./leaderboard.html">랭킹</a>
+        <a href="./boxing-gyms.html">복싱장 찾기</a>
+        <a href="./mypage.html">마이페이지</a>
+        <a href="./shop.html">샵</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="hub-wrap">
+    <section class="hub-hero">
+      <div>
+        <span class="hub-kicker">Choose Your Drill</span>
+        <h1 class="hub-title">PICK A <em>DRILL</em></h1>
+        <p class="hub-copy">
+          각 동작은 웹캠 자세 분석, 기준 실루엣, 참고 영상과 함께 진행됩니다.
+          가드부터 어퍼컷까지 원하는 훈련을 골라 바로 시작하세요.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="hub-panel-head">
+        <h2 class="hub-panel-title">훈련 동작</h2>
+        <span class="hub-panel-note">카드를 선택하면 해당 동작 훈련으로 이동합니다.</span>
+      </div>
+
+      <div class="lesson-grid" data-training-hub-grid></div>
+    </section>
+  </main>
+
+  <script>
+    const TRAINING_LESSONS = [
+      {
+        key: "basic-guard",
+        title: "기본 가드",
+        titleEn: "Guard",
+        level: "입문",
+        image: "./assets/images/tutorials/silhouette/jpg/neon/guard_neon.jpg",
+        desc: "손 높이, 턱 위치, 중심을 안정적으로 잡는 모든 복싱의 시작점입니다."
+      },
+      {
+        key: "jab",
+        title: "잽",
+        titleEn: "Jab",
+        level: "입문",
+        image: "./assets/images/tutorials/silhouette/jpg/neon/jab_neon.jpg",
+        desc: "앞손을 빠르게 뻗고 즉시 가드로 복귀하는 기본 직선 타격입니다."
+      },
+      {
+        key: "cross",
+        title: "크로스",
+        titleEn: "Cross",
+        level: "중급",
+        image: "./assets/images/tutorials/silhouette/jpg/neon/cross_neon.jpg",
+        desc: "뒷손과 골반 회전을 연결해 강한 직선 펀치를 만드는 훈련입니다."
+      },
+      {
+        key: "left-hook",
+        title: "왼훅",
+        titleEn: "Hook",
+        level: "중급",
+        image: "./assets/images/tutorials/silhouette/jpg/neon/hook_neon.jpg",
+        desc: "짧은 회전과 팔꿈치 높이를 맞춰 원형 타격을 안정적으로 만듭니다."
+      },
+      {
+        key: "slip",
+        title: "슬립",
+        titleEn: "Slip",
+        level: "중급",
+        image: "./assets/images/tutorials/silhouette/jpg/neon/slip_neon.jpg",
+        desc: "머리와 상체를 짧게 빼며 균형을 잃지 않는 방어 동작입니다."
+      },
+      {
+        key: "uppercut",
+        title: "어퍼컷",
+        titleEn: "Uppercut",
+        level: "중급",
+        image: "./assets/images/tutorials/silhouette/jpg/neon/uppercut_neon.jpg",
+        desc: "무릎 반동과 짧은 상향 타격을 연결하는 근거리 펀치입니다."
+      }
+    ];
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    const grid = document.querySelector("[data-training-hub-grid]");
+    if (grid) {
+      grid.innerHTML = TRAINING_LESSONS.map((lesson, index) => `
+        <a class="lesson-card" href="./training_session.html?lesson_key=${encodeURIComponent(lesson.key)}">
+          <img src="${escapeHtml(lesson.image)}" alt="${escapeHtml(lesson.title)} 기준 동작" loading="lazy">
+          <span class="lesson-num">${String(index + 1).padStart(2, "0")}</span>
+          <span class="lesson-level">${escapeHtml(lesson.level)}</span>
+          <div class="lesson-body">
+            <h2 class="lesson-title">${escapeHtml(lesson.title)}<span>${escapeHtml(lesson.titleEn)}</span></h2>
+            <p class="lesson-desc">${escapeHtml(lesson.desc)}</p>
+            <span class="lesson-cta">훈련 시작</span>
+          </div>
+        </a>
+      `).join("");
+    }
+  </script>
+</body>
+</html>
