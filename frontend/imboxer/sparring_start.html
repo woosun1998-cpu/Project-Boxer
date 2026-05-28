@@ -1709,15 +1709,41 @@
   /* ── Mode init ──────────────────────────────────── */
   const params = new URLSearchParams(location.search);
   const mode   = params.get('mode') || 'beginner';
-  function localSparringVideo(fileName) {
-    const path = '/video/' + encodeURIComponent(fileName);
-    return new URL(path, window.location.href).href;
+  function localSparringVideoCandidates(fileName) {
+    const encoded = encodeURIComponent(String(fileName || '').trim());
+    const isVercelHost = /\.vercel\.app$/i.test(window.location.hostname || '');
+    const bases = isVercelHost ? [] : ['/video/'];
+    const apiBase = typeof window.__BOXER_API_URL__ === 'string' ? window.__BOXER_API_URL__.trim() : '';
+    if (apiBase) {
+      bases.push(apiBase.replace(/\/$/, '') + '/video/');
+    } else {
+      bases.push('https://shapes-upgrade-brunswick-record.trycloudflare.com/video/');
+    }
+    if (/\.trycloudflare\.com$/i.test(window.location.hostname || '')) {
+      bases.push(window.location.origin.replace(/\/$/, '') + '/video/');
+    }
+    if (isVercelHost) {
+      bases.push('/video/');
+    }
+
+    const out = [];
+    const seen = new Set();
+    for (const base of bases) {
+      try {
+        const url = new URL(base + encoded, window.location.href).href;
+        if (!seen.has(url)) {
+          seen.add(url);
+          out.push(url);
+        }
+      } catch (_) {}
+    }
+    return out;
   }
   const MODES  = {
-    beginner:     { label:'BEGINNER',     aiName:'AI ROOKIE',   videoSrc: localSparringVideo('스파링초보.mp4') },
-    intermediate: { label:'INTERMEDIATE', aiName:'AI FIGHTER',  videoSrc: localSparringVideo('스파링보통.mp4') },
-    advanced:     { label:'ADVANCED',     aiName:'AI CHAMPION', videoSrc: localSparringVideo('스파링어려움.mp4') },
-    pro:          { label:'PRO',          aiName:'AI LEGEND',   videoSrc: localSparringVideo('복싱프로.mp4') },
+    beginner:     { label:'BEGINNER',     aiName:'AI ROOKIE',   videoSrc: localSparringVideoCandidates('스파링초보.mp4') },
+    intermediate: { label:'INTERMEDIATE', aiName:'AI FIGHTER',  videoSrc: localSparringVideoCandidates('스파링보통.mp4') },
+    advanced:     { label:'ADVANCED',     aiName:'AI CHAMPION', videoSrc: localSparringVideoCandidates('스파링어려움.mp4') },
+    pro:          { label:'PRO',          aiName:'AI LEGEND',   videoSrc: localSparringVideoCandidates('복싱프로.mp4') },
   };
   const cfg = MODES[mode] || MODES.beginner;
 
@@ -1736,13 +1762,23 @@
   /* AI video src */
   const vid = document.querySelector('[data-ai-video]');
   if (vid) {
-    vid.dataset.videoSrc = cfg.videoSrc;
+    const candidates = Array.isArray(cfg.videoSrc) ? cfg.videoSrc.filter(Boolean) : [cfg.videoSrc].filter(Boolean);
+    let idx = 0;
+    vid.dataset.videoSrc = candidates[0] || '';
     vid.preload = 'auto';
     vid.muted = true;
     vid.playsInline = true;
-    vid.src = cfg.videoSrc;
+    vid.src = candidates[0] || '';
     vid.load();
     vid.onerror = () => {
+      idx += 1;
+      if (candidates[idx]) {
+        vid.dataset.videoSrc = candidates[idx];
+        vid.src = candidates[idx];
+        vid.load();
+        vid.play().catch(() => {});
+        return;
+      }
       console.error('[sparring] 영상 로드 실패:', vid.currentSrc || vid.dataset.videoSrc);
     };
   }
