@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: project-box-backend
+    runtime: python
+    # 무엇: Render가 백엔드 폴더를 기준으로 설치/실행하도록 고정합니다.
+    # 왜: 루트 오인식으로 Hello world 앱이 뜨는 문제를 막기 위함입니다.
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
