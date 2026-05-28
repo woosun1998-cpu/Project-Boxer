@@ -1191,7 +1191,20 @@ function preloadAiVideo() {
 function normalizeSparringVideoUrl(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
-  if (/^https?:\/\//i.test(raw) || raw.startsWith("./")) return raw;
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const u = new URL(raw, window.location.href);
+      if (u.pathname.startsWith("/api/videos/")) {
+        const tail = decodeURIComponent(u.pathname.split("/").pop() || "");
+        const candidates = localSparringVideoCandidates(tail);
+        return candidates[0] || raw;
+      }
+      return raw;
+    } catch {
+      return raw;
+    }
+  }
+  if (raw.startsWith("./")) return raw;
   if (raw.startsWith("/api/videos/")) {
     const tail = decodeURIComponent(raw.split("/").pop() || "");
     const candidates = localSparringVideoCandidates(tail);
