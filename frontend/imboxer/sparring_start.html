@@ -1710,7 +1710,7 @@
   const params = new URLSearchParams(location.search);
   const mode   = params.get('mode') || 'beginner';
   function localSparringVideo(fileName) {
-    return new URL('../video/' + fileName, window.location.href).href;
+    return new URL('/video/' + fileName, window.location.href).href;
   }
   const MODES  = {
     beginner:     { label:'BEGINNER',     aiName:'AI ROOKIE',   videoSrc: localSparringVideo('스파링초보.mp4') },

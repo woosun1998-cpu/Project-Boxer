@@ -8,22 +8,22 @@ const TRAINING_RESULT_KEY = "im_boxer_training_last_result";
 const SPARRING_PENDING_SAVE_KEY = "im_boxer_sparring_pending_save";
 
 const TRAINING_ANALYSIS_VIDEO_MAP = {
-  "basic-guard": "./assets/images/result/analysis_1.mp4",
-  "beginner-basic-guard": "./assets/images/result/analysis_1.mp4",
-  jab: "./assets/images/result/analysis_2.mp4",
-  cross: "./assets/images/result/analysis_3.mp4",
-  "left-hook": "./assets/images/result/analysis_4.mp4",
-  slip: "./assets/images/result/analysis_5.mp4",
-  uppercut: "./assets/images/result/analysis_6.mp4",
-  default: "./assets/images/result/analysis_7.mp4",
+  "basic-guard": "/assets/images/result/analysis_1.mp4",
+  "beginner-basic-guard": "/assets/images/result/analysis_1.mp4",
+  jab: "/assets/images/result/analysis_2.mp4",
+  cross: "/assets/images/result/analysis_3.mp4",
+  "left-hook": "/assets/images/result/analysis_4.mp4",
+  slip: "/assets/images/result/analysis_5.mp4",
+  uppercut: "/assets/images/result/analysis_6.mp4",
+  default: "/assets/images/result/analysis_7.mp4",
 };
 
 const SPARRING_ANALYSIS_VIDEO_MAP = {
-  beginner: "./assets/videos/sparring/sparring_result_1.mp4",
-  intermediate: "./assets/videos/sparring/sparring_result_1.mp4",
-  advanced: "./assets/videos/sparring/sparring_result_1.mp4",
-  pro: "./assets/videos/sparring/sparring_result_1.mp4",
-  default: "./assets/videos/sparring/sparring_result_1.mp4",
+  beginner: "/assets/videos/sparring/sparring_result_1.mp4",
+  intermediate: "/assets/videos/sparring/sparring_result_1.mp4",
+  advanced: "/assets/videos/sparring/sparring_result_1.mp4",
+  pro: "/assets/videos/sparring/sparring_result_1.mp4",
+  default: "/assets/videos/sparring/sparring_result_1.mp4",
 };
 
 function pickFirst(...values) {

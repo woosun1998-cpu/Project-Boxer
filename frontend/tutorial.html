@@ -551,7 +551,7 @@
           <div class="video-spec-grid">
             <div class="video-spec-line">
               저장 위치<br>
-              <code id="guide-video-folder">./video/ (로컬 mp4)</code>
+              <code id="guide-video-folder">/video/ (로컬 mp4)</code>
             </div>
             <div class="video-spec-line">
               현재 강좌 파일명<br>
@@ -668,7 +668,7 @@
   let currentTutorialBlueprint = null;
   const V = window.BOXER_VIDEO || {};
   function vidFallback(name) {
-    return './video/' + encodeURIComponent(name);
+    return '/video/' + encodeURIComponent(name);
   }
 
   const CURRICULUM_VIDEO_MAP = [
@@ -904,7 +904,7 @@
     renderGuideList('guide-guard', currentTutorialBlueprint.guard);
     renderGuideList('guide-tips', currentTutorialBlueprint.tips);
     document.getElementById('guide-video-folder').textContent =
-      '로컬 영상: ./video/ (설정: js/config/boxer-video-local.js)';
+      '로컬 영상: /video/ (설정: js/config/boxer-video-local.js)';
     document.getElementById('guide-video-file').textContent = currentTutorialBlueprint.fileName;
     document.getElementById('guide-video-db-path').textContent = currentTutorialBlueprint.dbPath;
     renderCurriculumMap(currentTutorialBlueprint.fileName);

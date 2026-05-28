@@ -1,14 +1,14 @@
 /**
- * 훈련·스파링 영상 — 100% 로컬 ./video/ (한글·공백 파일명은 encodeURIComponent)
+ * 훈련·스파링 영상 — 100% 로컬 /video/ (한글·공백 파일명은 encodeURIComponent)
  * 무엇: 외부 스트림·Drive·폴백 없이 단일 출처 / 왜: 라이브 서버(5500)에서 끊김 없이 재생
  */
 (function (global) {
-  var DIR = "./video/";
+  var DIR = "/video/";
 
   function fileUrl(fileName) {
     try {
       if (typeof global.location !== "undefined" && global.location.href) {
-        return new URL("video/" + encodeURIComponent(fileName), global.location.href).href;
+        return new URL("/video/" + encodeURIComponent(fileName), global.location.href).href;
       }
     } catch (e) {
       /* fallback */

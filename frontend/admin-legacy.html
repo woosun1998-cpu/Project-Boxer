@@ -918,7 +918,7 @@
         </div>
         <div class="form-grid">
           <div class="field"><label>제목</label><input class="input" id="tut-title" type="text" placeholder="예: 기본 자세" /></div>
-          <div class="field"><label>비디오 URL</label><input class="input" id="tut-video-url" type="text" placeholder="./video/스파링초보.mp4" /></div>
+          <div class="field"><label>비디오 URL</label><input class="input" id="tut-video-url" type="text" placeholder="/video/스파링초보.mp4" /></div>
         </div>
         <div class="field" style="margin-top:.85rem;"><label>설명</label><textarea id="tut-desc" placeholder="짧은 설명"></textarea></div>
         <div class="form-grid three" style="margin-top:.85rem;">
@@ -1005,7 +1005,7 @@
         </div>
         <div class="form-grid">
           <div class="field"><label>제목</label><input id="vid-title" class="input" type="text" placeholder="예: Beginner Jab 01" /></div>
-          <div class="field"><label>파일 경로</label><input id="vid-path" class="input" type="text" placeholder="./video/스파링초보.mp4" /></div>
+          <div class="field"><label>파일 경로</label><input id="vid-path" class="input" type="text" placeholder="/video/스파링초보.mp4" /></div>
         </div>
         <div class="toolbar" style="margin-top:.65rem;">
           <select class="select" id="vid-path-preset" style="min-width:360px;">
@@ -1055,7 +1055,7 @@
             </div>
             <div class="field">
               <label>마킹할 영상 경로</label>
-              <input id="vid-path-marker" class="input" type="text" placeholder="./video/스파링초보.mp4" />
+              <input id="vid-path-marker" class="input" type="text" placeholder="/video/스파링초보.mp4" />
             </div>
             <div class="toolbar">
               <button class="btn-primary" type="button" id="marker-load-video-btn" onclick="loadMarkerVideoFromPath({ resetTime:true, autoplay:false })">영상 불러오기</button>
@@ -1268,7 +1268,7 @@
     };
     // 무엇: API 실패 시 사용할 기본 추천 목록 -> 왜: 백엔드 연결 문제에서도 최소 경로 추천을 유지하기 위해
     const ADMIN_VIDEO_PATH_PRESETS_FALLBACK = (function () {
-      var base = './video/';
+      var base = '/video/';
       function u(name) {
         return base + encodeURIComponent(name);
       }
@@ -1307,12 +1307,15 @@
       if (!raw) return '';
       if (/^(https?:)?\/\//i.test(raw) || raw.startsWith('blob:') || raw.startsWith('data:')) return raw;
       const windowsPath = raw.replace(/\\/g, '/');
-      // 무엇: ./video/ 아래 한글·공백 파일명은 퍼센트 인코딩으로 요청 / 왜: 브라우저가 그대로 요청하면 404가 나기 쉬움
-      const localVid = windowsPath.match(/^\.\/video\/(.+)$/i) || windowsPath.match(/^video\/(.+)$/i);
+      // 무엇: /video/ 공개 루트 아래 한글·공백 파일명은 퍼센트 인코딩으로 요청 / 왜: 브라우저가 그대로 요청하면 404가 나기 쉬움
+      const localVid =
+        windowsPath.match(/^\/video\/(.+)$/i) ||
+        windowsPath.match(/^\.\/video\/(.+)$/i) ||
+        windowsPath.match(/^video\/(.+)$/i);
       if (localVid) {
         const tail = localVid[1];
-        if (tail && !/%[0-9A-Fa-f]{2}/.test(tail)) return './video/' + encodeURIComponent(tail);
-        if (tail) return './video/' + tail;
+        if (tail && !/%[0-9A-Fa-f]{2}/.test(tail)) return '/video/' + encodeURIComponent(tail);
+        if (tail) return '/video/' + tail;
       }
       const assetMatch = windowsPath.match(/\/assets\/(.*)$/i);
       if (assetMatch) return '/assets/' + assetMatch[1].replace(/^\/+/, '');
@@ -2097,7 +2100,7 @@
       const preset = SPARRING_VIDEO_PRESETS[level] || SPARRING_VIDEO_PRESETS.beginner;
       const clipIndex = Math.max(1, Math.min(3, Number($('vid-clip-index')?.value || 1)));
       const suffix = String(clipIndex).padStart(2, '0');
-      const filePath = './video/' + encodeURIComponent('스파링초보.mp4');
+      const filePath = '/video/' + encodeURIComponent('스파링초보.mp4');
       $('vid-title').value = `${preset.titlePrefix} ${suffix}`;
       $('vid-path').value = filePath;
       $('vid-type').value = preset.attack_type;
@@ -2692,8 +2695,8 @@ INSERT INTO boxing_tutorials (title, description, target_pose_json, difficulty_l
 ('잽 회피', '짧은 공격을 피하는 입문 훈련입니다.', '{"guard":{"min_elbow_angle":78}}', 1, FALSE, 100, 10, 2);`;
       $('seed-video-sql').value = `USE boxer_db;
 INSERT INTO attack_videos (title, file_path, attack_type, difficulty, duration_sec, is_premium) VALUES
-('Beginner Jab 01', './video/%EC%8A%A4%ED%8C%8C%EB%A7%81%EC%B4%88%EB%B3%B4.mp4', 'jab', 'beginner', 5.0, FALSE),
-('Intermediate Straight 01', './video/%EC%8A%A4%ED%8C%8C%EB%A7%81%EC%B4%88%EB%B3%B4.mp4', 'straight', 'intermediate', 6.0, FALSE);`;
+('Beginner Jab 01', '/video/%EC%8A%A4%ED%8C%8C%EB%A7%81%EC%B4%88%EB%B3%B4.mp4', 'jab', 'beginner', 5.0, FALSE),
+('Intermediate Straight 01', '/video/%EC%8A%A4%ED%8C%8C%EB%A7%81%EC%B4%88%EB%B3%B4.mp4', 'straight', 'intermediate', 6.0, FALSE);`;
       $('seed-shop-sql').value = `USE boxer_db;
 INSERT INTO shop_items (name, description, item_type, price_coins, is_active) VALUES
 ('프리미엄 구독', '전체 콘텐츠 이용', 'premium', 0, TRUE),

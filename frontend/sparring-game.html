@@ -579,9 +579,9 @@
       const level = levelMap[rawLevel] || "beginner";
       const isSurvival = level === "advanced" || level === "pro";
 
-      /** 무엇: 로컬 ./video/ 단일 출처 / 왜: 한글 파일명 404 방지 — coachVideo·[data-ai-video] 공통 */
+      /** 무엇: 로컬 /video/ 단일 출처 / 왜: 한글 파일명 404 방지 — coachVideo·[data-ai-video] 공통 */
       function sparringLocalVideoSrc(fileName) {
-        return "./video/" + encodeURIComponent(fileName);
+        return "/video/" + encodeURIComponent(fileName);
       }
       const SPARRING_VIDEO_SRC = {
         beginner: sparringLocalVideoSrc("스파링초보.mp4"),
@@ -617,7 +617,7 @@
         coachVideo.dataset.fallbackBound = "1";
         coachVideo.addEventListener("error", () => {
           feedbackText.textContent =
-            "코치 영상을 불러오지 못했습니다. ./video/ 폴더에 난이도별 mp4가 있는지 확인하세요.";
+            "코치 영상을 불러오지 못했습니다. /video/ 폴더에 난이도별 mp4가 있는지 확인하세요.";
           try {
             coachVideo.removeAttribute("src");
           } catch (e) {

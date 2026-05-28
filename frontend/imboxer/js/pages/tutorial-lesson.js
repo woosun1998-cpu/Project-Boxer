@@ -85,7 +85,7 @@ const LESSON_KEYS = LESSON_DATA.map((l) => l.lessonKey);
 const SCORE_KEY_PREFIX = "im_boxer_lesson_score_";
 const TICK_INTERVAL_MS = 1000;
 const GUIDE_AUDIO_BASE = "./assets/sounds/training_guide/";
-const GUIDE_VIDEO_URL = "./assets/videos/tutorials/tutorial_guide.mp4?v=20260508-h264-video";
+const GUIDE_VIDEO_URL = "/assets/videos/tutorials/tutorial_guide.mp4?v=20260508-h264-video";
 const GUIDE_VIDEO_ABSOLUTE_URL = new URL(GUIDE_VIDEO_URL, window.location.href).href;
 const GUIDE_AUDIO_FILES = {
   "basic-guard": "guide_guard.mp3",
@@ -266,14 +266,14 @@ function getPoseMediaConfig(lessonKey, variant) {
   if (lessonKey === "jab" && variant === "good") {
     return {
       type: "video",
-      src: "./assets/images/tutorials/jab_right.mp4",
+      src: "/assets/images/tutorials/jab_right.mp4",
     };
   }
 
   if (lessonKey === "jab" && variant === "bad") {
     return {
       type: "hover-video",
-      src: "./assets/images/tutorials/jab_wrong..mp4",
+      src: "/assets/images/tutorials/jab_wrong..mp4",
     };
   }
 
@@ -281,8 +281,8 @@ function getPoseMediaConfig(lessonKey, variant) {
     return {
       type: "sequence-video",
       srcs: [
-        "./assets/images/tutorials/cross_right.mp4",
-        "./assets/images/tutorials/cross_right_1.mp4",
+        "/assets/images/tutorials/cross_right.mp4",
+        "/assets/images/tutorials/cross_right_1.mp4",
       ],
     };
   }
@@ -290,7 +290,7 @@ function getPoseMediaConfig(lessonKey, variant) {
   if (lessonKey === "cross" && variant === "bad") {
     return {
       type: "hover-video",
-      src: "./assets/images/tutorials/cross_wrong.mp4",
+      src: "/assets/images/tutorials/cross_wrong.mp4",
     };
   }
 
@@ -298,9 +298,9 @@ function getPoseMediaConfig(lessonKey, variant) {
     return {
       type: "sequence-video",
       srcs: [
-        "./assets/images/tutorials/left_hook_right_1.mp4",
-        "./assets/images/tutorials/left_hook_right_2.mp4",
-        "./assets/images/tutorials/left_hook_right_3.mp4",
+        "/assets/images/tutorials/left_hook_right_1.mp4",
+        "/assets/images/tutorials/left_hook_right_2.mp4",
+        "/assets/images/tutorials/left_hook_right_3.mp4",
       ],
     };
   }
@@ -308,21 +308,21 @@ function getPoseMediaConfig(lessonKey, variant) {
   if (lessonKey === "left-hook" && variant === "bad") {
     return {
       type: "hover-video",
-      src: "./assets/images/tutorials/left_hook_wrong.mp4",
+      src: "/assets/images/tutorials/left_hook_wrong.mp4",
     };
   }
 
   if (lessonKey === "slip" && variant === "good") {
     return {
       type: "video",
-      src: "./assets/images/tutorials/slip_right.mp4",
+      src: "/assets/images/tutorials/slip_right.mp4",
     };
   }
 
   if (lessonKey === "slip" && variant === "bad") {
     return {
       type: "hover-video",
-      src: "./assets/images/tutorials/slip_wrong.mp4",
+      src: "/assets/images/tutorials/slip_wrong.mp4",
     };
   }
 
@@ -330,9 +330,9 @@ function getPoseMediaConfig(lessonKey, variant) {
     return {
       type: "sequence-video",
       srcs: [
-        "./assets/images/tutorials/uppercut_right_1.mp4",
-        "./assets/images/tutorials/uppercut_right_2.mp4",
-        "./assets/images/tutorials/uppercut_right_3.mp4",
+        "/assets/images/tutorials/uppercut_right_1.mp4",
+        "/assets/images/tutorials/uppercut_right_2.mp4",
+        "/assets/images/tutorials/uppercut_right_3.mp4",
       ],
     };
   }
@@ -340,7 +340,7 @@ function getPoseMediaConfig(lessonKey, variant) {
   if (lessonKey === "uppercut" && variant === "bad") {
     return {
       type: "hover-video",
-      src: "./assets/images/tutorials/uppercut_wrong.mp4",
+      src: "/assets/images/tutorials/uppercut_wrong.mp4",
     };
   }
 

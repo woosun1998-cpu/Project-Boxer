@@ -184,7 +184,7 @@
         coachVideo.dataset.fallbackBound = "1";
         coachVideo.addEventListener("error", () => {
           feedbackText.textContent =
-            "코치 영상을 불러오지 못했습니다. ./video/ 폴더에 난이도별 mp4가 있는지 확인하세요.";
+            "코치 영상을 불러오지 못했습니다. /video/ 폴더에 난이도별 mp4가 있는지 확인하세요.";
           try {
             coachVideo.removeAttribute("src");
           } catch (e) {

@@ -513,10 +513,10 @@
         window.location.href = "./diet-boxing.html";
       }
 
-      /** 현재 페이지 기준 ./video/ 파일 URL (한글·공백 파일명 지원) */
+      /** /video/ 공개 루트 기준 파일 URL (한글·공백 파일명 지원) */
       function localVideoUrl(fileName) {
         const out = [];
-        const bases = ["video/", "./video/"];
+        const bases = ["/video/"];
         for (const base of bases) {
           try {
             out.push(new URL(base + fileName, window.location.href).href);
@@ -642,7 +642,7 @@
           if (detail) {
             detail.innerHTML = hasM4a
               ? `탐색기에 <b>M4A 파일(음성만)</b>은 있지만 <b>MP4 파일(영상)</b>이 없습니다.<br>필요: <b>${spec.mp4}</b><br>M4A를 MP4 영상으로 변환·다운로드 후 같은 이름으로 저장하세요.`
-              : `video 폴더에 <b>${spec.mp4}</b> 파일을 넣어 주세요.`;
+              : `/video 폴더에 <b>${spec.mp4}</b> 파일을 넣어 주세요.`;
           }
           if (feedbackMsg) {
             feedbackMsg.textContent = hasM4a

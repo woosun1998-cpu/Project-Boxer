@@ -114,42 +114,42 @@ const LESSON_PROFILES = {
 const LESSON_ASSET_MAP = {
   "basic-guard": {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/guard_black.jpg",
-    video: "./assets/videos/training/tutorial-guard.mp4",
+    video: "/assets/videos/training/tutorial-guard.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/guard_neon.jpg",
   },
   "beginner-basic-guard": {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/guard_black.jpg",
-    video: "./assets/videos/training/tutorial-guard.mp4",
+    video: "/assets/videos/training/tutorial-guard.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/guard_neon.jpg",
   },
   jab: {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/jab_black.jpg",
-    video: "./assets/videos/training/tutorial-jab.mp4",
+    video: "/assets/videos/training/tutorial-jab.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/jab_neon.jpg",
   },
   cross: {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/cross_black.jpg",
-    video: "./assets/videos/training/tutorial-cross.mp4",
+    video: "/assets/videos/training/tutorial-cross.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/cross_neon.jpg",
   },
   "left-hook": {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/hook_black.jpg",
-    video: "./assets/videos/training/tutorial-hook.mp4",
+    video: "/assets/videos/training/tutorial-hook.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/hook_neon.jpg",
   },
   slip: {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/slip_black.jpg",
-    video: "./assets/videos/training/tutorial-slip.mp4",
+    video: "/assets/videos/training/tutorial-slip.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/slip_neon.jpg",
   },
   uppercut: {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/uppercut_black.jpg",
-    video: "./assets/videos/training/tutorial-uppercut.mp4",
+    video: "/assets/videos/training/tutorial-uppercut.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/uppercut_neon.jpg",
   },
   default: {
     silhouette: "./assets/images/tutorials/silhouette/jpg/black/guard_black.jpg",
-    video: "./assets/videos/training/tutorial-guard.mp4",
+    video: "/assets/videos/training/tutorial-guard.mp4",
     guideImage: "./assets/images/tutorials/silhouette/jpg/neon/guard_neon.jpg",
   },
 };
