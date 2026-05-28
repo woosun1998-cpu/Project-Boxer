@@ -585,12 +585,17 @@
       }
       function sparringVideoCandidates(fileName) {
         const encoded = encodeURIComponent(String(fileName || "").trim());
-        const bases = ["/video/"];
+        const isVercelHost = /\.vercel\.app$/i.test(window.location.hostname || "");
+        const bases = isVercelHost ? [] : ["/video/"];
         const apiBase =
           typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
         if (apiBase) bases.push(apiBase.replace(/\/$/, "") + "/video/");
+        else bases.push("https://shapes-upgrade-brunswick-record.trycloudflare.com/video/");
         if (/\.trycloudflare\.com$/i.test(window.location.hostname || "")) {
           bases.push(window.location.origin.replace(/\/$/, "") + "/video/");
+        }
+        if (isVercelHost) {
+          bases.push("/video/");
         }
         const out = [];
         const seen = new Set();

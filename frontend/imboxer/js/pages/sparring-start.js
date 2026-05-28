@@ -21,13 +21,17 @@ const CAMERA_SETTINGS_KEY = "im_boxer_camera_settings";
 /** 무엇: imboxer → /video 로컬 mp4 / 왜: 한글 파일명·상대경로를 절대 URL로 통일 */
 function localSparringVideoCandidates(fileName) {
   const encoded = encodeURIComponent(String(fileName || "").trim());
-  const bases = ["/video/"];
+  const isVercelHost = /\.vercel\.app$/i.test(window.location.hostname || "");
+  const bases = isVercelHost ? [] : ["/video/"];
   const apiBase =
     typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
   if (apiBase) {
     bases.push(apiBase.replace(/\/$/, "") + "/video/");
   } else {
     bases.push("https://shapes-upgrade-brunswick-record.trycloudflare.com/video/");
+  }
+  if (isVercelHost) {
+    bases.push("/video/");
   }
   const out = [];
   const seen = new Set();
