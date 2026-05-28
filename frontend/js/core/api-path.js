@@ -1,15 +1,21 @@
-/**
- * API 요청 경로 — 항상 같은 출처 상대 경로 (/api/...)
- * localhost:8000 등 절대 URL을 쓰지 않습니다.
+﻿/**
+ * API 경로 유틸
+ * - API_URL(=window.__BOXER_API_URL__)가 있으면 해당 백엔드 절대 URL로 요청
+ * - 없으면 같은 출처 상대 경로(/api/...)
  */
 (function (global) {
-  function resolveApiPath(path) {
+  function getApiBase() {
+    const raw =
+      typeof global.__BOXER_API_URL__ === "string" ? global.__BOXER_API_URL__.trim() : "";
+    return raw ? raw.replace(/\/$/, "") : "";
+  }
+
+  function normalizePath(path) {
     if (path == null || path === "") return "/api";
     let p = String(path).trim();
     if (/^https?:\/\//i.test(p)) {
       try {
-        const base = global.location?.href || "http://localhost";
-        const u = new URL(p, base);
+        const u = new URL(p, global.location?.href || "http://localhost");
         return u.pathname + u.search;
       } catch {
         return p;
@@ -19,8 +25,23 @@
     return p;
   }
 
-  global.BoxerApiPath = { resolveApiPath };
+  function resolveApiPath(path) {
+    const p = normalizePath(path);
+    const base = getApiBase();
+    if (!base) return p;
+    if (/^https?:\/\//i.test(p)) return p;
+    return base + p;
+  }
+
+  global.BoxerApiPath = { resolveApiPath, getApiBase };
 })(typeof window !== "undefined" ? window : globalThis);
+
+export function getApiBase() {
+  if (typeof window !== "undefined" && window.BoxerApiPath) {
+    return window.BoxerApiPath.getApiBase();
+  }
+  return "";
+}
 
 export function resolveApiPath(path) {
   if (typeof window !== "undefined" && window.BoxerApiPath) {
@@ -28,20 +49,11 @@ export function resolveApiPath(path) {
   }
   if (path == null || path === "") return "/api";
   let p = String(path).trim();
-  if (/^https?:\/\//i.test(p)) {
-    try {
-      const u = new URL(p, window.location.href);
-      return u.pathname + u.search;
-    } catch {
-      return p;
-    }
-  }
   if (!p.startsWith("/")) p = "/" + p;
   return p;
 }
 
-/** @deprecated 빈 문자열 — fetch는 resolveApiPath(path)만 사용 */
-export const API_BASE_URL = "";
+export const API_BASE_URL = getApiBase();
 
 export function apiUrl(path) {
   return resolveApiPath(path);
