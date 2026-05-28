@@ -157,6 +157,12 @@
   }
 
   function apiBaseCandidates() {
+    const configured =
+      typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+    if (configured) return [configured.replace(/\/$/, "")];
+    if (window.location.protocol === "https:") {
+      return [window.location.origin.replace(/\/$/, "")];
+    }
     const host = apiHost();
     const hosts = [...new Set([host, "127.0.0.1", "localhost"])];
     return hosts.flatMap((candidateHost) => [

@@ -7,6 +7,10 @@
   "cleanUrls": false,
   "rewrites": [
     {
+      "source": "/video/:path*",
+      "destination": "/video/:path*"
+    },
+    {
       "source": "/assets/:path*",
       "destination": "/imboxer/assets/:path*"
     }

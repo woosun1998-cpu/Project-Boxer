@@ -50,7 +50,17 @@ return "/video/" + encodeURIComponent(fileName);
 <source src="/assets/videos/tutorials/tutorial_guide.mp4" type="video/mp4">
 ```
 
-## 5) Vercel 프로젝트 설정 (루트 `vercel.json` + `package.json`)
+## 5) Mixed Content — API_URL (백엔드 HTTPS)
+
+브라우저에서는 `process.env`를 쓸 수 없습니다. Vercel 빌드 시 `process.env.API_URL`을 읽어 `frontend/js/config/api-env.js`를 생성하고, `api.js`가 `window.__BOXER_API_URL__`을 사용합니다.
+
+| 환경 | 설정 |
+|------|------|
+| Vercel 대시보드 | **Settings → Environment Variables** → `API_URL` = `https://your-backend.example.com` (끝에 `/` 없이) |
+| 로컬 | 비워 두면 `http://localhost:8000` (HTTP 페이지만) |
+| HTTPS + API_URL 없음 | 같은 출처(`window.location.origin`)로 `/api/...` 호출 — 백엔드 프록시 필요 |
+
+## 6) Vercel 프로젝트 설정 (루트 `vercel.json` + `package.json`)
 
 | 항목 | 값 |
 |------|-----|
@@ -71,7 +81,9 @@ return "/video/" + encodeURIComponent(fileName);
 
 로컬 확인: `npm run build` 후 `npm run start:frontend` → http://localhost:5500
 
-## 6) 배포 전 체크리스트
+`/video/:path*` 는 빌드 후 `frontend/video/` 파일을 그대로 서빙합니다 (rewrite는 동일 경로 매핑). **404는 대부분 `public/video`에 mp4가 없거나 Git에 포함되지 않은 경우**입니다.
+
+## 7) 배포 전 체크리스트
 - `public/video`에 실제 mp4 파일 업로드 (스파링 4종 등)
 - `public/assets/videos`에 training/tutorial/sparring 영상 업로드
 - `public/assets/images`에 mp4 참조되는 이미지/결과 리소스 포함 여부 확인
