@@ -180,11 +180,6 @@
   }
 
   async function postObstacleForm(path, formData) {
-    const api = await ensureApi();
-    if (api?.postForm) {
-      return api.postForm(path, formData);
-    }
-
     const response = await fetch(resolveObstacleApiPath(path), {
       method: "POST",
       body: formData,
