@@ -389,7 +389,7 @@
   </head>
   <body>
     <div class="stage-viewport">
-      <div class="stage-container" id="stage-container" data-scale-mode="cover">
+      <div class="stage-container" id="stage-container" data-scale-mode="contain">
         <!-- 트레이닝 화면: ready.html 이후 바로 표시 -->
         <div id="state-2-training">
           <div id="training-left-bg"></div>
@@ -476,6 +476,7 @@
       </div>
     </div>
 
+    <script src="js/core/api.js?v=8000"></script>
     <script>
       function showTrainingSummary() {
         const modal = document.getElementById("trainingSummaryModal");
@@ -778,6 +779,7 @@
     </script>
     <script src="js/core/pose.js"></script>
     <script src="js/core/pose-compare.js"></script>
+    <script src="/js/core/obstacle-detect.js?v=20260527-engine-pause"></script>
     <script src="js/ui/auto-scale.js"></script>
   </body>
 </html>

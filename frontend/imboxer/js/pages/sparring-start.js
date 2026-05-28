@@ -1,7 +1,7 @@
 import { authFetch, getStoredUser, refreshCurrentUser } from "../core/auth.js";
 import { apiUrl } from "../core/api.js";
 import { SparringEffects as FX } from "../engine/SparringEffects.js";
-import { SparringSound } from "../engine/SparringSound.js?v=20260506-alternating-bgm";
+import { SparringSound } from "../engine/SparringSound.js?v=20260527-obstacle-pause";
 import "../engine/MediaPipePoseTracker.js?v=20260512-local-vendor-path";
 import "../engine/ThresholdManager.js";
 import "../engine/PoseAnalyzer.js";
@@ -411,6 +411,11 @@ const state = {
   telegraphedTimelineMarkerIds: new Set(),
   timelineLastTime: 0,
   timelineRafId: 0,
+  obstaclePause: {
+    active: false,
+    previousGameState: "",
+    remainingRoundMs: 0,
+  },
   adminMode: false,
   adminPanelOpen: false,
   adminEditMode: "beginner",
@@ -1183,12 +1188,16 @@ function stopTimelineMarkerLoop() {
   }
 }
 
-function startTimelineMarkerLoop() {
+function startTimelineMarkerLoop({ reset = true } = {}) {
   stopTimelineMarkerLoop();
   if (!ui.aiVideo || !state.timelineMarkers.length) {
     return;
   }
-  resetTimelineMarkerState();
+  if (reset) {
+    resetTimelineMarkerState();
+  } else {
+    state.timelineLastTime = toNumber(ui.aiVideo.currentTime, 0);
+  }
   const offsetSec = toNumber(TIMELINE_IMPACT_OFFSET_SEC[state.mode], 0);
   const tick = () => {
     state.timelineRafId = requestAnimationFrame(tick);
@@ -1421,6 +1430,70 @@ function startCountdown(nextRound = state.round) {
   }, 1000);
 }
 
+function startRoundTick() {
+  clearTimer("roundTick");
+  state.timers.roundTick = window.setInterval(() => {
+    const msLeft = state.roundEndsAt - Date.now();
+    syncHitZoneOverlay();
+    updateRoundTimer(msLeft);
+    if (msLeft <= 0) {
+      clearTimer("roundTick");
+      handleRoundComplete();
+    }
+  }, 250);
+}
+
+function pauseForObstacle(message = "장애물을 치워주세요") {
+  if (state.obstaclePause.active || state.gameState !== "round_active") {
+    return;
+  }
+  state.obstaclePause.active = true;
+  state.obstaclePause.previousGameState = state.gameState;
+  state.obstaclePause.remainingRoundMs = Math.max(0, state.roundEndsAt - Date.now());
+
+  setGameState("safety_paused");
+  clearTimer("roundTick");
+  clearTimer("aiAttack");
+  stopTimelineMarkerLoop();
+  ui.aiVideo?.pause();
+  SparringSound.pauseAll?.();
+  FX.setCoachTip(message);
+  updateRoundTimer(state.obstaclePause.remainingRoundMs);
+}
+
+function resumeFromObstacle() {
+  if (!state.obstaclePause.active) {
+    return;
+  }
+  const shouldResumeRound = state.obstaclePause.previousGameState === "round_active";
+  const remainingRoundMs = Math.max(0, state.obstaclePause.remainingRoundMs);
+  state.obstaclePause.active = false;
+  state.obstaclePause.previousGameState = "";
+  state.obstaclePause.remainingRoundMs = 0;
+
+  if (!shouldResumeRound || remainingRoundMs <= 0 || state.gameState === "game_over") {
+    return;
+  }
+
+  setGameState("round_active");
+  state.roundEndsAt = Date.now() + remainingRoundMs;
+  updateRoundTimer(remainingRoundMs);
+  startRoundTick();
+
+  if (ui.aiVideo) {
+    ui.aiVideo.play().catch((error) => {
+      console.warn("[sparring] 안전 일시정지 후 영상 재개 실패:", error?.message || error);
+    });
+  }
+  if (state.timelineMarkers.length) {
+    startTimelineMarkerLoop({ reset: false });
+  } else {
+    scheduleAiAttack();
+  }
+  SparringSound.resumeAll?.();
+  FX.setCoachTip(resolveCoachTip());
+}
+
 async function beginRound(roundNumber) {
   if (LOCAL_SPARRING_VIDEO_SRC[state.mode] && !state.timelineMarkers.length) {
     loadCpuAttackTimelineFromData(state.mode);
@@ -1451,18 +1524,8 @@ async function beginRound(roundNumber) {
   FX.roundTransition(state.round);
   FX.setCoachTip(resolveCoachTip());
   updateRoundTimer(state.roundDurationMs);
-  clearTimer("roundTick");
   clearTimer("aiAttack");
-
-  state.timers.roundTick = window.setInterval(() => {
-    const msLeft = state.roundEndsAt - Date.now();
-    syncHitZoneOverlay();
-    updateRoundTimer(msLeft);
-    if (msLeft <= 0) {
-      clearTimer("roundTick");
-      handleRoundComplete();
-    }
-  }, 250);
+  startRoundTick();
 
   scheduleAiAttack();
   syncHud();
@@ -1984,6 +2047,15 @@ function bindControls() {
     if (state.gameState === "countdown" || state.gameState === "round_active") {
       SparringSound.startModeBgm(state.mode, { restart: true });
     }
+  });
+
+  window.addEventListener("boxer:obstacle-danger-change", (event) => {
+    const detail = event.detail || {};
+    if (detail.active) {
+      pauseForObstacle(detail.message || "장애물을 치워주세요");
+      return;
+    }
+    resumeFromObstacle();
   });
 
   ui.adminToggle?.addEventListener("click", () => {

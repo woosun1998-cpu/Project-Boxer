@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
 from ultralytics import YOLO
+from ultralytics.utils.downloads import safe_download
 
 
 router = APIRouter()
@@ -28,16 +29,25 @@ FALLBACK_TRAINED_WEIGHTS = (
     / "best.pt"
 )
 DEFAULT_WEIGHTS = PROJECT_ROOT / "dataset" / "pretrained" / "yolov8n.pt"
+DEFAULT_WEIGHTS_URL = "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.pt"
+
+
+def resolve_weight_path() -> Path:
+    if TRAINED_WEIGHTS.exists():
+        return TRAINED_WEIGHTS
+    if FALLBACK_TRAINED_WEIGHTS.exists():
+        return FALLBACK_TRAINED_WEIGHTS
+    if not DEFAULT_WEIGHTS.exists():
+        # 무엇: 학습 모델이 없으면 무료 공개 YOLO 기본 가중치를 프로젝트 규칙 경로에 받습니다.
+        # 왜: Roboflow 학습 산출물이 없어도 chair/cup/laptop 같은 COCO 객체 감지를 바로 테스트하기 위함입니다.
+        DEFAULT_WEIGHTS.parent.mkdir(parents=True, exist_ok=True)
+        safe_download(url=DEFAULT_WEIGHTS_URL, file=str(DEFAULT_WEIGHTS))
+    return DEFAULT_WEIGHTS
 
 
 @lru_cache(maxsize=1)
 def get_model() -> YOLO:
-    if TRAINED_WEIGHTS.exists():
-        weight_path = TRAINED_WEIGHTS
-    elif FALLBACK_TRAINED_WEIGHTS.exists():
-        weight_path = FALLBACK_TRAINED_WEIGHTS
-    else:
-        weight_path = DEFAULT_WEIGHTS
+    weight_path = resolve_weight_path()
     if not weight_path.exists():
         raise FileNotFoundError(f"YOLO 가중치 파일을 찾을 수 없습니다: {weight_path}")
     return YOLO(str(weight_path))
@@ -87,5 +97,5 @@ async def detect_obstacles(
     return {
         "detections": detections,
         "count": len(detections),
-        "model_path": str(TRAINED_WEIGHTS if TRAINED_WEIGHTS.exists() else DEFAULT_WEIGHTS),
+        "model_path": str(resolve_weight_path()),
     }

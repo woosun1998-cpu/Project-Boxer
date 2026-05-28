@@ -54,6 +54,7 @@ const WHOOSHES = [
 
 const state = {
   enabled: readEnabled(),
+  paused: false,
   bgm: null,
   bgmMode: "",
   bgmQueue: [],
@@ -124,7 +125,7 @@ function randomItem(list) {
 }
 
 function safePlay(audio) {
-  if (!audio || !state.enabled) {
+  if (!audio || !state.enabled || state.paused) {
     return Promise.resolve(false);
   }
   return audio.play().then(
@@ -269,13 +270,13 @@ function playReadyRound() {
 }
 
 function playOneShot(src, { volume = 0.75, delayMs = 0 } = {}) {
-  if (!state.enabled || !src) {
+  if (!state.enabled || state.paused || !src) {
     return Promise.resolve(false);
   }
 
   return new Promise((resolve) => {
     window.setTimeout(() => {
-      if (!state.enabled) {
+      if (!state.enabled || state.paused) {
         resolve(false);
         return;
       }
@@ -324,6 +325,26 @@ function playResult(winner) {
   }
 }
 
+function pauseAll() {
+  state.paused = true;
+  state.bgm?.pause();
+  state.ready?.pause();
+  state.activeShots.forEach((audio) => {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.onended = null;
+    audio.onerror = null;
+    audio.src = "";
+  });
+  state.activeShots.clear();
+}
+
+function resumeAll() {
+  state.paused = false;
+  void safePlay(state.bgm);
+  void safePlay(state.ready);
+}
+
 export const SparringSound = {
   init,
   setEnabled,
@@ -337,6 +358,8 @@ export const SparringSound = {
   playPunch,
   playWhoosh,
   playResult,
+  pauseAll,
+  resumeAll,
 };
 
 if (typeof window !== "undefined") {

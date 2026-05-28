@@ -207,6 +207,10 @@ const state = {
   bgmAudio: null,
   bgmEnabled: false,
   bgmTrack: "",
+  obstaclePause: {
+    active: false,
+    previousTrainingState: "",
+  },
 };
 
 function continueAsGuest() {
@@ -1484,6 +1488,44 @@ function togglePause() {
   saveDraftSession();
 }
 
+function pauseTrainingForObstacle(message = "장애물을 치워주세요") {
+  if (state.obstaclePause.active || state.trainingState !== "active") {
+    return;
+  }
+  state.obstaclePause.active = true;
+  state.obstaclePause.previousTrainingState = state.trainingState;
+  state.pauseStartedPerf = performance.now();
+  setTrainingState("paused", message);
+  pushFeedback(message, "info");
+  pauseBgm();
+  state.ui.referenceVideo?.pause?.();
+  stopLoop();
+  saveDraftSession();
+}
+
+function resumeTrainingFromObstacle() {
+  if (!state.obstaclePause.active) {
+    return;
+  }
+  const shouldResume = state.obstaclePause.previousTrainingState === "active";
+  state.obstaclePause.active = false;
+  state.obstaclePause.previousTrainingState = "";
+
+  if (!shouldResume || state.trainingState !== "paused") {
+    return;
+  }
+  if (state.pauseStartedPerf) {
+    state.pausedTotalMs += performance.now() - state.pauseStartedPerf;
+    state.pauseStartedPerf = 0;
+  }
+  setTrainingState("active", "장애물이 제거되어 훈련을 재개합니다.");
+  state.ui.referenceVideo?.play?.().catch(() => {});
+  if (state.bgmEnabled) {
+    void playBgm();
+  }
+  startLoop();
+}
+
 async function restartTraining() {
   stopLoop();
   stopPoseTracker();
@@ -1701,6 +1743,15 @@ function attachGlobalListeners() {
   document.addEventListener("im-boxer:training-duration-change", (event) => {
     const nextDurationMs = normalizeDurationMs(event?.detail?.durationMs);
     setTrainingDuration(nextDurationMs, { syncButtons: true });
+  });
+
+  window.addEventListener("boxer:obstacle-danger-change", (event) => {
+    const detail = event.detail || {};
+    if (detail.active) {
+      pauseTrainingForObstacle(detail.message || "장애물을 치워주세요");
+      return;
+    }
+    resumeTrainingFromObstacle();
   });
 }
 

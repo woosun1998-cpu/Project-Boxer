@@ -1,4 +1,5 @@
 ﻿from contextlib import asynccontextmanager
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -13,13 +14,23 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _FRONTEND_DIR = _PROJECT_ROOT / "frontend"
 _UPLOADS_DIR = _PROJECT_ROOT / "uploads"
 _DATASET_DIR = _PROJECT_ROOT / "dataset"
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    await init_database()
-    yield
-    await engine.dispose()
+    try:
+        await init_database()
+    except Exception:
+        if not settings.DEBUG:
+            raise
+        # 무엇: 로컬 개발에서는 DB 오류가 있어도 감지 API 서버는 계속 실행합니다.
+        # 왜: 웹캠 장애물 감지는 DB 없이 동작하므로 MySQL 설정 오류 때문에 막히지 않게 하기 위함입니다.
+        logger.exception("Database initialization failed; continuing in DEBUG mode.")
+    try:
+        yield
+    finally:
+        await engine.dispose()
 
 
 app = FastAPI(
