@@ -1192,6 +1192,11 @@ function normalizeSparringVideoUrl(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
   if (/^https?:\/\//i.test(raw) || raw.startsWith("./")) return raw;
+  if (raw.startsWith("/api/videos/")) {
+    const tail = decodeURIComponent(raw.split("/").pop() || "");
+    const candidates = localSparringVideoCandidates(tail);
+    return candidates[0] || apiUrl(raw);
+  }
   if (raw.startsWith("/uploads/") || raw.startsWith("/dataset/")) return apiUrl(raw);
   if (raw.startsWith("/assets/")) return `.${raw}`;
   return raw;

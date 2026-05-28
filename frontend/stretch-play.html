@@ -346,16 +346,12 @@
         const trainerVideo = document.getElementById("trainer-video");
         const feedbackMsg = document.getElementById("feedback-msg");
         if (trainerVideo) {
-          trainerVideo.addEventListener(
-            "error",
-            () => {
-              if (feedbackMsg) {
-                feedbackMsg.textContent =
-                  "재활 영상을 불러오지 못했습니다. frontend/video/스트레칭.mp4 파일을 확인해 주세요.";
-              }
-            },
-            { once: true }
-          );
+          trainerVideo.addEventListener("error", () => {
+            if (feedbackMsg) {
+              feedbackMsg.textContent =
+                "재활 영상을 찾지 못했습니다. /video 또는 API_URL/video 경로를 확인해 주세요.";
+            }
+          });
         }
         const playPauseBtn = document.getElementById("playPauseBtn");
         const videoTimeline = document.getElementById("videoTimeline");
