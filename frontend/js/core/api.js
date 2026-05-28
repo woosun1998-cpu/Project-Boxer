@@ -23,7 +23,9 @@ function resolveApiPath(path) {
   if (path == null || path === "") return "/api";
   var p = String(path).trim();
   if (!p.startsWith("/")) p = "/" + p;
-  return p;
+  var raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+  var base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
+  return base + p;
 }
 
 const api = {
