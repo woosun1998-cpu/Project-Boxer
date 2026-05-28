@@ -367,7 +367,50 @@
         const playlistStatus = document.getElementById("playlist-status");
 
         const V = window.BOXER_VIDEO || {};
-        const playlist = [V.stretching || ""].filter(Boolean);
+        function buildVideoCandidates(rawPath) {
+          const path = String(rawPath || "").trim();
+          if (!path) return [];
+          const fileName = decodeURIComponent(path.split("/").pop() || "");
+          const bases = ["/video/"];
+          const apiBase =
+            typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+          if (apiBase) bases.push(apiBase.replace(/\/$/, "") + "/video/");
+          if (/\.trycloudflare\.com$/i.test(window.location.hostname || "")) {
+            bases.push(window.location.origin.replace(/\/$/, "") + "/video/");
+          }
+          const out = [];
+          const seen = new Set();
+          for (const base of bases) {
+            try {
+              const url = new URL(base + fileName, window.location.href).href;
+              if (!seen.has(url)) {
+                seen.add(url);
+                out.push(url);
+              }
+            } catch {
+              /* ignore */
+            }
+          }
+          return out;
+        }
+
+        async function probeVideoUrl(url) {
+          if (!url) return false;
+          try {
+            const res = await fetch(url, { method: "HEAD" });
+            if (!res.ok) return false;
+            const contentType = String(res.headers.get("content-type") || "").toLowerCase();
+            return (
+              contentType.includes("video/") ||
+              contentType.includes("application/octet-stream") ||
+              contentType === ""
+            );
+          } catch {
+            return false;
+          }
+        }
+
+        const playlist = buildVideoCandidates(V.stretching || "");
         let currentVideoIndex = 0;
         let isDragging = false;
 
@@ -502,7 +545,21 @@
           if (msgEl) msgEl.innerText = "웹캠 권한을 허용해주세요!";
         }
 
-        await loadAndPlay(0);
+        async function tryPlayableFrom(startIndex) {
+          for (let i = startIndex; i < playlist.length; i += 1) {
+            if (await probeVideoUrl(playlist[i])) {
+              await loadAndPlay(i);
+              return true;
+            }
+          }
+          return false;
+        }
+
+        const playable = await tryPlayableFrom(0);
+        if (!playable && feedbackMsg) {
+          feedbackMsg.textContent =
+            "재활 영상을 찾지 못했습니다. /video 또는 API_URL/video 경로를 확인해 주세요.";
+        }
       });
     </script>
     <script src="js/core/pose.js"></script>

@@ -583,11 +583,35 @@
       function sparringLocalVideoSrc(fileName) {
         return "/video/" + encodeURIComponent(fileName);
       }
+      function sparringVideoCandidates(fileName) {
+        const encoded = encodeURIComponent(String(fileName || "").trim());
+        const bases = ["/video/"];
+        const apiBase =
+          typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+        if (apiBase) bases.push(apiBase.replace(/\/$/, "") + "/video/");
+        if (/\.trycloudflare\.com$/i.test(window.location.hostname || "")) {
+          bases.push(window.location.origin.replace(/\/$/, "") + "/video/");
+        }
+        const out = [];
+        const seen = new Set();
+        for (const base of bases) {
+          try {
+            const url = new URL(base + encoded, window.location.href).href;
+            if (!seen.has(url)) {
+              seen.add(url);
+              out.push(url);
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        return out;
+      }
       const SPARRING_VIDEO_SRC = {
-        beginner: sparringLocalVideoSrc("스파링초보.mp4"),
-        intermediate: sparringLocalVideoSrc("스파링보통.mp4"),
-        advanced: sparringLocalVideoSrc("스파링어려움.mp4"),
-        pro: sparringLocalVideoSrc("복싱프로.mp4"),
+        beginner: sparringVideoCandidates("스파링초보.mp4"),
+        intermediate: sparringVideoCandidates("스파링보통.mp4"),
+        advanced: sparringVideoCandidates("스파링어려움.mp4"),
+        pro: sparringVideoCandidates("복싱프로.mp4"),
       };
       const levelConfig = {
         beginner: { rate: 1.0, src: SPARRING_VIDEO_SRC.beginner },
@@ -599,9 +623,31 @@
       const coachVideo = document.getElementById("coachVideo");
 
       /** 무엇: 코치 영상 단일 적용 / 왜: levelConfig와 coachVideo·[data-ai-video] 경로 충돌 제거 */
-      function applyCoachVideoSource() {
+      async function probeVideoUrl(url) {
+        if (!url) return false;
+        try {
+          const res = await fetch(url, { method: "HEAD" });
+          if (!res.ok) return false;
+          const contentType = String(res.headers.get("content-type") || "").toLowerCase();
+          return (
+            contentType.includes("video/") ||
+            contentType.includes("application/octet-stream") ||
+            contentType === ""
+          );
+        } catch {
+          return false;
+        }
+      }
+      async function applyCoachVideoSource() {
         const cfg = levelConfig[level] || levelConfig.beginner;
-        const src = cfg.src;
+        const srcList = Array.isArray(cfg.src) ? cfg.src : [cfg.src].filter(Boolean);
+        let src = srcList[0] || "";
+        for (const candidate of srcList) {
+          if (await probeVideoUrl(candidate)) {
+            src = candidate;
+            break;
+          }
+        }
         coachVideo.src = src;
         coachVideo.playbackRate = cfg.rate;
         const aiVideoEl = document.querySelector("[data-ai-video]");
@@ -1105,7 +1151,7 @@
           `영상 소스: ${levelConfig[level].src} | 재생속도: ${levelConfig[level].rate}x`,
         );
         coachVideo.dataset.usedFallback = "0";
-        applyCoachVideoSource();
+        await applyCoachVideoSource();
         coachVideo.loop = true;
         coachVideo.muted = true;
         await startCountdown();
