@@ -19,12 +19,30 @@ const STORAGE_KEYS = {
 const CAMERA_SETTINGS_KEY = "im_boxer_camera_settings";
 
 /** 무엇: imboxer → /video 로컬 mp4 / 왜: 한글 파일명·상대경로를 절대 URL로 통일 */
-function localSparringVideoSrc(fileName) {
-  const path =
-    window.BoxerVideoPath && window.BoxerVideoPath.videoUrl
-      ? window.BoxerVideoPath.videoUrl(fileName)
-      : `/video/${encodeURIComponent(fileName)}`;
-  return new URL(path, window.location.href).href;
+function localSparringVideoCandidates(fileName) {
+  const encoded = encodeURIComponent(String(fileName || "").trim());
+  const bases = ["/video/"];
+  const apiBase =
+    typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+  if (apiBase) {
+    bases.push(apiBase.replace(/\/$/, "") + "/video/");
+  } else {
+    bases.push("https://shapes-upgrade-brunswick-record.trycloudflare.com/video/");
+  }
+  const out = [];
+  const seen = new Set();
+  for (const base of bases) {
+    try {
+      const url = new URL(base + encoded, window.location.href).href;
+      if (!seen.has(url)) {
+        seen.add(url);
+        out.push(url);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return out;
 }
 
 function getVideoReadyTimeoutMs(mode = state.mode) {
@@ -105,10 +123,10 @@ function sameVideoSrc(a, b) {
 }
 
 const LOCAL_SPARRING_VIDEO_SRC = {
-  beginner: localSparringVideoSrc("스파링초보.mp4"),
-  intermediate: localSparringVideoSrc("스파링보통.mp4"),
-  advanced: localSparringVideoSrc("스파링어려움.mp4"),
-  pro: localSparringVideoSrc("복싱프로.mp4"),
+  beginner: localSparringVideoCandidates("스파링초보.mp4"),
+  intermediate: localSparringVideoCandidates("스파링보통.mp4"),
+  advanced: localSparringVideoCandidates("스파링어려움.mp4"),
+  pro: localSparringVideoCandidates("복싱프로.mp4"),
 };
 
 const MODE_CONFIG = {
@@ -1076,15 +1094,47 @@ function applyAiVideoSource(source, { preloadOnly = false } = {}) {
     return;
   }
 
-  ui.aiVideo.dataset.videoSrc = source;
+  let candidates = [];
+  if (Array.isArray(source)) {
+    candidates = source.filter(Boolean);
+  } else {
+    candidates = [source];
+  }
+  const activeSrc = candidates[0] || "";
+  if (!activeSrc) return;
+  ui.aiVideo.dataset.videoCandidates = JSON.stringify(candidates);
+  ui.aiVideo.dataset.videoSrcIndex = "0";
+  ui.aiVideo.dataset.videoSrc = activeSrc;
   ui.aiVideo.muted = true;
   ui.aiVideo.playsInline = true;
   ui.aiVideo.preload = "auto";
   ui.aiVideo.removeAttribute("poster");
 
-  if (!sameVideoSrc(ui.aiVideo.currentSrc || ui.aiVideo.getAttribute("src"), source)) {
-    ui.aiVideo.src = source;
+  if (!sameVideoSrc(ui.aiVideo.currentSrc || ui.aiVideo.getAttribute("src"), activeSrc)) {
+    ui.aiVideo.src = activeSrc;
     ui.aiVideo.load();
+  }
+
+  if (ui.aiVideo.dataset.videoFallbackBound !== "1") {
+    ui.aiVideo.dataset.videoFallbackBound = "1";
+    ui.aiVideo.addEventListener("error", () => {
+      let list = [];
+      try {
+        list = JSON.parse(ui.aiVideo.dataset.videoCandidates || "[]");
+      } catch {
+        list = [];
+      }
+      const nextIndex = Number(ui.aiVideo.dataset.videoSrcIndex || "0") + 1;
+      if (list[nextIndex]) {
+        ui.aiVideo.dataset.videoSrcIndex = String(nextIndex);
+        ui.aiVideo.dataset.videoSrc = list[nextIndex];
+        ui.aiVideo.src = list[nextIndex];
+        ui.aiVideo.load();
+        ui.aiVideo.play().catch(() => {});
+        return;
+      }
+      console.warn("[sparring] 모든 영상 후보 로드 실패");
+    });
   }
 
   ui.aiVideo.style.display = "block";
@@ -1233,16 +1283,18 @@ function startTimelineMarkerLoop({ reset = true } = {}) {
 }
 
 function usesLocalSparringVideo(mode = state.mode) {
-  return Boolean(LOCAL_SPARRING_VIDEO_SRC[mode]);
+  const src = LOCAL_SPARRING_VIDEO_SRC[mode];
+  return Array.isArray(src) ? src.length > 0 : Boolean(src);
 }
 
 async function loadActiveSparringVideo() {
   const mode = state.mode;
   const localSrc = LOCAL_SPARRING_VIDEO_SRC[mode];
-  if (localSrc) {
-    state.config = { ...state.config, videoSrc: localSrc };
+  if ((Array.isArray(localSrc) && localSrc.length) || (!Array.isArray(localSrc) && localSrc)) {
+    const primarySrc = Array.isArray(localSrc) ? localSrc[0] : localSrc;
+    state.config = { ...state.config, videoSrc: primarySrc };
     if (ui.aiVideo) {
-      ui.aiVideo.dataset.videoSrc = localSrc;
+      ui.aiVideo.dataset.videoSrc = primarySrc;
     }
     loadCpuAttackTimelineFromData(mode);
     applyAiVideoSource(localSrc, { preloadOnly: true });
