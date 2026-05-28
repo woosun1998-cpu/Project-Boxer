@@ -36,6 +36,16 @@ function resolveApiPath(path) {
 }
 
 const api = {
+  async parseJsonSafe(res) {
+    const text = await res.text().catch(() => "");
+    if (!text) return { ok: true, data: null, text: "" };
+    try {
+      return { ok: true, data: JSON.parse(text), text };
+    } catch {
+      return { ok: false, data: null, text };
+    }
+  },
+
   async _fetch(path, options) {
     const url = resolveApiPath(path);
     try {
@@ -104,11 +114,20 @@ const api = {
       throw new Error(this.formatErrorDetail(data.detail, "입력값이 올바르지 않습니다."));
     }
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(this.formatErrorDetail(data.detail, `요청 실패 (${res.status})`));
+      const parsed = await this.parseJsonSafe(res);
+      const detail = parsed.ok ? parsed.data?.detail : "";
+      throw new Error(this.formatErrorDetail(detail, `요청 실패 (${res.status})`));
     }
     if (res.status === 204) return null;
-    const payload = await res.json();
+    const parsed = await this.parseJsonSafe(res);
+    if (!parsed.ok) {
+      const sample = (parsed.text || "").slice(0, 80);
+      if (/hello,\s*world!?/i.test(sample)) {
+        throw new Error("API_URL이 앱 백엔드가 아닌 기본 서버를 가리키고 있습니다. Vercel API_URL 값을 확인하세요.");
+      }
+      throw new Error(`API 응답이 JSON 형식이 아닙니다: ${sample || "(empty)"}`);
+    }
+    const payload = parsed.data;
     if (payload && typeof payload === "object" && "success" in payload && "data" in payload) {
       return payload.data;
     }

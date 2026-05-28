@@ -133,9 +133,18 @@ export async function loginAndStore(payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const rawText = await response.text().catch(() => "");
+  let data = {};
+  try {
+    data = rawText ? JSON.parse(rawText) : {};
+  } catch {
+    data = {};
+  }
   if (!response.ok) {
     throw new Error(data?.detail || "로그인에 실패했습니다.");
+  }
+  if (!rawText || !data || typeof data !== "object") {
+    throw new Error("로그인 API 응답 형식이 올바르지 않습니다. API_URL 값을 확인해 주세요.");
   }
 
   setAccessToken(data.access_token);
@@ -154,9 +163,18 @@ export async function signupAndStore(payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const rawText = await response.text().catch(() => "");
+  let data = {};
+  try {
+    data = rawText ? JSON.parse(rawText) : {};
+  } catch {
+    data = {};
+  }
   if (!response.ok) {
     throw new Error(data?.detail || "회원가입에 실패했습니다.");
+  }
+  if (!rawText || !data || typeof data !== "object") {
+    throw new Error("회원가입 API 응답 형식이 올바르지 않습니다. API_URL 값을 확인해 주세요.");
   }
 
   setAccessToken(data.access_token);
