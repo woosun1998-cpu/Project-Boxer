@@ -116,7 +116,7 @@ function copyDirMerge(srcRoot, dstRoot) {
 }
 
 function writeApiEnv() {
-  const apiUrl = (process.env.API_URL || "https://my-backend.onrender.com")
+  const apiUrl = (process.env.API_URL || "")
     .trim()
     .replace(/\/$/, "");
   const out = path.join(FRONTEND, "js", "config", "api-env.js");

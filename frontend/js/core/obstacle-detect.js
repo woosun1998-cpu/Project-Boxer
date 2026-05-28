@@ -165,7 +165,8 @@
     const p = String(path || "").trim();
     const normalized = p.startsWith("/") ? p : "/" + p;
     const raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
-    const base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
+    if (!raw) return normalized;
+    const base = raw.replace(/\/$/, "");
     return /^https?:\/\//i.test(normalized) ? normalized : `${base}${normalized}`;
   }
 

@@ -179,7 +179,8 @@ function resolveApiUrl(path) {
     return `${window.location.origin.replace(/\/$/, "")}${normalized}`;
   }
   const raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
-  const base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
+  if (!raw) return normalized;
+  const base = raw.replace(/\/$/, "");
   return `${base}${normalized}`;
 }
 

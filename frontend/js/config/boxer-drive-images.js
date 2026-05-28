@@ -16,7 +16,7 @@
   global.BOXER_DRIVE_IMG = {
     uc: uc,
     defaultProfile: uc("1fBykG25zJ2YkJFqY2exc-Lraz0Zzcr18"),
-    logo: uc("12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8"),
+    logo: uc("1E58-Ar9HJovqNrhjRTCRZ5bArTU8Q1Hg"),
     mainBgShape: uc("1CFTAkSBoHfnxLvybI0pQyUoYdgycocIi"),
     mainBoxer: uc("1qbEsaRfOnN7EduZ3goZL2RAHXbN0igBt"),
     s2Boxer: uc("1HVY1if5oj5NL8BNPkwVElC6A0V8llj4P"),

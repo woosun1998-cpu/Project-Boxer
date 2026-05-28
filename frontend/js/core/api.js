@@ -28,7 +28,8 @@ function resolveApiPath(path) {
     return window.location.origin.replace(/\/$/, "") + p;
   }
   var raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
-  var base = (raw || "https://shapes-upgrade-brunswick-record.trycloudflare.com").replace(/\/$/, "");
+  if (!raw) return p;
+  var base = raw.replace(/\/$/, "");
   return base + p;
 }
 

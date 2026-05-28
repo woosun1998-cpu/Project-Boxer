@@ -46,7 +46,7 @@
   const inFrontend = path.startsWith("/frontend/");
   const pageBase = inFrontend ? "/frontend" : "";
   // 무엇: 로컬 전용 플레이스홀더 / 왜: 외부 공유 URL·혼합 콘텐츠(CORS) 회피
-  const myboxShareImageUrl = `${pageBase || "."}/image/cache/12JEeAGf9eRkYAyIIRxDZDW3ugiwf-Kk8.png`;
+  const myboxShareImageUrl = `${pageBase || "."}/image/cache/1E58-Ar9HJovqNrhjRTCRZ5bArTU8Q1Hg.png`;
   const isActive = (href) => path.endsWith(href.toLowerCase());
 
   const nav = document.createElement("nav");

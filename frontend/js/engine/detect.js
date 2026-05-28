@@ -3,7 +3,7 @@
 (function (global) {
   const DEFAULT_MODEL_PATH = "/static/boxing_ai_web_model/model.json";
   const DEFAULT_LABELS = ["hook", "uppercut", "cross", "jab", "No punch"];
-  const DEFAULT_API_BASE = "https://shapes-upgrade-brunswick-record.trycloudflare.com";
+  const DEFAULT_API_BASE = "";
 
   function resolveApiUrl(path) {
     const p = String(path || "").trim();
@@ -17,6 +17,7 @@
     }
     const raw = typeof global.__BOXER_API_URL__ === "string" ? global.__BOXER_API_URL__.trim() : "";
     const base = (raw || DEFAULT_API_BASE).replace(/\/$/, "");
+    if (!base) return normalized;
     return `${base}${normalized}`;
   }
 
