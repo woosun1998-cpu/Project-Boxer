@@ -589,6 +589,22 @@
         }
       }
 
+        async function probeVideoUrl(url) {
+          if (!url) return false;
+          try {
+            const res = await fetch(url, { method: "HEAD" });
+            if (!res.ok) return false;
+            const contentType = String(res.headers.get("content-type") || "").toLowerCase();
+            return (
+              contentType.includes("video/") ||
+              contentType.includes("application/octet-stream") ||
+              contentType === ""
+            );
+          } catch {
+            return false;
+          }
+        }
+
       /**
        * URL mode → 트레이너 영상 경로 (ready.html에서 안내 후 본 화면만 담당)
        */
@@ -727,7 +743,7 @@
         }
 
         let candidateIndex = 0;
-        function tryNextCandidate() {
+        async function tryNextCandidate() {
           if (candidateIndex >= candidates.length) {
             if (feedbackMsg) {
               feedbackMsg.textContent =
@@ -736,6 +752,11 @@
             return;
           }
           const next = candidates[candidateIndex++];
+          const ok = await probeVideoUrl(next);
+          if (!ok) {
+            console.warn("[diet-boxing] video candidate unavailable:", next);
+            return tryNextCandidate();
+          }
           console.info("[diet-boxing] video try:", next);
           loadTrainerVideo(next);
         }
