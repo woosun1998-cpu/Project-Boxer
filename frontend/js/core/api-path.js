@@ -44,26 +44,3 @@
 
   global.BoxerApiPath = { resolveApiPath, getApiBase };
 })(typeof window !== "undefined" ? window : globalThis);
-
-export function getApiBase() {
-  if (typeof window !== "undefined" && window.BoxerApiPath) {
-    return window.BoxerApiPath.getApiBase();
-  }
-  return "";
-}
-
-export function resolveApiPath(path) {
-  if (typeof window !== "undefined" && window.BoxerApiPath) {
-    return window.BoxerApiPath.resolveApiPath(path);
-  }
-  if (path == null || path === "") return "/api";
-  let p = String(path).trim();
-  if (!p.startsWith("/")) p = "/" + p;
-  return p;
-}
-
-export const API_BASE_URL = getApiBase();
-
-export function apiUrl(path) {
-  return resolveApiPath(path);
-}
