@@ -116,7 +116,9 @@ function copyDirMerge(srcRoot, dstRoot) {
 }
 
 function writeApiEnv() {
-  const apiUrl = (process.env.API_URL || "").trim().replace(/\/$/, "");
+  const apiUrl = (process.env.API_URL || "https://my-backend.onrender.com")
+    .trim()
+    .replace(/\/$/, "");
   const out = path.join(FRONTEND, "js", "config", "api-env.js");
   ensureDir(path.dirname(out));
   const content =
@@ -126,11 +128,7 @@ function writeApiEnv() {
     "})(typeof window !== \"undefined\" ? window : globalThis);\n";
   fs.writeFileSync(out, content, "utf8");
 
-  if (apiUrl) {
-    console.log(`[api] API_URL set -> ${apiUrl}`);
-  } else {
-    console.log("[api] API_URL empty -> app uses relative /api/... requests");
-  }
+  console.log(`[api] API_URL set -> ${apiUrl}`);
 }
 
 function printPublicVideoSummary() {
