@@ -170,6 +170,15 @@ const STATE_MESSAGES = {
   ended: "훈련이 종료되었습니다.",
 };
 
+function resolveApiUrl(path) {
+  const p = String(path || "").trim();
+  if (/^https?:\/\//i.test(p)) return p;
+  const normalized = p.startsWith("/") ? p : `/${p}`;
+  const raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+  const base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
+  return `${base}${normalized}`;
+}
+
 const state = {
   user: null,
   root: null,
@@ -859,7 +868,7 @@ async function persistFinalSessionToDatabase(payload) {
     return null;
   }
 
-  const response = await fetch("/api/training-results", {
+  const response = await fetch(resolveApiUrl("/api/training-results"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

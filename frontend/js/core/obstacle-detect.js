@@ -163,8 +163,10 @@
       return window.BoxerApiPath.resolveApiPath(path);
     }
     const p = String(path || "").trim();
-    if (!p.startsWith("/")) return "/" + p;
-    return p;
+    const normalized = p.startsWith("/") ? p : "/" + p;
+    const raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+    const base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
+    return /^https?:\/\//i.test(normalized) ? normalized : `${base}${normalized}`;
   }
 
   async function parseApiResponse(response) {

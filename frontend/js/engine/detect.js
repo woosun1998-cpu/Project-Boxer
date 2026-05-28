@@ -3,6 +3,16 @@
 (function (global) {
   const DEFAULT_MODEL_PATH = "/static/boxing_ai_web_model/model.json";
   const DEFAULT_LABELS = ["hook", "uppercut", "cross", "jab", "No punch"];
+  const DEFAULT_API_BASE = "https://my-backend.onrender.com";
+
+  function resolveApiUrl(path) {
+    const p = String(path || "").trim();
+    if (/^https?:\/\//i.test(p)) return p;
+    const normalized = p.startsWith("/") ? p : `/${p}`;
+    const raw = typeof global.__BOXER_API_URL__ === "string" ? global.__BOXER_API_URL__.trim() : "";
+    const base = (raw || DEFAULT_API_BASE).replace(/\/$/, "");
+    return `${base}${normalized}`;
+  }
 
   function normalizeLabel(value) {
     return String(value ?? "none").trim().toLowerCase() || "none";
@@ -312,7 +322,7 @@
         const data = await global.api.post("/api/v1/records", payload);
         result = { success: true, data };
       } else {
-        const response = await fetch("/api/v1/records", {
+        const response = await fetch(resolveApiUrl("/api/v1/records"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
