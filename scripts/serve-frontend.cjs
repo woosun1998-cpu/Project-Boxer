@@ -1,16 +1,23 @@
 /**
- * frontend 정적 서버 (Range / 206 지원)
- * Python http.server 는 Range 미지원 → moov 가 파일 끝인 대용량 mp4 가 검은 화면으로 보일 수 있음
+ * frontend 정적 서버 (Range / 206 지원) + /api·/static 백엔드 프록시
  *
  * 사용: node scripts/serve-frontend.cjs
- * 접속: http://localhost:5500/imboxer/sparring_start.html?mode=advanced
+ * 접속: http://localhost:5500/index.html
+ * API:  http://localhost:5500/api/... → http://127.0.0.1:8000/api/...
  */
 const http = require("http");
+const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.join(__dirname, "..", "frontend");
 const PORT = Number(process.env.PORT) || 5500;
+const API_TARGET = (process.env.API_PROXY_TARGET || "http://127.0.0.1:8000").replace(
+  /\/$/,
+  "",
+);
+
+const PROXY_PREFIXES = ["/api", "/static", "/uploads", "/docs", "/redoc", "/openapi.json", "/health"];
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -31,6 +38,34 @@ const MIME = {
   ".ico": "image/x-icon",
   ".wasm": "application/wasm",
 };
+
+function shouldProxy(urlPath) {
+  return PROXY_PREFIXES.some(
+    (prefix) => urlPath === prefix || urlPath.startsWith(prefix + "/"),
+  );
+}
+
+function proxyToApi(req, res) {
+  const targetUrl = new URL(req.url, API_TARGET);
+  const lib = targetUrl.protocol === "https:" ? https : http;
+  const headers = { ...req.headers, host: targetUrl.host };
+
+  const proxyReq = lib.request(
+    targetUrl,
+    { method: req.method, headers },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      proxyRes.pipe(res);
+    },
+  );
+
+  proxyReq.on("error", () => {
+    res.writeHead(502, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end(`API proxy failed: ${API_TARGET}`);
+  });
+
+  req.pipe(proxyReq);
+}
 
 function safePath(urlPath) {
   const decoded = decodeURIComponent(urlPath.split("?")[0]);
@@ -90,8 +125,14 @@ function sendFile(req, res, filePath) {
 }
 
 const server = http.createServer((req, res) => {
-  let urlPath = req.url === "/" ? "/index.html" : req.url;
-  const filePath = safePath(urlPath);
+  const urlPath = (req.url || "/").split("?")[0];
+
+  if (shouldProxy(urlPath)) {
+    proxyToApi(req, res);
+    return;
+  }
+
+  const filePath = safePath(urlPath === "/" ? "/index.html" : urlPath);
   if (!filePath) {
     res.writeHead(403);
     res.end("Forbidden");
@@ -102,5 +143,6 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`[Boxer] frontend → http://localhost:${PORT}/index.html`);
+  console.log(`[Boxer] API proxy  → ${API_TARGET} (/api, /static, /docs, /health)`);
   console.log(`[Boxer] Range(206) 지원 — 대용량 mp4 스트리밍 가능`);
 });

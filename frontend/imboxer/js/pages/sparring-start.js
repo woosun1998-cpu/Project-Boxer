@@ -20,7 +20,11 @@ const CAMERA_SETTINGS_KEY = "im_boxer_camera_settings";
 
 /** 무엇: imboxer → /video 로컬 mp4 / 왜: 한글 파일명·상대경로를 절대 URL로 통일 */
 function localSparringVideoSrc(fileName) {
-  return new URL(`/video/${fileName}`, window.location.href).href;
+  const path =
+    window.BoxerVideoPath && window.BoxerVideoPath.videoUrl
+      ? window.BoxerVideoPath.videoUrl(fileName)
+      : `/video/${encodeURIComponent(fileName)}`;
+  return new URL(path, window.location.href).href;
 }
 
 function getVideoReadyTimeoutMs(mode = state.mode) {

@@ -822,12 +822,12 @@
       <div class="server-dot" id="server-dot"></div>
       <div class="server-info">
         <strong id="server-status-text">서버 상태 확인 중...</strong>
-        <span id="server-detail">http://localhost:8001</span>
+        <span id="server-detail">/api (같은 출처)</span>
       </div>
       <div class="server-actions">
         <button class="btn-sm" type="button" onclick="checkHealth()">새로고침</button>
-        <a class="btn-sm success" href="http://localhost:8001/docs" target="_blank" rel="noreferrer">Swagger</a>
-        <a class="btn-sm" href="http://localhost:8001/redoc" target="_blank" rel="noreferrer">ReDoc</a>
+        <a class="btn-sm success" href="/docs" target="_blank" rel="noreferrer">Swagger</a>
+        <a class="btn-sm" href="/redoc" target="_blank" rel="noreferrer">ReDoc</a>
       </div>
     </div>
     <div class="notice" id="admin-access-notice" style="display:none;"></div>
@@ -1257,10 +1257,8 @@
       }
     };
     // 무엇: admin 페이지에서 표시할 API 포트를 한 곳에 고정 -> 왜: 팀 작업 중 포트 하드코딩 불일치를 줄이기 위해
-    const ADMIN_API_PORT = 8000;
-    // 무엇: 현재 호스트 기준 admin API 기본 주소를 계산 -> 왜: localhost/사설망 환경에서 링크를 안정적으로 맞추기 위해
-    const ADMIN_API_HOST = window.location.hostname || 'localhost';
-    const ADMIN_API_BASE = `http://${ADMIN_API_HOST}:${ADMIN_API_PORT}`;
+    // 무엇: API는 같은 출처 상대 경로(/api, /docs)만 사용 -> 왜: HTTPS 배포 시 localhost Mixed Content 방지
+    const ADMIN_API_BASE = '';
     // 무엇: 어드민 폼 임시저장 키를 고정 -> 왜: 새로고침 후에도 작성 중 데이터 복원을 안정적으로 처리하기 위해
     const ADMIN_DRAFT_KEYS = {
       tutorial: 'boxer_admin_tutorial_draft_v1',

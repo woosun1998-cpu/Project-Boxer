@@ -1,6 +1,5 @@
 /**
- * API 베이스 URL (Vercel 빌드 시 scripts/vercel-prepare-static.cjs 가 process.env.API_URL 로 갱신)
- * 로컬: 비우면 api.js 가 http://localhost:8000 사용
+ * (레거시) API는 상대 경로 /api/... 만 사용합니다. api-path.js 참고.
  */
 (function (g) {
   g.__BOXER_API_URL__ = "";

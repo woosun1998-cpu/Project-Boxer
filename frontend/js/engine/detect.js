@@ -113,11 +113,7 @@
         }
       }
 
-      if (global.BOXER_API_BASE) {
-        return `${global.BOXER_API_BASE}/static/boxing_ai_web_model/model.json`;
-      }
-
-      return "http://127.0.0.1:8000/static/boxing_ai_web_model/model.json";
+      return "/static/boxing_ai_web_model/model.json";
     }
 
     async startCamera() {

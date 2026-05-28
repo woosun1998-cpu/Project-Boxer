@@ -6,14 +6,18 @@
   var DIR = "/video/";
 
   function fileUrl(fileName) {
+    const path =
+      global.BoxerVideoPath && global.BoxerVideoPath.videoUrl
+        ? global.BoxerVideoPath.videoUrl(fileName)
+        : DIR + encodeURIComponent(fileName);
     try {
       if (typeof global.location !== "undefined" && global.location.href) {
-        return new URL("/video/" + encodeURIComponent(fileName), global.location.href).href;
+        return new URL(path, global.location.href).href;
       }
     } catch (e) {
       /* fallback */
     }
-    return DIR + encodeURIComponent(fileName);
+    return path;
   }
 
   global.BOXER_VIDEO = {

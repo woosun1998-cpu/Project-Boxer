@@ -443,39 +443,29 @@
       apiBanner.hidden = true;
       setTimeout(() => { successBanner.hidden = true; }, 2500);
     }
-    function apiBaseCandidates() {
-      const host = window.location.hostname;
-      const candidates = [];
-      if (API_BASE_URL) candidates.push(API_BASE_URL);
-      const altFrontendPorts = new Set(['5001', '5501']);
-      const defaultApiPort = altFrontendPorts.has(window.location.port) ? '8001' : '8000';
-      const fallbackApiPort = defaultApiPort === '8001' ? '8000' : '8001';
-      if (host) {
-        candidates.push(`${window.location.protocol}//${host}:${defaultApiPort}`);
-        candidates.push(`${window.location.protocol}//${host}:${fallbackApiPort}`);
+    function resolveMediaApiPath(path) {
+      const p = String(path || '').trim();
+      if (!p) return '/api';
+      if (/^https?:\/\//i.test(p)) {
+        try {
+          const u = new URL(p, window.location.href);
+          return u.pathname + u.search;
+        } catch {
+          return p;
+        }
       }
-      candidates.push('http://127.0.0.1:8001', 'http://localhost:8001', 'http://localhost:8000', 'http://127.0.0.1:8000');
-      return [...new Set(candidates.map(base => base.replace(/\/$/, '')))];
+      return p.startsWith('/') ? p : `/${p}`;
     }
     function withCacheBust(path) {
       const joiner = path.includes('?') ? '&' : '?';
       return `${path}${joiner}_=${Date.now()}`;
     }
     async function apiFetch(path, options = {}) {
-      let networkError = null;
-      lastApiAttempts = [];
-      for (const base of apiBaseCandidates()) {
-        lastApiAttempts.push(`${base}${path}`);
-        try {
-          const requestOptions = typeof options === 'function' ? options() : options;
-          const res = await fetch(`${base}${path}`, requestOptions);
-          activeApiBase = base;
-          return res;
-        } catch (err) {
-          networkError = err;
-        }
-      }
-      throw networkError || new Error('API server is unreachable');
+      const url = resolveMediaApiPath(path);
+      lastApiAttempts = [url];
+      const requestOptions = typeof options === 'function' ? options() : options;
+      activeApiBase = '';
+      return fetch(url, requestOptions);
     }
     function describeFetchError(err) {
       if (err?.message === 'Failed to fetch' || err instanceof TypeError) {
@@ -483,9 +473,9 @@
         const isHttpsPage = window.location.protocol === 'https:';
         const isFilePage = window.location.protocol === 'file:';
         const hints = [];
-        if (isHttpsPage) hints.push('현재 페이지가 HTTPS라서 HTTP API 호출이 브라우저에서 차단될 수 있습니다. http://127.0.0.1:5500 또는 로컬 정적 서버로 admin 페이지를 여세요.');
-        if (isFilePage) hints.push('HTML 파일을 직접 열면 브라우저 보안 정책에 막힐 수 있습니다. 로컬 정적 서버로 frontend를 띄워서 접속하세요.');
-        hints.push('같은 브라우저 새 탭에서 http://127.0.0.1:8000/health 또는 http://127.0.0.1:8001/health 가 열리는지 확인하세요.');
+        if (isHttpsPage) hints.push('HTTPS 배포 시 Vercel에서 /api 를 백엔드로 rewrite 했는지 확인하세요.');
+        if (isFilePage) hints.push('HTML 파일을 직접 열면 API가 막힐 수 있습니다. node scripts/serve-frontend.cjs 로 접속하세요.');
+        hints.push('같은 브라우저 새 탭에서 /api/health 가 열리는지 확인하세요.');
         return `API 서버에 연결하지 못했습니다. 현재 페이지: ${pageUrl}. 시도한 주소: ${lastApiAttempts.join(', ')}. ${hints.join(' ')}`;
       }
       return err?.message || String(err);

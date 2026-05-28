@@ -6,7 +6,8 @@
 (function () {
   "use strict";
 
-  const API_SCRIPT_SRC = "/js/core/api.js?v=8000";
+  const API_PATH_SCRIPT_SRC = "/js/core/api-path.js";
+  const API_SCRIPT_SRC = "/js/core/api.js?v=rel-api";
   const VIDEO_SELECTORS = [
     "video[data-obstacle-detect]",
     "[data-webcam-video]",
@@ -144,9 +145,10 @@
   async function ensureApi() {
     if (window.api?.postForm) return window.api;
     if (!apiLoadPromise) {
-      apiLoadPromise = loadScript(API_SCRIPT_SRC).then(() => {
-        return window.api?.postForm ? window.api : null;
-      }).catch(() => null);
+      apiLoadPromise = loadScript(API_PATH_SCRIPT_SRC)
+        .then(() => loadScript(API_SCRIPT_SRC))
+        .then(() => (window.api?.postForm ? window.api : null))
+        .catch(() => null);
     }
     return apiLoadPromise;
   }
@@ -156,19 +158,13 @@
     return window.location.hostname || "localhost";
   }
 
-  function apiBaseCandidates() {
-    const configured =
-      typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
-    if (configured) return [configured.replace(/\/$/, "")];
-    if (window.location.protocol === "https:") {
-      return [window.location.origin.replace(/\/$/, "")];
+  function resolveObstacleApiPath(path) {
+    if (window.BoxerApiPath && window.BoxerApiPath.resolveApiPath) {
+      return window.BoxerApiPath.resolveApiPath(path);
     }
-    const host = apiHost();
-    const hosts = [...new Set([host, "127.0.0.1", "localhost"])];
-    return hosts.flatMap((candidateHost) => [
-      `http://${candidateHost}:8000`,
-      `http://${candidateHost}:8020`,
-    ]);
+    const p = String(path || "").trim();
+    if (!p.startsWith("/")) return "/" + p;
+    return p;
   }
 
   async function parseApiResponse(response) {
@@ -186,19 +182,11 @@
       return api.postForm(path, formData);
     }
 
-    let lastError = null;
-    for (const base of apiBaseCandidates()) {
-      try {
-        const response = await fetch(`${base}${path}`, {
-          method: "POST",
-          body: formData,
-        });
-        return await parseApiResponse(response);
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    throw lastError || new Error("장애물 감지 API에 연결할 수 없습니다.");
+    const response = await fetch(resolveObstacleApiPath(path), {
+      method: "POST",
+      body: formData,
+    });
+    return await parseApiResponse(response);
   }
 
   function ensurePositioned(element) {

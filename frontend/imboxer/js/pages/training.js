@@ -859,13 +859,7 @@ async function persistFinalSessionToDatabase(payload) {
     return null;
   }
 
-  const altFrontendPorts = new Set(["5001", "5501"]);
-  const defaultApiPort = altFrontendPorts.has(window.location.port) ? "8001" : "8000";
-  const apiBase =
-    window.IM_BOXER_API_BASE_URL ||
-    window.localStorage?.getItem("IM_BOXER_API_BASE_URL") ||
-    `http://127.0.0.1:${defaultApiPort}`;
-  const response = await fetch(`${apiBase}/api/training-results`, {
+  const response = await fetch("/api/training-results", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
