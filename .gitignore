@@ -16,11 +16,13 @@ frontend/assets/videos/라이트모드.mp4
 frontend/assets/videos/스탠다드모드.mp4
 frontend/assets/videos/인탠스모드.mp4
 
-# 스파링·튜토리얼 대용량 영상 (로컬 전용 — GitHub 단일 파일·LFS 한도 회피)
+# 스파링·다이어트 대용량 영상 — frontend/video 는 Git 제외 (로컬·빌드 산출용)
+# Vercel/GitHub 에 올릴 원본은 public/video/ (LFS 가능, .gitignore 대상 아님)
 # 한글 등 파일명 glob 이슈 회피: 폴더 전체 무시 후 .gitkeep만 예외
 frontend/video/**
 !frontend/video/
 !frontend/video/.gitkeep
+# 저장소 루트의 /video/ 폴더만 무시 (public/video/ 와 무관)
 /video/
 
 # Roboflow 등 대용량 다운로드

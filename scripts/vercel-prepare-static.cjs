@@ -223,27 +223,89 @@ function writeApiEnv() {
   console.log("");
 }
 
-function listAllPublicMedia() {
-  const roots = [
-    path.join(PUBLIC, "video"),
-    path.join(PUBLIC, "assets", "videos"),
-  ];
-  const list = [];
-  const walk = (dir, prefix) => {
-    if (!fs.existsSync(dir)) return;
-    for (const name of fs.readdirSync(dir)) {
+/** dir 기준 미디어 파일 상대 경로 목록 (하위 폴더 포함) */
+function listMediaRelative(dir) {
+  const rels = [];
+  if (!fs.existsSync(dir)) return rels;
+  const walk = (current, prefix) => {
+    for (const name of fs.readdirSync(current)) {
       if (isPlaceholder(name)) continue;
-      const p = path.join(dir, name);
-      if (fs.statSync(p).isDirectory()) walk(p, prefix + name + "/");
-      else if (isMediaFile(p)) list.push(prefix + name);
+      const p = path.join(current, name);
+      if (fs.statSync(p).isDirectory()) {
+        walk(p, prefix ? prefix + name + "/" : name + "/");
+      } else if (isMediaFile(p)) {
+        rels.push(prefix + name);
+      }
     }
   };
-  for (const root of roots) {
-    if (!fs.existsSync(root)) continue;
-    const base = path.relative(PUBLIC, root).split(path.sep).join("/");
-    walk(root, base ? base + "/" : "");
-  }
+  walk(dir, "");
+  return rels;
+}
+
+function listAllPublicMedia() {
+  const list = [];
+  const videoRoot = path.join(PUBLIC, "video");
+  const assetsRoot = path.join(PUBLIC, "assets", "videos");
+  list.push(
+    ...listMediaRelative(videoRoot).map((r) => "video/" + r),
+  );
+  list.push(
+    ...listMediaRelative(assetsRoot).map((r) => "assets/videos/" + r),
+  );
   return list;
+}
+
+/**
+ * public 원본 → frontend 대상 복사 무결성 검사
+ * @returns {Array<{kind: string, message: string}>}
+ */
+function verifyCopyIntegrity(rule) {
+  const errors = [];
+  const srcMedia = listMediaRelative(rule.from);
+
+  for (const rel of srcMedia) {
+    const srcPath = path.join(rule.from, rel);
+    const destPath = path.join(rule.to, rel);
+    const publicRel = path
+      .relative(PUBLIC, srcPath)
+      .split(path.sep)
+      .join("/");
+    const frontendRel = path
+      .relative(FRONTEND, destPath)
+      .split(path.sep)
+      .join("/");
+
+    if (!fs.existsSync(destPath)) {
+      errors.push({
+        kind: "MISSING_DEST",
+        message:
+          `복사 누락: public/${publicRel} → frontend/${frontendRel} (파일 없음)`,
+      });
+      continue;
+    }
+
+    const srcSize = fs.statSync(srcPath).size;
+    const destSize = fs.statSync(destPath).size;
+    if (srcSize !== destSize) {
+      errors.push({
+        kind: "SIZE_MISMATCH",
+        message:
+          `크기 불일치: public/${publicRel} (${formatBytes(srcSize)}) ≠ frontend/${frontendRel} (${formatBytes(destSize)})`,
+      });
+    }
+  }
+
+  return errors;
+}
+
+function failBuild(title, lines) {
+  console.error("\n[vercel-prepare-static] FATAL:", title);
+  lines.forEach((line) => console.error("  ✗", line));
+  console.error(
+    "\n  해결: public/video/, public/assets/videos/ 에 mp4를 넣고 Git LFS push 후 재배포.",
+    "\n  가이드: md/PUBLIC_VIDEO_GIT_AND_DEPLOY.md",
+  );
+  process.exit(1);
 }
 
 function spotCheck() {
@@ -347,6 +409,31 @@ function main() {
     path.join(PUBLIC, "assets", "videos"),
   );
 
+  const copyErrors = [];
+  for (const rule of COPY_RULES) {
+    if (rule.optional) continue;
+    copyErrors.push(...verifyCopyIntegrity(rule));
+  }
+
+  if (copyErrors.length > 0) {
+    failBuild(
+      "public/ 영상이 frontend/ 로 모두 복사되지 않았습니다.",
+      copyErrors.map((e) => e.message),
+    );
+  }
+
+  const isCi =
+    process.env.VERCEL === "1" ||
+    process.env.CI === "true" ||
+    process.env.STRICT_PUBLIC_MEDIA === "1";
+
+  if (isCi && publicVideoCount === 0) {
+    failBuild("Vercel/CI 빌드: public/video/ 에 미디어 파일이 없습니다.", [
+      "Git LFS로 public/video/*.mp4 를 커밋·push 했는지 확인하세요.",
+      "frontend/video/ 는 .gitignore 대상이라 배포에 포함되지 않습니다.",
+    ]);
+  }
+
   if (publicVideoCount === 0) {
     console.warn(
       "\n[vercel-prepare-static] public/video/ 에 mp4가 없습니다.",
@@ -357,8 +444,12 @@ function main() {
   if (publicAssetsVideoCount === 0) {
     console.warn(
       "[vercel-prepare-static] public/assets/videos/ 에 mp4가 없습니다.",
-      "Git push 시 Vercel에서 /assets/videos/... 가 404 됩니다.",
+      "(frontend/imboxer/assets/videos Git 추적분만 쓰는 경우는 생략 가능)",
     );
+  }
+
+  if (publicMedia.length > 0) {
+    console.log("\n  복사 무결성: public 미디어", publicMedia.length, "개 → frontend 전부 OK");
   }
 
   console.log("\n[vercel-prepare-static] 완료");
