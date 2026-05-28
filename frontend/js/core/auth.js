@@ -24,9 +24,16 @@ const auth = {
 
   // 로그인 상태 확인 (토큰 존재 여부만)
   isLoggedIn() {
-    // 요청사항: 메모리/토큰보다 localStorage 플래그를 최우선
-    if (localStorage.getItem(LOGGED_IN_KEY) === 'true') return true;
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) {
+      // 무엇: 토큰이 없는데 로그인 플래그만 남아 있는 꼬인 상태를 즉시 정리합니다.
+      // 왜: /api/users/me 호출이 401로 떨어지며 "인증 만료"가 반복되는 문제를 막기 위함입니다.
+      if (localStorage.getItem(LOGGED_IN_KEY) === 'true') {
+        localStorage.setItem(LOGGED_IN_KEY, 'false');
+      }
+      return false;
+    }
+    return true;
   },
 
   // 사용자 정보 캐시에 저장
@@ -151,7 +158,11 @@ const auth = {
   // 로그인 처리 (토큰 + 사용자 정보 저장)
   async login(email, password) {
     const data = await api.post('/api/auth/login', { email, password });
-    this.saveToken(data.token || data.access_token);
+    const token = data?.token || data?.access_token;
+    if (!token) {
+      throw new Error('로그인 응답에 토큰이 없습니다. 서버 응답 형식을 확인해 주세요.');
+    }
+    this.saveToken(token);
     this.markLoggedIn();
     const user = await this.fetchCurrentUser();
     // 요청사항: 로그인 성공 시 user + 로그인 플래그 강제 저장
@@ -163,8 +174,9 @@ const auth = {
   // 회원가입 처리
   async signup(username, email, password) {
     const data = await api.post('/api/auth/signup', { username, email, password });
-    if (data.token || data.access_token) {
-      this.saveToken(data.token || data.access_token);
+    const token = data?.token || data?.access_token;
+    if (token) {
+      this.saveToken(token);
       this.markLoggedIn();
       await this.fetchCurrentUser();
     }
