@@ -623,31 +623,12 @@
       const coachVideo = document.getElementById("coachVideo");
 
       /** 무엇: 코치 영상 단일 적용 / 왜: levelConfig와 coachVideo·[data-ai-video] 경로 충돌 제거 */
-      async function probeVideoUrl(url) {
-        if (!url) return false;
-        try {
-          const res = await fetch(url, { method: "HEAD" });
-          if (!res.ok) return false;
-          const contentType = String(res.headers.get("content-type") || "").toLowerCase();
-          return (
-            contentType.includes("video/") ||
-            contentType.includes("application/octet-stream") ||
-            contentType === ""
-          );
-        } catch {
-          return false;
-        }
-      }
-      async function applyCoachVideoSource() {
+      function applyCoachVideoSource() {
         const cfg = levelConfig[level] || levelConfig.beginner;
         const srcList = Array.isArray(cfg.src) ? cfg.src : [cfg.src].filter(Boolean);
         let src = srcList[0] || "";
-        for (const candidate of srcList) {
-          if (await probeVideoUrl(candidate)) {
-            src = candidate;
-            break;
-          }
-        }
+        coachVideo.dataset.srcCandidates = JSON.stringify(srcList);
+        coachVideo.dataset.srcIndex = "0";
         coachVideo.src = src;
         coachVideo.playbackRate = cfg.rate;
         const aiVideoEl = document.querySelector("[data-ai-video]");
@@ -662,6 +643,19 @@
         if (coachVideo.dataset.fallbackBound === "1") return;
         coachVideo.dataset.fallbackBound = "1";
         coachVideo.addEventListener("error", () => {
+          let list = [];
+          try {
+            list = JSON.parse(coachVideo.dataset.srcCandidates || "[]");
+          } catch {
+            list = [];
+          }
+          const nextIndex = Number(coachVideo.dataset.srcIndex || "0") + 1;
+          if (list[nextIndex]) {
+            coachVideo.dataset.srcIndex = String(nextIndex);
+            coachVideo.src = list[nextIndex];
+            coachVideo.play().catch(() => {});
+            return;
+          }
           feedbackText.textContent =
             "코치 영상을 불러오지 못했습니다. /video/ 폴더에 난이도별 mp4가 있는지 확인하세요.";
           try {
@@ -1151,7 +1145,7 @@
           `영상 소스: ${levelConfig[level].src} | 재생속도: ${levelConfig[level].rate}x`,
         );
         coachVideo.dataset.usedFallback = "0";
-        await applyCoachVideoSource();
+        applyCoachVideoSource();
         coachVideo.loop = true;
         coachVideo.muted = true;
         await startCountdown();

@@ -394,22 +394,6 @@
           return out;
         }
 
-        async function probeVideoUrl(url) {
-          if (!url) return false;
-          try {
-            const res = await fetch(url, { method: "HEAD" });
-            if (!res.ok) return false;
-            const contentType = String(res.headers.get("content-type") || "").toLowerCase();
-            return (
-              contentType.includes("video/") ||
-              contentType.includes("application/octet-stream") ||
-              contentType === ""
-            );
-          } catch {
-            return false;
-          }
-        }
-
         const playlist = buildVideoCandidates(V.stretching || "");
         let currentVideoIndex = 0;
         let isDragging = false;
@@ -465,6 +449,17 @@
         }
 
         if (trainerVideo && videoTimeline) {
+          trainerVideo.addEventListener("error", async () => {
+            const next = currentVideoIndex + 1;
+            if (next < playlist.length) {
+              await loadAndPlay(next);
+              return;
+            }
+            if (feedbackMsg) {
+              feedbackMsg.textContent =
+                "재활 영상을 찾지 못했습니다. /video 또는 API_URL/video 경로를 확인해 주세요.";
+            }
+          });
           trainerVideo.addEventListener("loadedmetadata", () => {
             if (durationDisplay) durationDisplay.textContent = formatTime(trainerVideo.duration);
             videoTimeline.max = Math.floor(trainerVideo.duration || 0);
@@ -545,21 +540,12 @@
           if (msgEl) msgEl.innerText = "웹캠 권한을 허용해주세요!";
         }
 
-        async function tryPlayableFrom(startIndex) {
-          for (let i = startIndex; i < playlist.length; i += 1) {
-            if (await probeVideoUrl(playlist[i])) {
-              await loadAndPlay(i);
-              return true;
-            }
-          }
-          return false;
-        }
-
-        const playable = await tryPlayableFrom(0);
-        if (!playable && feedbackMsg) {
+        if (!playlist.length && feedbackMsg) {
           feedbackMsg.textContent =
             "재활 영상을 찾지 못했습니다. /video 또는 API_URL/video 경로를 확인해 주세요.";
+          return;
         }
+        await loadAndPlay(0);
       });
     </script>
     <script src="js/core/pose.js"></script>
