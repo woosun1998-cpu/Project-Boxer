@@ -16,6 +16,9 @@
     }
     const raw =
       typeof global.__BOXER_API_URL__ === "string" ? global.__BOXER_API_URL__.trim() : "";
+    if (raw && /\.trycloudflare\.com$/i.test(raw.replace(/^https?:\/\//i, "").split("/")[0] || "")) {
+      return "";
+    }
     return raw ? raw.replace(/\/$/, "") : DEFAULT_API_BASE;
   }
 
