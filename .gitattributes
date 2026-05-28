@@ -13,11 +13,12 @@
 *.wav binary
 *.pdf binary
 
-# Git LFS — Vercel 배포 원본 (public/ 만 LFS, frontend/video 는 .gitignore)
+# Git LFS — 대용량 영상 (전역 + public/ 명시)
 # 가이드: md/PUBLIC_VIDEO_GIT_AND_DEPLOY.md
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
 public/video/** filter=lfs diff=lfs merge=lfs -text
 public/assets/videos/** filter=lfs diff=lfs merge=lfs -text
-public/**/*.mov filter=lfs diff=lfs merge=lfs -text
 public/**/*.webm filter=lfs diff=lfs merge=lfs -text
 public/**/*.mkv filter=lfs diff=lfs merge=lfs -text
 

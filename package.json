@@ -9,6 +9,8 @@
     "prepare:static": "node scripts/vercel-prepare-static.cjs",
     "build": "npm run prepare:static",
     "vercel-build": "npm run prepare:static",
+    "sync:videos": "node scripts/vercel-prepare-static.cjs",
+    "lfs:verify": "git lfs ls-files public/video",
     "start:frontend": "node scripts/serve-frontend.cjs",
     "dev:frontend": "node scripts/serve-frontend.cjs"
   },

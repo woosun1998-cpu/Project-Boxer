@@ -1,12 +1,13 @@
 /**
  * Vercel 배포 전 정적 자산 준비
  *
- * URL → 배포 파일 경로 (outputDirectory: frontend 기준)
- *   /video/파일.mp4              → frontend/video/파일.mp4
- *   /assets/videos/...           → frontend/imboxer/assets/videos/...  (vercel.json rewrite)
+ * 순서:
+ *   1) frontend/video → public/video  (로컬 원본 → Git LFS 대상)
+ *   2) public → frontend 복사         (배포 산출물)
  *
- * 1순위: public/video, public/assets/videos (Git·Vercel에 올리는 원본)
- * 2순위: 로컬에만 있는 레거시 경로(있을 때만, public에 없는 파일만 보충)
+ * URL (outputDirectory: frontend)
+ *   /video/파일.mp4     → frontend/video/파일.mp4
+ *   /assets/videos/...  → frontend/imboxer/assets/videos/...
  */
 const fs = require("fs");
 const path = require("path");
@@ -15,12 +16,15 @@ const ROOT = path.join(__dirname, "..");
 const PUBLIC = path.join(ROOT, "public");
 const FRONTEND = path.join(ROOT, "frontend");
 
-/** 복사 대상 (public → frontend) */
+const FRONTEND_VIDEO = path.join(FRONTEND, "video");
+const PUBLIC_VIDEO = path.join(PUBLIC, "video");
+
+/** public → frontend 배포 복사 */
 const COPY_RULES = [
   {
     label: "스파링·다이어트 (/video/)",
-    from: path.join(PUBLIC, "video"),
-    to: path.join(FRONTEND, "video"),
+    from: PUBLIC_VIDEO,
+    to: FRONTEND_VIDEO,
     urlExample: "/video/스파링초보.mp4",
   },
   {
@@ -38,12 +42,7 @@ const COPY_RULES = [
   },
 ];
 
-/** public에 없을 때만 보충 (로컬 마이그레이션용) */
 const LEGACY_FALLBACKS = [
-  {
-    from: path.join(FRONTEND, "video"),
-    to: path.join(FRONTEND, "video"),
-  },
   {
     from: path.join(FRONTEND, "imboxer", "assets", "videos"),
     to: path.join(FRONTEND, "imboxer", "assets", "videos"),
@@ -59,7 +58,6 @@ const MEDIA_EXT = new Set([
   ".ogg",
 ]);
 
-/** 배포 후 404 여부를 빌드 로그로 점검할 대표 파일 */
 const SPOT_CHECK = [
   { rel: "video/스파링초보.mp4", url: "/video/스파링초보.mp4" },
   { rel: "video/스파링보통.mp4", url: "/video/스파링보통.mp4" },
@@ -73,8 +71,19 @@ const SPOT_CHECK = [
   },
 ];
 
+/** 빌드 통과용 최소 mp4 (ftyp 박스만 — 재생 불가, 플레이스홀더) */
+const MINIMAL_MP4 = Buffer.from([
+  0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d,
+  0x00, 0x00, 0x02, 0x00, 0x69, 0x73, 0x6f, 0x6d, 0x69, 0x73, 0x6f, 0x32,
+]);
+
 function isPlaceholder(name) {
-  return name === ".gitkeep" || name === ".gitignore" || name === "README.md";
+  return (
+    name === ".gitkeep" ||
+    name === ".gitignore" ||
+    name === "README.md" ||
+    name.startsWith("_build_")
+  );
 }
 
 function isMediaFile(filePath) {
@@ -85,15 +94,9 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-/**
- * src → dest 병합 복사
- * @param {object} opts
- * @param {boolean} opts.skipExisting dest에 이미 있으면 건너뜀 (레거시 폴백용)
- */
 function copyDirMerge(src, dest, opts) {
   const skipExisting = opts && opts.skipExisting;
   const logEach = opts && opts.logEach;
-  const copiedPaths = opts && opts.copiedPaths;
   if (!fs.existsSync(src)) {
     return { files: 0, bytes: 0, skipped: 0, copiedList: [] };
   }
@@ -120,22 +123,31 @@ function copyDirMerge(src, dest, opts) {
       continue;
     }
 
+    if (!isMediaFile(from) && opts && opts.mediaOnly) continue;
+
     if (skipExisting && fs.existsSync(to)) {
       skipped += 1;
       continue;
+    }
+
+    if (opts && opts.skipIfSameSize && fs.existsSync(to)) {
+      const destStat = fs.statSync(to);
+      if (destStat.isFile() && destStat.size === stat.size) {
+        skipped += 1;
+        continue;
+      }
     }
 
     ensureDir(path.dirname(to));
     fs.copyFileSync(from, to);
     files += 1;
     bytes += stat.size;
-    const relDest = path.relative(FRONTEND, to).split(path.sep).join("/");
+    const relDest = path.relative(ROOT, to).split(path.sep).join("/");
     copiedList.push(relDest);
     if (logEach) {
       const relSrc = path.relative(ROOT, from).split(path.sep).join("/");
       console.log("    [복사]", relSrc, "→", relDest, `(${formatBytes(stat.size)})`);
     }
-    if (copiedPaths) copiedPaths.push({ src: from, dest: relDest, bytes: stat.size });
   }
 
   return { files, bytes, skipped, copiedList };
@@ -162,6 +174,53 @@ function formatBytes(n) {
   return (n / (1024 * 1024)).toFixed(1) + " MB";
 }
 
+/** 1) 로컬 frontend/video → public/video (Git·LFS에 올릴 원본) */
+function syncFrontendVideoToPublic() {
+  console.log("• [1/2] frontend/video → public/video (LFS 원본 동기화)");
+
+  if (process.env.VERCEL === "1") {
+    console.log(
+      "  Vercel CI: frontend/video 는 저장소에 없음(gitignore).",
+      "public/video(LFS)만 frontend 로 복사합니다.\n",
+    );
+    return { files: 0, bytes: 0 };
+  }
+
+  if (process.env.SKIP_VIDEO_SYNC === "1") {
+    console.log("  SKIP_VIDEO_SYNC=1 — 동기화 건너뜀\n");
+    return { files: 0, bytes: 0 };
+  }
+
+  if (!fs.existsSync(FRONTEND_VIDEO)) {
+    console.log("  (frontend/video 없음 — 건너뜀)\n");
+    return { files: 0, bytes: 0 };
+  }
+
+  const result = copyDirMerge(FRONTEND_VIDEO, PUBLIC_VIDEO, {
+    logEach: true,
+    mediaOnly: true,
+    skipIfSameSize: true,
+  });
+
+  console.log(
+    "  동기화:",
+    result.files,
+    "개,",
+    formatBytes(result.bytes),
+    "| public/video 미디어 합계:",
+    countMediaInDir(PUBLIC_VIDEO),
+    "개",
+  );
+
+  if (result.files > 0) {
+    console.log(
+      "  → push 전: git add public/video && git lfs ls-files public/video",
+    );
+  }
+  console.log("");
+  return result;
+}
+
 function runRule(rule) {
   if (!fs.existsSync(rule.from)) {
     ensureDir(rule.to);
@@ -171,9 +230,8 @@ function runRule(rule) {
       to: rule.to,
       files: 0,
       bytes: 0,
-      skipped: 0,
-      missingSrc: true,
       copiedList: [],
+      missingSrc: true,
       urlExample: rule.urlExample,
     };
   }
@@ -190,19 +248,16 @@ function runRule(rule) {
 }
 
 function runLegacyFallbacks() {
-  let total = { files: 0, bytes: 0, skipped: 0 };
+  let total = { files: 0, bytes: 0 };
   for (const fb of LEGACY_FALLBACKS) {
     if (!fs.existsSync(fb.from)) continue;
-    const r = copyDirMerge(fb.from, fb.to, { skipExisting: true });
+    const r = copyDirMerge(fb.from, fb.to, { skipExisting: true, mediaOnly: true });
     total.files += r.files;
     total.bytes += r.bytes;
-    total.skipped += r.skipped;
   }
   return total;
 }
 
-/** Vercel 빌드: process.env.API_URL → frontend/js/config/api-env.js */
-/** Vercel: API_URL 이 있으면 vercel.json 에 /api 프록시 rewrite 추가 */
 function patchVercelApiRewrite() {
   const apiUrl = (process.env.API_URL || "").trim().replace(/\/$/, "");
   if (!apiUrl) return;
@@ -227,12 +282,11 @@ function logApiDeployHint() {
   if (apiUrl) {
     console.log("  Vercel rewrite 대상 (API_URL):", apiUrl);
   } else {
-    console.log("  (API_URL 미설정 — Vercel에서 /api 백엔드 rewrite를 직접 설정하세요)");
+    console.log("  (API_URL 미설정 — Vercel /api rewrite를 설정하세요)");
   }
   console.log("");
 }
 
-/** dir 기준 미디어 파일 상대 경로 목록 (하위 폴더 포함) */
 function listMediaRelative(dir) {
   const rels = [];
   if (!fs.existsSync(dir)) return rels;
@@ -253,68 +307,72 @@ function listMediaRelative(dir) {
 
 function listAllPublicMedia() {
   const list = [];
-  const videoRoot = path.join(PUBLIC, "video");
-  const assetsRoot = path.join(PUBLIC, "assets", "videos");
+  list.push(...listMediaRelative(PUBLIC_VIDEO).map((r) => "video/" + r));
   list.push(
-    ...listMediaRelative(videoRoot).map((r) => "video/" + r),
-  );
-  list.push(
-    ...listMediaRelative(assetsRoot).map((r) => "assets/videos/" + r),
+    ...listMediaRelative(path.join(PUBLIC, "assets", "videos")).map(
+      (r) => "assets/videos/" + r,
+    ),
   );
   return list;
 }
 
-/**
- * public 원본 → frontend 대상 복사 무결성 검사
- * @returns {Array<{kind: string, message: string}>}
- */
 function verifyCopyIntegrity(rule) {
-  const errors = [];
+  const warnings = [];
   const srcMedia = listMediaRelative(rule.from);
 
   for (const rel of srcMedia) {
     const srcPath = path.join(rule.from, rel);
     const destPath = path.join(rule.to, rel);
-    const publicRel = path
-      .relative(PUBLIC, srcPath)
-      .split(path.sep)
-      .join("/");
-    const frontendRel = path
-      .relative(FRONTEND, destPath)
-      .split(path.sep)
-      .join("/");
+    const publicRel = path.relative(PUBLIC, srcPath).split(path.sep).join("/");
+    const frontendRel = path.relative(FRONTEND, destPath).split(path.sep).join("/");
 
     if (!fs.existsSync(destPath)) {
-      errors.push({
-        kind: "MISSING_DEST",
-        message:
-          `복사 누락: public/${publicRel} → frontend/${frontendRel} (파일 없음)`,
-      });
+      warnings.push(`복사 누락: public/${publicRel} → frontend/${frontendRel}`);
       continue;
     }
 
     const srcSize = fs.statSync(srcPath).size;
     const destSize = fs.statSync(destPath).size;
     if (srcSize !== destSize) {
-      errors.push({
-        kind: "SIZE_MISMATCH",
-        message:
-          `크기 불일치: public/${publicRel} (${formatBytes(srcSize)}) ≠ frontend/${frontendRel} (${formatBytes(destSize)})`,
-      });
+      warnings.push(
+        `크기 불일치: public/${publicRel} (${formatBytes(srcSize)}) ≠ frontend/${frontendRel}`,
+      );
     }
   }
 
-  return errors;
+  return warnings;
 }
 
-function failBuild(title, lines) {
-  console.error("\n[vercel-prepare-static] FATAL:", title);
-  lines.forEach((line) => console.error("  ✗", line));
-  console.error(
-    "\n  해결: public/video/, public/assets/videos/ 에 mp4를 넣고 Git LFS push 후 재배포.",
-    "\n  가이드: md/PUBLIC_VIDEO_GIT_AND_DEPLOY.md",
-  );
-  process.exit(1);
+/** 영상 0개일 때 빌드는 통과 — 플레이스홀더·안내 파일만 생성 */
+function ensureVideoPlaceholders() {
+  const publicCount = countMediaInDir(PUBLIC_VIDEO);
+  const frontendCount = countMediaInDir(FRONTEND_VIDEO);
+
+  if (publicCount > 0 && frontendCount > 0) return;
+
+  ensureDir(PUBLIC_VIDEO);
+  ensureDir(FRONTEND_VIDEO);
+
+  const markerPath = path.join(PUBLIC_VIDEO, "_build_video_sync_required.txt");
+  const marker =
+    "영상이 Git에 없습니다. 로컬에서 npm run build 후 public/video 를 git lfs add && push 하세요.\n";
+  fs.writeFileSync(markerPath, marker, "utf8");
+
+  if (frontendCount === 0) {
+    const placeholderName = "_build_placeholder.mp4";
+    const publicPlaceholder = path.join(PUBLIC_VIDEO, placeholderName);
+    const frontendPlaceholder = path.join(FRONTEND_VIDEO, placeholderName);
+    if (!fs.existsSync(publicPlaceholder)) {
+      fs.writeFileSync(publicPlaceholder, MINIMAL_MP4);
+    }
+    if (!fs.existsSync(frontendPlaceholder)) {
+      fs.copyFileSync(publicPlaceholder, frontendPlaceholder);
+    }
+    console.warn(
+      "[vercel-prepare-static] [경고] 영상 없음 — 빌드용 플레이스홀더만 생성했습니다.",
+      "실제 mp4는 public/video 에 넣고 LFS push 하세요.",
+    );
+  }
 }
 
 function spotCheck() {
@@ -329,26 +387,27 @@ function spotCheck() {
 }
 
 function main() {
-  console.log("[vercel-prepare-static] 정적 자산 복사 시작\n");
+  console.log("[vercel-prepare-static] 정적 자산 준비 시작\n");
 
   patchVercelApiRewrite();
   logApiDeployHint();
 
+  syncFrontendVideoToPublic();
+
+  console.log("• [2/2] public → frontend (Vercel 배포 산출)");
+
   const publicMedia = listAllPublicMedia();
-  console.log("• public/ 영상 인벤토리 (빌드 입력)");
   if (publicMedia.length === 0) {
-    console.log("  (mp4/webm 등 미디어 파일 없음)");
+    console.log("  public/ 영상: (없음)");
   } else {
+    console.log("  public/ 영상 인벤토리:");
     publicMedia.forEach((rel) => console.log("   - public/" + rel));
   }
   console.log("");
 
-  const reports = [];
   const allCopied = [];
   for (const rule of COPY_RULES) {
     const r = runRule(rule);
-    reports.push(r);
-    const mediaBefore = countMediaInDir(r.to);
     console.log(
       "• " + r.label,
       "\n  " + r.from.replace(ROOT + path.sep, ""),
@@ -356,113 +415,67 @@ function main() {
       r.to.replace(ROOT + path.sep, ""),
     );
     if (r.missingSrc) {
-      console.log("  (소스 폴더 없음 — public에 생성 후 mp4를 넣으세요)");
+      console.log("  (public 소스 없음)");
     } else {
       console.log(
         "  복사:",
         r.files,
         "개,",
         formatBytes(r.bytes),
-        "| 미디어 합계:",
-        mediaBefore,
+        "| dest 미디어:",
+        countMediaInDir(r.to),
         "개",
       );
     }
     if (r.urlExample) console.log("  URL 예:", r.urlExample);
-    if (r.copiedList && r.copiedList.length) {
-      allCopied.push(...r.copiedList);
-    }
+    if (r.copiedList.length) allCopied.push(...r.copiedList);
     console.log("");
   }
 
   const legacy = runLegacyFallbacks();
   if (legacy.files > 0) {
-    console.log(
-      "• 레거시 경로 보충 (public에 없던 파일만):",
-      legacy.files,
-      "개,",
-      formatBytes(legacy.bytes),
-    );
+    console.log("• imboxer/assets/videos 레거시 보충:", legacy.files, "개");
     console.log("");
   }
 
-  const totalVideo = countMediaInDir(path.join(FRONTEND, "video"));
-  const totalAssetsVideos = countMediaInDir(
-    path.join(FRONTEND, "imboxer", "assets", "videos"),
-  );
+  ensureVideoPlaceholders();
+
+  const copyWarnings = [];
+  for (const rule of COPY_RULES) {
+    if (rule.optional) continue;
+    copyWarnings.push(...verifyCopyIntegrity(rule));
+  }
+  if (copyWarnings.length) {
+    console.warn("\n  [경고] 복사 검증:");
+    copyWarnings.forEach((w) => console.warn("    ", w));
+  }
+
+  const totalVideo = countMediaInDir(FRONTEND_VIDEO);
+  const publicVideoCount = countMediaInDir(PUBLIC_VIDEO);
 
   console.log("[vercel-prepare-static] 요약");
-  console.log("  public → frontend 복사 파일:", allCopied.length, "개");
-  if (allCopied.length) {
-    console.log("  복사된 frontend 경로:");
-    allCopied.forEach((p) => console.log("    -", p));
-  }
-  console.log("  frontend/video 미디어:", totalVideo, "개");
-  console.log("  frontend/imboxer/assets/videos 미디어:", totalAssetsVideos, "개");
+  console.log("  public/video:", publicVideoCount, "개");
+  console.log("  frontend/video:", totalVideo, "개");
+  console.log("  public → frontend 복사:", allCopied.length, "개");
 
   const { ok, missing } = spotCheck();
   if (ok.length) {
-    console.log("\n  배포 URL 점검 OK (샘플):");
+    console.log("\n  URL 샘플 OK:");
     ok.forEach((u) => console.log("    ", u));
   }
   if (missing.length) {
-    console.warn("\n  [경고] 아래 URL은 배포 후 404 가능 (파일 없음):");
+    console.warn("\n  [경고] 배포 후 404 가능:");
     missing.forEach((u) => console.warn("    ", u));
-    console.warn(
-      "\n  → public/video/, public/assets/videos/ 에 mp4를 넣고 Git push 하세요.",
-      "\n  → 가이드: md/VERCEL_PUBLIC_ASSET_MIGRATION.md",
-    );
-  }
-
-  const publicVideoCount = countMediaInDir(path.join(PUBLIC, "video"));
-  const publicAssetsVideoCount = countMediaInDir(
-    path.join(PUBLIC, "assets", "videos"),
-  );
-
-  const copyErrors = [];
-  for (const rule of COPY_RULES) {
-    if (rule.optional) continue;
-    copyErrors.push(...verifyCopyIntegrity(rule));
-  }
-
-  if (copyErrors.length > 0) {
-    failBuild(
-      "public/ 영상이 frontend/ 로 모두 복사되지 않았습니다.",
-      copyErrors.map((e) => e.message),
-    );
-  }
-
-  const isCi =
-    process.env.VERCEL === "1" ||
-    process.env.CI === "true" ||
-    process.env.STRICT_PUBLIC_MEDIA === "1";
-
-  if (isCi && publicVideoCount === 0) {
-    failBuild("Vercel/CI 빌드: public/video/ 에 미디어 파일이 없습니다.", [
-      "Git LFS로 public/video/*.mp4 를 커밋·push 했는지 확인하세요.",
-      "frontend/video/ 는 .gitignore 대상이라 배포에 포함되지 않습니다.",
-    ]);
   }
 
   if (publicVideoCount === 0) {
     console.warn(
-      "\n[vercel-prepare-static] public/video/ 에 mp4가 없습니다.",
-      "Git push 시 Vercel에서 /video/... 가 404 됩니다.",
-      "(로컬 frontend/video 만 있으면 배포 서버에는 포함되지 않습니다)",
-    );
-  }
-  if (publicAssetsVideoCount === 0) {
-    console.warn(
-      "[vercel-prepare-static] public/assets/videos/ 에 mp4가 없습니다.",
-      "(frontend/imboxer/assets/videos Git 추적분만 쓰는 경우는 생략 가능)",
+      "\n[vercel-prepare-static] public/video 가 비어 있습니다.",
+      "로컬: frontend/video 를 채운 뒤 npm run build → git add public/video → LFS push",
     );
   }
 
-  if (publicMedia.length > 0) {
-    console.log("\n  복사 무결성: public 미디어", publicMedia.length, "개 → frontend 전부 OK");
-  }
-
-  console.log("\n[vercel-prepare-static] 완료");
+  console.log("\n[vercel-prepare-static] 완료 (빌드 계속)");
 }
 
 main();

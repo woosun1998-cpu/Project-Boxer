@@ -1,5 +1,15 @@
 # public/ 영상 — Git · LFS · Vercel 배포 규칙
 
+## 0) 자동 동기화 (npm run build)
+
+`npm run build` 실행 시:
+
+1. **`frontend/video/` → `public/video/`** (Git LFS에 올릴 원본)
+2. **`public/` → `frontend/`** (Vercel 배포 산출)
+
+로컬에서 영상을 `frontend/video/`에만 두어도 빌드가 `public/video/`로 복사합니다.  
+**push 전** 반드시 `git add public/video` 후 LFS 확인하세요.
+
 ## 1) .gitignore 확인 결과 (2026-05)
 
 | 경로 | Git 추적 | 이유 |
@@ -50,23 +60,19 @@ git lfs track "public/video/**"
 git lfs track "public/assets/videos/**"
 ```
 
-### 3-2b. push 전 LFS 검증 명령어
+### 3-2b. push 전 LFS 검증 (한 줄)
 
 ```powershell
-# 1) LFS 대상으로 잡히는지 (filter: lfs 가 나와야 함)
-git check-attr filter -- public/video/스파링초보.mp4
-git check-attr filter -- public/assets/videos/training/tutorial-jab.mp4
+npm run build; git add public/video; git lfs ls-files public/video
+```
 
-# 2) 스테이징 후 LFS에 올라갈 파일 목록
-git add public/video/ public/assets/videos/ .gitattributes
-git lfs ls-files
+`public/video/...` 경로가 나오면 LFS 등록된 것입니다. (비어 있으면 `git lfs install` 후 다시 `git add`)
 
-# 3) 일반 Git blob이 아닌지 (LFS 포인터면 앞부분이 version https://git-lfs.github.com/spec/v1)
+상세:
+
+```powershell
+git check-attr filter -- public/video/스파링초보.mp4   # filter: lfs
 git lfs status
-
-# 4) 빌드 복사 검증 (public → frontend)
-npm run build
-# public에 mp4가 있으면 "복사 무결성: ... 전부 OK" / 누락 시 FATAL 로 빌드 실패
 ```
 
 ### 3-3. 영상을 public으로 옮긴 뒤 커밋
