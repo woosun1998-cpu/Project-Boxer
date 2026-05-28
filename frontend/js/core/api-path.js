@@ -4,7 +4,7 @@
  * - 없으면 같은 출처 상대 경로(/api/...)
  */
 (function (global) {
-  const DEFAULT_API_BASE = "https://my-backend.onrender.com";
+  const DEFAULT_API_BASE = "https://shapes-upgrade-brunswick-record.trycloudflare.com";
   function isQuickTunnelOrigin() {
     const host = global.location && global.location.hostname ? String(global.location.hostname) : "";
     return /\.trycloudflare\.com$/i.test(host);

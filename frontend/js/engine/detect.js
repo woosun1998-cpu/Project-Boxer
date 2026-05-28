@@ -3,7 +3,7 @@
 (function (global) {
   const DEFAULT_MODEL_PATH = "/static/boxing_ai_web_model/model.json";
   const DEFAULT_LABELS = ["hook", "uppercut", "cross", "jab", "No punch"];
-  const DEFAULT_API_BASE = "https://my-backend.onrender.com";
+  const DEFAULT_API_BASE = "https://shapes-upgrade-brunswick-record.trycloudflare.com";
 
   function resolveApiUrl(path) {
     const p = String(path || "").trim();

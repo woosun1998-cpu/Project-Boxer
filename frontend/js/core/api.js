@@ -28,7 +28,7 @@ function resolveApiPath(path) {
     return window.location.origin.replace(/\/$/, "") + p;
   }
   var raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
-  var base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
+  var base = (raw || "https://shapes-upgrade-brunswick-record.trycloudflare.com").replace(/\/$/, "");
   return base + p;
 }
 

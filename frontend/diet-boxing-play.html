@@ -517,7 +517,18 @@
       function localVideoUrl(fileName) {
         const out = [];
         const bases = ["/video/"];
+        const apiBase =
+          typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
+        if (apiBase) {
+          bases.push(apiBase.replace(/\/$/, "") + "/video/");
+        }
+        if (/\.trycloudflare\.com$/i.test(window.location.hostname || "")) {
+          bases.push(window.location.origin.replace(/\/$/, "") + "/video/");
+        }
+        const seenBase = new Set();
         for (const base of bases) {
+          if (!base || seenBase.has(base)) continue;
+          seenBase.add(base);
           try {
             out.push(new URL(base + fileName, window.location.href).href);
           } catch {
@@ -732,11 +743,10 @@
         async function initTrainerMedia() {
           const spec = DIET_MODE_MEDIA[currentMode];
           if (spec) {
-            if (await probeVideoFile(spec.mp4)) {
-              loadTrainerVideo(localVideoUrl(spec.mp4)[0]);
-              return;
-            }
-            showMp4RequiredError(spec, false);
+            const specCandidates = buildDietVideoCandidates([spec.mp4]);
+            candidates.splice(0, candidates.length, ...specCandidates);
+            candidateIndex = 0;
+            tryNextCandidate();
             return;
           }
           candidateIndex = 0;
