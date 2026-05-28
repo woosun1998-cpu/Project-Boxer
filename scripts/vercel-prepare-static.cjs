@@ -174,51 +174,133 @@ function formatBytes(n) {
   return (n / (1024 * 1024)).toFixed(1) + " MB";
 }
 
+/** frontend/video 내 모든 .mp4 목록 (1단계 폴더) */
+function listFrontendMp4Files() {
+  const list = [];
+  if (!fs.existsSync(FRONTEND_VIDEO)) return list;
+  for (const name of fs.readdirSync(FRONTEND_VIDEO)) {
+    if (isPlaceholder(name)) continue;
+    const p = path.join(FRONTEND_VIDEO, name);
+    if (!fs.statSync(p).isFile()) continue;
+    if (path.extname(name).toLowerCase() === ".mp4") {
+      list.push(name);
+    }
+  }
+  return list;
+}
+
+/**
+ * frontend/video/*.mp4 → public/video/*.mp4 강제 복사 (항상 덮어씀)
+ * 에러 시 throw 하지 않고 errors 배열에 기록
+ */
+function forceCopyAllMp4ToPublic() {
+  const report = {
+    copied: [],
+    failed: [],
+    skipped: [],
+    totalBytes: 0,
+  };
+
+  ensureDir(PUBLIC_VIDEO);
+
+  const mp4Files = listFrontendMp4Files();
+  if (mp4Files.length === 0) {
+    return report;
+  }
+
+  for (const name of mp4Files) {
+    const from = path.join(FRONTEND_VIDEO, name);
+    const to = path.join(PUBLIC_VIDEO, name);
+
+    try {
+      const stat = fs.statSync(from);
+      fs.copyFileSync(from, to);
+      report.copied.push(name);
+      report.totalBytes += stat.size;
+      console.log(
+        "    [강제 복사]",
+        name,
+        "→ public/video/",
+        `(${formatBytes(stat.size)})`,
+      );
+    } catch (err) {
+      const msg = err && err.message ? err.message : String(err);
+      report.failed.push({ name, error: msg });
+      console.warn("    [복사 실패]", name, "—", msg);
+    }
+  }
+
+  return report;
+}
+
 /** 1) 로컬 frontend/video → public/video (Git·LFS에 올릴 원본) */
 function syncFrontendVideoToPublic() {
-  console.log("• [1/2] frontend/video → public/video (LFS 원본 동기화)");
+  console.log("• [1/2] frontend/video → public/video (mp4 강제 동기화)");
 
   if (process.env.VERCEL === "1") {
     console.log(
       "  Vercel CI: frontend/video 는 저장소에 없음(gitignore).",
       "public/video(LFS)만 frontend 로 복사합니다.\n",
     );
-    return { files: 0, bytes: 0 };
+    return { files: 0, bytes: 0, failed: [] };
   }
 
   if (process.env.SKIP_VIDEO_SYNC === "1") {
     console.log("  SKIP_VIDEO_SYNC=1 — 동기화 건너뜀\n");
-    return { files: 0, bytes: 0 };
+    return { files: 0, bytes: 0, failed: [] };
   }
 
   if (!fs.existsSync(FRONTEND_VIDEO)) {
     console.log("  (frontend/video 없음 — 건너뜀)\n");
-    return { files: 0, bytes: 0 };
+    return { files: 0, bytes: 0, failed: [] };
   }
 
-  const result = copyDirMerge(FRONTEND_VIDEO, PUBLIC_VIDEO, {
-    logEach: true,
-    mediaOnly: true,
-    skipIfSameSize: true,
-  });
+  const mp4List = listFrontendMp4Files();
+  console.log("  frontend/video mp4:", mp4List.length, "개");
+
+  const force = forceCopyAllMp4ToPublic();
+
+  const srcCount = mp4List.length;
+  const destCount = countMediaInDir(PUBLIC_VIDEO);
+  const destMp4 = listMediaRelative(PUBLIC_VIDEO).filter((r) =>
+    r.toLowerCase().endsWith(".mp4"),
+  );
 
   console.log(
-    "  동기화:",
-    result.files,
+    "  강제 복사 성공:",
+    force.copied.length,
     "개,",
-    formatBytes(result.bytes),
-    "| public/video 미디어 합계:",
-    countMediaInDir(PUBLIC_VIDEO),
+    formatBytes(force.totalBytes),
+    "| public/video mp4:",
+    destMp4.length,
     "개",
   );
 
-  if (result.files > 0) {
-    console.log(
-      "  → push 전: git add public/video && git lfs ls-files public/video",
+  if (force.failed.length > 0) {
+    console.warn("  [경고] 복사 실패", force.failed.length, "개:");
+    force.failed.forEach((f) => console.warn("    -", f.name, ":", f.error));
+  }
+
+  if (srcCount > force.copied.length) {
+    console.warn(
+      "  [경고] frontend mp4",
+      srcCount,
+      "개 중",
+      force.copied.length,
+      "개만 public/video 에 반영됨 (디스크 부족 등 확인)",
     );
   }
+
+  if (force.copied.length > 0) {
+    console.log("  → push 전: git add public/video && git lfs ls-files public/video");
+  }
   console.log("");
-  return result;
+
+  return {
+    files: force.copied.length,
+    bytes: force.totalBytes,
+    failed: force.failed,
+  };
 }
 
 function runRule(rule) {
