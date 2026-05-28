@@ -174,6 +174,10 @@ function resolveApiUrl(path) {
   const p = String(path || "").trim();
   if (/^https?:\/\//i.test(p)) return p;
   const normalized = p.startsWith("/") ? p : `/${p}`;
+  const isQuickTunnel = /\.trycloudflare\.com$/i.test(window.location.hostname || "");
+  if (isQuickTunnel) {
+    return `${window.location.origin.replace(/\/$/, "")}${normalized}`;
+  }
   const raw = typeof window.__BOXER_API_URL__ === "string" ? window.__BOXER_API_URL__.trim() : "";
   const base = (raw || "https://my-backend.onrender.com").replace(/\/$/, "");
   return `${base}${normalized}`;

@@ -9,6 +9,12 @@
     const p = String(path || "").trim();
     if (/^https?:\/\//i.test(p)) return p;
     const normalized = p.startsWith("/") ? p : `/${p}`;
+    const isQuickTunnel =
+      typeof global.location !== "undefined" &&
+      /\.trycloudflare\.com$/i.test(global.location.hostname || "");
+    if (isQuickTunnel) {
+      return `${global.location.origin.replace(/\/$/, "")}${normalized}`;
+    }
     const raw = typeof global.__BOXER_API_URL__ === "string" ? global.__BOXER_API_URL__.trim() : "";
     const base = (raw || DEFAULT_API_BASE).replace(/\/$/, "");
     return `${base}${normalized}`;

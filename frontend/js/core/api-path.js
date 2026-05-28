@@ -5,8 +5,15 @@
  */
 (function (global) {
   const DEFAULT_API_BASE = "https://my-backend.onrender.com";
+  function isQuickTunnelOrigin() {
+    const host = global.location && global.location.hostname ? String(global.location.hostname) : "";
+    return /\.trycloudflare\.com$/i.test(host);
+  }
 
   function getApiBase() {
+    if (isQuickTunnelOrigin()) {
+      return global.location.origin;
+    }
     const raw =
       typeof global.__BOXER_API_URL__ === "string" ? global.__BOXER_API_URL__.trim() : "";
     return raw ? raw.replace(/\/$/, "") : DEFAULT_API_BASE;

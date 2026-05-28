@@ -51,8 +51,11 @@ _cors = dict(
 # Starlette는 allow_origin_regex에 re.fullmatch()를 쓰므로 전체 Origin 문자열이
 # 끝까지 맞아야 합니다. (:\d+)? 뒤에 $ 없이 두면 "http://localhost:5501"에서
 # 포트가 잡히지 않고 fullmatch가 실패 → CORS 헤더가 붙지 않습니다.
-if settings.DEBUG:
-    _cors["allow_origin_regex"] = r"https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+_cors["allow_origin_regex"] = (
+    r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+    r"|^https://[a-z0-9-]+\.vercel\.app$"
+    r"|^https://[a-z0-9-]+\.trycloudflare\.com$"
+)
 
 app.add_middleware(CORSMiddleware, **_cors)
 
